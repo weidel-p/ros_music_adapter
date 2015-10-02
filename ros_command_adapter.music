@@ -1,0 +1,15 @@
+stoptime=50.0
+[sensor]
+  binary=./ros_sensor_adapter
+  args=
+  np=1
+  ros_topic=/jubot/laserscan
+  message_type=Laserscan
+[command]
+  binary=./ros_command_adapter
+  args=
+  np=1
+  ros_topic=/jubot/cmd_vel
+  message_type=Twist
+  angular.z=5
+sensor.sensordata -> command.commanddata[120]

@@ -26,3 +26,12 @@
 *.exe
 *.out
 *.app
+
+CMakeFiles/*
+CMakeCache.txt
+Makefile
+
+*.swp
+*.cmake
+ros_command_adapter
+ros_sensor_adapter
