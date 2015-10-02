@@ -1,0 +1,16 @@
+<launch>
+
+	<!-- Create world with robot -->
+	<node pkg="jubot" type="bashim" name="gazebo_server" 
+	      args="gzserver $(find jubot)/config/gazebo/demo_world.sdf"/>
+
+    <!-- run script to bridge laserscan from gazebo to ros -->
+	<node pkg="jubot" type="laserscan_bridge" name="jubot_laserscan_bridge" />
+
+	<!-- run script to control the vitual robot-->
+	<node pkg="jubot" type="cmd_bridge" name="jubot_cmd_bridge" />
+</launch>
+
+
+
+

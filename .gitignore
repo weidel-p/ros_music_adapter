@@ -35,3 +35,10 @@ Makefile
 *.cmake
 ros_command_adapter
 ros_sensor_adapter
+
+catkin_ws/devel/*
+catkin_ws/install/*
+catkin_ws/build/*
+catkin_ws/src/ros-pioneer3at/*
+catkin_ws/src/rosaria/*
+
