@@ -10,6 +10,7 @@
 #include "boost/thread.hpp"
 
 const double DEFAULT_TIMESTEP = 1e-3;
+const double DEFAULT_SENSOR_UPDATE_RATE = 30;
 
 class RosSensorAdapter
 {
@@ -27,6 +28,8 @@ class RosSensorAdapter
         MUSIC::Runtime* runtime;
         double stoptime;
         int datasize;
+        double sensor_update_rate;
+        double timestep;
 
         double* data;
 
