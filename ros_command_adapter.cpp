@@ -1,5 +1,6 @@
 #include "ros_command_adapter.h"
 
+
 void
 ros_thread(RosCommandAdapter ros_adapter)
 {
@@ -26,6 +27,9 @@ void
 RosCommandAdapter::init(int argc, char** argv)
 {
     std::cout << "initializing ROS command adapter" << std::endl;
+
+    timestep = DEFAULT_TIMESTEP;
+    command_rate = DEFAULT_COMMAND_RATE;
 
     // MUSIC before ROS to read the config first!
     initMUSIC(argc, argv);
@@ -55,34 +59,46 @@ void
 RosCommandAdapter::initMUSIC(int argc, char** argv)
 {
     MUSIC::Setup* setup = new MUSIC::Setup (argc, argv);
+
+    setup->config("ros_topic", &ros_topic);
+    setup->config("stoptime", &stoptime);
+    setup->config("message_type", &msg_type);
+    setup->config("command_rate", &command_rate);
+    setup->config("music_timestep", &timestep);
     
-    MUSIC::ContInputPort* wavedata = setup->publishContInput ("commanddata");
+    MUSIC::ContInputPort* port_in = setup->publishContInput ("in"); //TODO: read portname from file
     
     comm = setup->communicator ();
-    int nProcesses = comm.Get_size (); // how many processes are there?
     int rank = comm.Get_rank ();       // which process am I?
+    int nProcesses = comm.Get_size (); // how many processes are there?
+    if (nProcesses > 1)
+    {
+        std::cout << "ERROR: num processes (np) not equal 1" << std::endl;
+        comm.Abort(1);
+    }
+
     int width = 0;
-    if (wavedata->hasWidth ())
-      width = wavedata->width ();
+    if (port_in->hasWidth ())
+    {
+        width = port_in->width ();
+    }
     else
-      comm.Abort (1);
+    {
+        std::cout << "ERROR: Port-width not defined" << std::endl;
+        comm.Abort (1);
+    }
     
-    // For clarity, assume that width is a multiple of n_processes
-    nLocalVars = width / nProcesses;
-    data = new double[nLocalVars]; 
-    databuf = new double[nLocalVars+1]; //+1 for the leading zero needed for unspecified fiels in the message
+    datasize = width;
+    data = new double[datasize]; 
+    databuf = new double[datasize+1]; //+1 for the leading zero needed for unspecified fiels in the message
     databuf[0] = 0.;
          
     // Declare where in memory to put data
     MUSIC::ArrayData dmap (data,
       		 MPI::DOUBLE,
-      		 rank * nLocalVars,
-      		 nLocalVars);
-    wavedata->map (&dmap);
-    
-    setup->config("ros_topic", &ros_topic);
-    setup->config("stoptime", &stoptime);
-    setup->config("message_type", &msg_type);
+      		 rank * datasize,
+      		 datasize);
+    port_in->map (&dmap, 1);
 
     if (msg_type.compare("Twist") == 0)
     {
@@ -112,20 +128,25 @@ RosCommandAdapter::initMUSIC(int argc, char** argv)
         
     } 
  
-    runtime = new MUSIC::Runtime (setup, DEFAULT_TIMESTEP);
-
+    runtime = new MUSIC::Runtime (setup, timestep);
 }
 
 void
 RosCommandAdapter::runROS()
 {
+    std::cout << "running command adapter with update rate of " << command_rate << std::endl;
 
-    ros::Rate rate(30); 
+    ros::Rate rate(command_rate); 
+
+    struct timeval tval;
+    struct timeval tval2;
+    struct timeval tval3;
 
     for (int t = 0; runtime->time() < stoptime; t++)
     {
+        gettimeofday(&tval, NULL);
+        ros::spinOnce();
 
-//        std::cout << msg_type.compare("Twist") << std::endl;
         if (msg_type.compare("Twist") == 0)
         {
             geometry_msgs::Twist command;
@@ -141,28 +162,49 @@ RosCommandAdapter::runROS()
             publisher.publish(command);
         }
 
-        ros::spinOnce();
+        std::cout << "Command: " ;
+        for (int i = 0; i < datasize; ++i)
+            std::cout << data[i] << ' ';
+        std::cout << std::endl;
+
+    //    gettimeofday(&tval2, NULL);
+    //    int dt = tval2.tv_usec - tval.tv_usec;
+    //    if (tval2.tv_sec > tval.tv_sec){
+    //        dt += 1000000;
+    //    }
+
+    //    tval3 = tval2; 
+    //    while (dt < 10000){
+    //        std::exp(dt);
+    //        gettimeofday(&tval2, NULL);
+    //        dt = tval2.tv_usec - tval.tv_usec;
+    //        if (tval2.tv_sec > tval.tv_sec){
+    //            dt += 1000000;
+    //        }
+    //    }
+    //    dt = tval2.tv_usec - tval3.tv_usec;
+    //    if (tval2.tv_sec > tval3.tv_sec){
+    //        dt += 1000000;
+    //    }
+
+    //    sum_dt += dt;
+    //    std::cout << dt  << std::endl;
         rate.sleep();
        
     }
 
+//    std::cout << sum_dt << std::endl;
 }
 
 void 
 RosCommandAdapter::runMUSIC()
 {
-    ros::Rate rate(1/DEFAULT_TIMESTEP);
+    ros::Rate rate(1/timestep);
 
     for (int t = 0; runtime->time() < stoptime; t++)
     {
         runtime->tick();
-
-        memcpy( &databuf[1], &data[0], nLocalVars * sizeof( double ) );
-
-        for (int i = 0; i < nLocalVars + 1; ++i)
-            std::cout << databuf[i] << ' ';
-        std::cout << std::endl;
-
+        memcpy( &databuf[1], &data[0], datasize * sizeof( double ) );
         rate.sleep();
     }
 

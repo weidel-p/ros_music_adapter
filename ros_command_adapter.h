@@ -8,8 +8,10 @@
 #include <mpi.h>
 
 #include "boost/thread.hpp"
+#include "sys/time.h"
 
 const double DEFAULT_TIMESTEP = 1e-3;
+const double DEFAULT_COMMAND_RATE = 10;
 
 class RosCommandAdapter
 {
@@ -26,10 +28,13 @@ class RosCommandAdapter
         MPI::Intracomm comm;
         MUSIC::Runtime* runtime;
         double stoptime;
-        int nLocalVars;
+        int datasize;
 
         double* data;
         double* databuf;
+
+        double timestep;
+        double command_rate;
 
         //typedef void (*fun)(void);
         std::string msg_type;
