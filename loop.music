@@ -1,5 +1,5 @@
 stoptime=10.
-music_timestep = 0.001
+music_timestep=0.001
 [sensor]
   binary=./ros_sensor_adapter
   args=
@@ -9,6 +9,10 @@ music_timestep = 0.001
   sensor_update_rate=30
 [encoder]
   binary=./nef_encoder
+  args=
+  np=1
+[nest]
+  binary=./dummy_network.py
   args=
   np=1
 [decoder]
@@ -25,5 +29,6 @@ music_timestep = 0.001
   angular.z=1
   command_rate=10
 sensor.out->encoder.in[10]
-encoder.out->decoder.in[100]
+encoder.out->nest.in[5000]
+nest.out->decoder.in[5000]
 decoder.out->command.in[2]

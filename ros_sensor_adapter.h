@@ -8,6 +8,9 @@
 #include <mpi.h>
 
 #include "boost/thread.hpp"
+#include "sys/time.h"
+
+#include "rate.h"
 
 const double DEFAULT_TIMESTEP = 1e-3;
 const double DEFAULT_SENSOR_UPDATE_RATE = 30;

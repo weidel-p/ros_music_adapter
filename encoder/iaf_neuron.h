@@ -11,11 +11,11 @@ class IAFNeuron{
     double propagator;
 
     // NEF parameters
-    double  bias, V_m, scaling;
     std::vector<double> alpha;
     bool is_nef_initialized;
 
     public:
+    double  bias, V_m, scaling;
        IAFNeuron(){
         
             //V_m = 0.0;

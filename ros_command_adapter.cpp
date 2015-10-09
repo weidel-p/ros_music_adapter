@@ -69,8 +69,8 @@ RosCommandAdapter::initMUSIC(int argc, char** argv)
     MUSIC::ContInputPort* port_in = setup->publishContInput ("in"); //TODO: read portname from file
     
     comm = setup->communicator ();
-    int rank = comm.Get_rank ();       // which process am I?
-    int nProcesses = comm.Get_size (); // how many processes are there?
+    int rank = comm.Get_rank ();       
+    int nProcesses = comm.Get_size (); 
     if (nProcesses > 1)
     {
         std::cout << "ERROR: num processes (np) not equal 1" << std::endl;
@@ -135,16 +135,10 @@ void
 RosCommandAdapter::runROS()
 {
     std::cout << "running command adapter with update rate of " << command_rate << std::endl;
-
-    ros::Rate rate(command_rate); 
-
-    struct timeval tval;
-    struct timeval tval2;
-    struct timeval tval3;
+    Rate rate(command_rate);
 
     for (int t = 0; runtime->time() < stoptime; t++)
     {
-        gettimeofday(&tval, NULL);
         ros::spinOnce();
 
         if (msg_type.compare("Twist") == 0)
@@ -161,45 +155,20 @@ RosCommandAdapter::runROS()
         
             publisher.publish(command);
         }
-
-        std::cout << "Command: " ;
-        for (int i = 0; i < datasize; ++i)
-            std::cout << data[i] << ' ';
-        std::cout << std::endl;
-
-    //    gettimeofday(&tval2, NULL);
-    //    int dt = tval2.tv_usec - tval.tv_usec;
-    //    if (tval2.tv_sec > tval.tv_sec){
-    //        dt += 1000000;
-    //    }
-
-    //    tval3 = tval2; 
-    //    while (dt < 10000){
-    //        std::exp(dt);
-    //        gettimeofday(&tval2, NULL);
-    //        dt = tval2.tv_usec - tval.tv_usec;
-    //        if (tval2.tv_sec > tval.tv_sec){
-    //            dt += 1000000;
-    //        }
-    //    }
-    //    dt = tval2.tv_usec - tval3.tv_usec;
-    //    if (tval2.tv_sec > tval3.tv_sec){
-    //        dt += 1000000;
-    //    }
-
-    //    sum_dt += dt;
-    //    std::cout << dt  << std::endl;
-        rate.sleep();
-       
+        rate.sleep();     
     }
 
-//    std::cout << sum_dt << std::endl;
 }
 
 void 
 RosCommandAdapter::runMUSIC()
 {
-    ros::Rate rate(1/timestep);
+
+    Rate rate(1./timestep);
+    struct timeval start;
+    struct timeval end;
+    gettimeofday(&start, NULL);
+    unsigned int ticks_skipped = 0;
 
     for (int t = 0; runtime->time() < stoptime; t++)
     {
@@ -207,6 +176,16 @@ RosCommandAdapter::runMUSIC()
         memcpy( &databuf[1], &data[0], datasize * sizeof( double ) );
         rate.sleep();
     }
+
+    gettimeofday(&end, NULL);
+    unsigned int dt_s = end.tv_sec - start.tv_sec;
+    unsigned int dt_us = end.tv_usec - start.tv_usec;
+    if (end.tv_sec > start.tv_sec)
+    {
+        dt_us += 1000000;
+    }
+    std::cout << "command: total simtime: " << dt_s << " " << dt_us << " ticks skipped " << ticks_skipped <<  std::endl;
+
 
 }
 

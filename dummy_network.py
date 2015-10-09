@@ -11,11 +11,13 @@ sbn.set_palette("deep", desat=.6)
 sbn.set_context(rc={"figure.figsize": (8, 4)})
 
 nest.ResetKernel()
-#nest.set_verbosity("M_FATAL")
+nest.set_verbosity("M_FATAL")
+#nest.SetKernelStatus({'resolution': 0.1})
 nest.SetKernelStatus({'print_time': True})
 
-NUM_ENC_NEURONS = 200 
-run_time = 5000.
+
+NUM_ENC_NEURONS = 5000 
+run_time = 10000.
 
 proxy_in = nest.Create('music_event_in_proxy', NUM_ENC_NEURONS)
 nest.SetStatus(proxy_in, [{'port_name': 'in', 'music_channel': c} for c in range(NUM_ENC_NEURONS)])

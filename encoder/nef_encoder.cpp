@@ -31,8 +31,8 @@ NefEncoder::initMUSIC(int argc, char** argv)
     port_in = setup->publishContInput("in");
 
     comm = setup->communicator ();
-    int rank = comm.Get_rank ();       // which process am I?
-    int nProcesses = comm.Get_size (); // how many processes are there?
+    int rank = comm.Get_rank ();       
+    int nProcesses = comm.Get_size ();
     if (nProcesses > 1)
     {
         std::cout << "ERROR: num processes (np) not equal 1" << std::endl;
@@ -54,6 +54,7 @@ NefEncoder::initMUSIC(int argc, char** argv)
     for (unsigned int i = 0; i < size_sensor_data; ++i)
     {
         sensor_data.push_back(0.);
+        sensor_data_buf.push_back(0.);
     }
 
     for (int n = 0; n < size_spike_data; ++n){
@@ -82,33 +83,46 @@ void
 NefEncoder::runMUSIC()
 {
     std::cout << "running nef encoder" << std::endl;
-    struct timeval tval0;
-    struct timeval tval1;
+
+    Rate rate(1./timestep);
+    struct timeval start;
+    struct timeval end;
+    gettimeofday(&start, NULL);
+    int ticks_skipped = 0;
+    int _ticks_to_skip = 0;
 
     for (int t = 0; runtime->time() < stoptime; t++)
     {
-        gettimeofday(&tval0, NULL);
         runtime->tick();
 
-        for (unsigned int n = 0; n < neurons.size(); ++n){
-            neurons[n].encode(sensor_data);
-            if (neurons[n].propagate()){
-                //std::cout << "NEF: SPIKE!!" << std::endl;
+        if (sensor_data != sensor_data_buf) 
+        {
+            for (unsigned int n = 0; n < neurons.size(); ++n)
+            {
+                neurons[n].encode(sensor_data);
+            }
+            sensor_data_buf = sensor_data;
+        }
+
+        for (unsigned int n = 0; n < neurons.size(); ++n)
+        {
+            if (neurons[n].propagate())
+            {
                 port_out->insertEvent(runtime->time(), MUSIC::GlobalIndex(n));
             }
         }
-
-
-        gettimeofday(&tval1, NULL);
-        unsigned int dt = tval1.tv_usec - tval0.tv_usec;
-        if (tval1.tv_sec > tval0.tv_sec){
-            dt += 1000000;
-        }
-
-        //std::cout << "dt " << dt << std::endl;
-        if (dt < timestep * 1000000) // in us
-            usleep(timestep * 1000000 - dt); // for the rest of the tick
+       
+        rate.sleep();
     }
+
+    gettimeofday(&end, NULL);
+    unsigned int dt_s = end.tv_sec - start.tv_sec;
+    unsigned int dt_us = end.tv_usec - start.tv_usec;
+    if (end.tv_sec > start.tv_sec)
+    {
+        dt_us += 1000000;
+    }
+    std::cout << "encoder: total simtime: " << dt_s << " " << dt_us << " ticks skipped " << ticks_skipped <<  std::endl;
 }
 
 void NefEncoder::finalize(){

@@ -25,7 +25,7 @@ find_library(ROSTIME rostime /opt/ros/jade/lib)
 
 include_directories(/opt/ros/jade/include/)
 
-find_package(Boost COMPONENTS thread system REQUIRED)
+find_package(Boost COMPONENTS thread system date_time REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
 

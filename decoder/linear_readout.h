@@ -6,12 +6,12 @@
 #include <unistd.h>
 #include "sys/time.h"
 
-#include "iaf_neuron.h"
 #include "../rate.h"
 
 const double DEFAULT_TIMESTEP = 1e-3;
+const double DEFAULT_TAU = 0.03;
 
-class NefEncoder{
+class LinearReadoutDecoder : MUSIC::EventHandlerGlobalIndex{
     public:
         void init(int argc, char** argv);
         void runMUSIC();
@@ -22,15 +22,18 @@ class NefEncoder{
         MUSIC::Runtime* runtime;
         double stoptime;
         double timestep;
-        int size_sensor_data;
+        int size_command_data;
         int size_spike_data;
-        std::vector<double> sensor_data;
-        std::vector<double> sensor_data_buf;
-        std::vector<IAFNeuron> neurons;
-        MUSIC::EventOutputPort* port_out;
-        MUSIC::ContInputPort* port_in;
+        double* command_data;
+        double* activity_traces;
+        double* readout_weights; 
+        MUSIC::EventInputPort* port_in;
+        MUSIC::ContOutputPort* port_out;
+
+        double tau, propagator;
 
         void initMUSIC(int argc, char** argv);
+        void operator() (double t, MUSIC::GlobalIndex id );
 };
 
 

@@ -60,8 +60,8 @@ RosSensorAdapter::initMUSIC(int argc, char** argv)
     MUSIC::ContOutputPort* port_out = setup->publishContOutput ("out");
 
     comm = setup->communicator ();
-    int rank = comm.Get_rank ();       // which process am I?
-    int nProcesses = comm.Get_size (); // how many processes are there?
+    int rank = comm.Get_rank ();       
+    int nProcesses = comm.Get_size (); 
     if (nProcesses > 1)
     {
         std::cout << "ERROR: num processes (np) not equal 1" << std::endl;
@@ -98,40 +98,51 @@ RosSensorAdapter::initMUSIC(int argc, char** argv)
 void
 RosSensorAdapter::runROS()
 {
+    Rate rate(sensor_update_rate);
     std::cout << "running sensor adapter with update rate of " << sensor_update_rate << std::endl;
-    ros::Rate rate(sensor_update_rate); 
+
     for (int t = 0; runtime->time() < stoptime; t++)
     {
         ros::spinOnce();
         rate.sleep();
-    }
+   }
 }
 
 void 
 RosSensorAdapter::runMUSIC()
 {
-    ros::Rate rate(1/timestep);
+    Rate rate(1./timestep);
+    struct timeval start;
+    struct timeval end;
+    gettimeofday(&start, NULL);
+    unsigned int ticks_skipped = 0;
 
     for (int t = 0; runtime->time() < stoptime; t++)
     {
         runtime->tick();
-        rate.sleep();
+        rate.sleep(); 
     }
+
+    gettimeofday(&end, NULL);
+    unsigned int dt_s = end.tv_sec - start.tv_sec;
+    unsigned int dt_us = end.tv_usec - start.tv_usec;
+    if (end.tv_sec > start.tv_sec)
+    {
+        dt_us += 1000000;
+    }
+    std::cout << "sensor: total simtime: " << dt_s << " " << dt_us << " ticks skipped " << ticks_skipped <<  std::endl;
+
 }
 
 void
 RosSensorAdapter::laserscanCallback(const sensor_msgs::LaserScanConstPtr& msg)
 {
-    //std::cout << "Sensor: " ;
-    //    std::cout  << data[i] << " " ;
-    //std::cout << std::endl;
     for (unsigned int i = 0; i < msg->ranges.size(); ++i)
     {
         // scale data between -1 and 1
         // TODO: catch exception if ranges.size not width of port
         data[i] = (msg->ranges.at(i) / msg->range_max ) * 2 - 1;
     }
-    //std::cout << msg->ranges.at(0) << " " << data[0] << " " << datasize << " " << msg->ranges.size() << std::endl;
     
 }
 
