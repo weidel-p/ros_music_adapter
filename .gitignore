@@ -38,6 +38,8 @@ ros_command_adapter
 ros_sensor_adapter
 linear_readout_decoder
 nef_encoder
+rate_encoder
+converge_adapter
 
 catkin_ws/devel/*
 catkin_ws/install/*
