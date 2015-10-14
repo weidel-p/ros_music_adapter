@@ -7,6 +7,8 @@ add_executable(ros_command_adapter ros_command_adapter.cpp)
 add_executable(ros_sensor_adapter ros_sensor_adapter.cpp)
 add_executable(linear_readout_decoder decoder/linear_readout.cpp)
 add_executable(nef_encoder encoder/nef_encoder.cpp)
+add_executable(converge_adapter adapters/converge.cpp)
+add_executable(rate_encoder encoder/rate_encoder.cpp)
 
 include_directories(/home/weidel/opt/music/include/)
 find_library(MUSIC music /home/weidel/opt/music/lib)
@@ -28,10 +30,13 @@ include_directories(/opt/ros/jade/include/)
 find_package(Boost COMPONENTS thread system date_time REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
+find_library(JSON jsoncpp)
 
 target_link_libraries(ros_command_adapter ${MUSIC} ${ROS_CPP} ${ROS_CPP_SER} ${ROSCONSOLE} ${ROSTIME} ${MPI_LIBRARIES} ${Boost_LIBRARIES})
 target_link_libraries(ros_sensor_adapter ${MUSIC} ${ROS_CPP} ${ROS_CPP_SER} ${ROSCONSOLE} ${ROSTIME} ${MPI_LIBRARIES} ${Boost_LIBRARIES})
-target_link_libraries(linear_readout_decoder ${MUSIC} ${ROS_CPP} ${ROS_CPP_SER} ${ROSCONSOLE} ${ROSTIME} ${MPI_LIBRARIES} ${Boost_LIBRARIES})
-target_link_libraries(nef_encoder ${MUSIC} ${ROS_CPP} ${ROS_CPP_SER} ${ROSCONSOLE} ${ROSTIME} ${MPI_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(linear_readout_decoder ${MUSIC} ${MPI_LIBRARIES} ${Boost_LIBRARIES} ${JSON})
+target_link_libraries(nef_encoder ${MUSIC} ${MPI_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(rate_encoder ${MUSIC} ${MPI_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(converge_adapter ${MUSIC} ${MPI_LIBRARIES} ${Boost_LIBRARIES})
 
 
