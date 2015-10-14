@@ -37,8 +37,8 @@ LinearReadoutDecoder::initMUSIC(int argc, char** argv)
     port_out = setup->publishContOutput("out");
 
     comm = setup->communicator ();
-    int rank = comm.Get_rank ();       // which process am I?
-    int nProcesses = comm.Get_size (); // how many processes are there?
+    int rank = comm.Get_rank ();       
+    int nProcesses = comm.Get_size (); 
     if (nProcesses > 1)
     {
         std::cout << "ERROR: num processes (np) not equal 1" << std::endl;
@@ -127,16 +127,6 @@ LinearReadoutDecoder::runMUSIC()
     gettimeofday(&start, NULL);
     unsigned int ticks_skipped = 0;
 
-
-    // REMOVE ME
-//    
-//    readout_weights[0][0] = 0.12;
-//    readout_weights[0][1] = 0.12;
-//    readout_weights[1][0] = -0.5;
-//    readout_weights[1][1] = 0.5;
-//
-    //
-
     for (int t = 0; runtime->time() < stoptime; t++)
     {
         runtime->tick();
@@ -154,8 +144,6 @@ LinearReadoutDecoder::runMUSIC()
                 command_data[i] += activity_traces[j] * readout_weights[i][j].asDouble();
             }
         }
-        //std::cout << "decoder: acti " << activity_traces[0] << " " << activity_traces[1] << std::endl;
-        //std::cout << "decoder: command" << command_data[0] << " " << command_data[1] << std::endl;
         rate.sleep();
     }
 

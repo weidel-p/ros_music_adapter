@@ -38,7 +38,6 @@ class RosCommandAdapter
         double timestep;
         double command_rate;
 
-        //typedef void (*fun)(void);
         std::string msg_type;
         std::map<std::string, int> msg_map; 
 

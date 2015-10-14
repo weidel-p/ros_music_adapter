@@ -27,8 +27,8 @@ NefEncoder::initMUSIC(int argc, char** argv)
     setup->config("stoptime", &stoptime);
     setup->config("music_timestep", &timestep);
 
-    port_out = setup->publishEventOutput("out");
     port_in = setup->publishContInput("in");
+    port_out = setup->publishEventOutput("out");
 
     comm = setup->communicator ();
     int rank = comm.Get_rank ();       

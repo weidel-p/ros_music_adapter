@@ -31,8 +31,8 @@ ConvergeAdapter::initMUSIC(int argc, char** argv)
     port_out = setup->publishContOutput("out");
 
     comm = setup->communicator ();
-    int rank = comm.Get_rank ();       // which process am I?
-    int nProcesses = comm.Get_size (); // how many processes are there?
+    int rank = comm.Get_rank ();       
+    int nProcesses = comm.Get_size (); 
     if (nProcesses > 1)
     {
         std::cout << "ERROR: num processes (np) not equal 1" << std::endl;
@@ -96,7 +96,6 @@ ConvergeAdapter::runMUSIC()
     for (int t = 0; runtime->time() < stoptime; t++)
     {
         runtime->tick();
-        //std::cout << "converge adapter: " << size_factor; 
         for (int i = 0; i < size_data_out; ++i)
         {
             data_out[i] = 0;
@@ -104,9 +103,7 @@ ConvergeAdapter::runMUSIC()
             {
                 data_out[i] += data_in[j] * (1. / size_factor);
             }
-         //   std::cout << " " << data_out[i];
         }
-        //std::cout << std::endl;
         rate.sleep();
     }
 

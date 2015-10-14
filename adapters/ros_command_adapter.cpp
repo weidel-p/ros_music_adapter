@@ -155,7 +155,6 @@ RosCommandAdapter::runROS()
         
             publisher.publish(command);
         }
-        //std::cout << "ros command: " << databuf[1] << " " << databuf[2] << std::endl;
         rate.sleep();     
     }
 
