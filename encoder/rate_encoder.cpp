@@ -16,6 +16,8 @@ RateEncoder::init(int argc, char** argv)
 {
     std::cout << "initializing rate encoder" << std::endl;
     timestep = DEFAULT_TIMESTEP;
+    rate_min = DEFAULT_RATE_MIN;
+    rate_max = DEFAULT_RATE_MAX;
     initMUSIC(argc, argv);
 }
 
@@ -26,6 +28,8 @@ RateEncoder::initMUSIC(int argc, char** argv)
 
     setup->config("stoptime", &stoptime);
     setup->config("music_timestep", &timestep);
+    setup->config("rate_min", &rate_min);
+    setup->config("rate_max", &rate_max);
 
     port_in = setup->publishContInput("in");
     port_out = setup->publishEventOutput("out");
@@ -55,8 +59,8 @@ RateEncoder::initMUSIC(int argc, char** argv)
     next_spike = new double[size_data];
     for (int i = 0; i < size_data; ++i)
     {
-        rates[i] = 8.;
-        next_spike[i] = 0.01; //negexp(denormalize(rates[i])); 
+        rates[i] = 0.;
+        next_spike[i] = rate2SpikeTime(rates[i]); 
     }
     rates_buf = rates;
          
@@ -94,7 +98,7 @@ RateEncoder::runMUSIC()
         {
             for (int n = 0; n < size_data; ++n)
             {
-                next_spike[n] += 1./(rates[n] + 1) / 100.; //negexp(denormalize(rates[n]));
+                next_spike[n] += rate2SpikeTime(rates[n]);
             }
             rates_buf = rates;
         }
@@ -104,12 +108,9 @@ RateEncoder::runMUSIC()
             while(next_spike[n] < t + timestep)
             {
                 port_out->insertEvent(runtime->time(), MUSIC::GlobalIndex(n));
-                next_spike[n] += 1./(rates[n] + 1) / 100.; //negexp(denormalize(rates[n]));
+                next_spike[n] += rate2SpikeTime(rates[n]); 
             }
         }
-
-        //std::cout << "rate encoder: " << next_spike[0] << " " << next_spike[1] << std::endl;
-        //std::cout << "rate encoder rates: " << rates[0] << " " << rates[1] << std::endl;
         rate.sleep();
     }
 
@@ -123,16 +124,11 @@ RateEncoder::runMUSIC()
     std::cout << "rate encoder: total simtime: " << dt_s << " " << dt_us << " ticks skipped " << ticks_skipped <<  std::endl;
 }
 
-double
-RateEncoder::denormalize(double s)
+inline double
+RateEncoder::rate2SpikeTime(double r)
 {
-  return 1. / ((s + 1) * 8.); 
-}
-
-double
-RateEncoder::negexp (double m)
-{
-  return - m * log (drand48 ());
+    // the incoming data, which is interpreted as rate, is between -1 and 1.
+    return 1. / ((r+1) * (rate_max - rate_min) / 2. + rate_min);
 }
 
 void
