@@ -16,8 +16,12 @@ LinearReadoutDecoder::init(int argc, char** argv)
 {
     std::cout << "initializing linear readout decoder" << std::endl;
     timestep = DEFAULT_TIMESTEP;
+    weights_filename = DEFAULT_WEIGHTS_FILENAME;
     tau = DEFAULT_TAU;
-    initMUSIC(argc, argv);
+
+    // init MUSIC to read config
+    initMUSIC(argc, argv); 
+    readWeightsFile();
 }
 
 void
@@ -27,7 +31,7 @@ LinearReadoutDecoder::initMUSIC(int argc, char** argv)
 
     setup->config("stoptime", &stoptime);
     setup->config("music_timestep", &timestep);
-    setup->config("tau", &tau);
+    setup->config("weights_filename", &weights_filename);
 
     port_in = setup->publishEventInput("in");
     port_out = setup->publishContOutput("out");
@@ -64,7 +68,6 @@ LinearReadoutDecoder::initMUSIC(int argc, char** argv)
     {
         activity_traces[i] = 0.;
     }
-
          
     // Declare where in memory to put command_data
     MUSIC::ArrayData dmap(command_data,
@@ -85,6 +88,35 @@ LinearReadoutDecoder::initMUSIC(int argc, char** argv)
 }
 
 void 
+LinearReadoutDecoder::readWeightsFile()
+{
+    Json::Reader json_reader;
+
+    std::ifstream weights_file;
+    weights_file.open(weights_filename.c_str(), std::ios::in);
+    string json_weights = "";
+    string line;
+
+    while (std::getline(weights_file, line))
+    {
+        json_weights += line;
+    }
+    weights_file.close();
+    
+    if ( !json_reader.parse(json_weights, readout_weights))
+    {
+        // report to the user the failure and their locations in the document.
+        std::cout   << "ERROR: linear readout: Failed to parse file \"" << weights_filename << "\"\n" 
+                    << json_weights << " It has to be in JSON format.\n"
+                    << json_reader.getFormattedErrorMessages();
+
+        comm.Abort(1);
+        return;
+    }
+
+}
+
+void 
 LinearReadoutDecoder::runMUSIC()
 {
     std::cout << "running linear readout decoder" << std::endl;
@@ -94,6 +126,16 @@ LinearReadoutDecoder::runMUSIC()
     struct timeval end;
     gettimeofday(&start, NULL);
     unsigned int ticks_skipped = 0;
+
+
+    // REMOVE ME
+//    
+//    readout_weights[0][0] = 0.12;
+//    readout_weights[0][1] = 0.12;
+//    readout_weights[1][0] = -0.5;
+//    readout_weights[1][1] = 0.5;
+//
+    //
 
     for (int t = 0; runtime->time() < stoptime; t++)
     {
@@ -106,12 +148,14 @@ LinearReadoutDecoder::runMUSIC()
        
         for (int i = 0; i < size_command_data; ++i)
         {
-            //TODO use weights
+            command_data[i] = 0.;
             for (int j = 0; j < size_spike_data; ++j)
             {
-                command_data[i] += activity_traces[j] * (1. / size_spike_data);
+                command_data[i] += activity_traces[j] * readout_weights[i][j].asDouble();
             }
         }
+        //std::cout << "decoder: acti " << activity_traces[0] << " " << activity_traces[1] << std::endl;
+        //std::cout << "decoder: command" << command_data[0] << " " << command_data[1] << std::endl;
         rate.sleep();
     }
 
