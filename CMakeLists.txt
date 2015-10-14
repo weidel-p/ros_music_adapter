@@ -3,8 +3,8 @@ cmake_minimum_required(VERSION 2.8)
 project("MUSIC-ROS Adapter")
 
 
-add_executable(ros_command_adapter ros_command_adapter.cpp)
-add_executable(ros_sensor_adapter ros_sensor_adapter.cpp)
+add_executable(ros_command_adapter adapters/ros_command_adapter.cpp)
+add_executable(ros_sensor_adapter adapters/ros_sensor_adapter.cpp)
 add_executable(linear_readout_decoder decoder/linear_readout.cpp)
 add_executable(nef_encoder encoder/nef_encoder.cpp)
 add_executable(converge_adapter adapters/converge.cpp)
