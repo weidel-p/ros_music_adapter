@@ -115,7 +115,6 @@ ConvergeAdapter::runMUSIC()
         dt_us += 1000000;
     }
     std::cout << "converge adapter: total simtime: " << dt_s << " " << dt_us << " ticks skipped " << ticks_skipped <<  std::endl;
-
 }
 
 void

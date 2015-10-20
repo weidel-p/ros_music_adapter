@@ -15,6 +15,8 @@
 const double DEFAULT_TIMESTEP = 1e-3;
 const double DEFAULT_SENSOR_UPDATE_RATE = 30;
 
+enum msg_types {Laserscan}; 
+
 class RosSensorAdapter
 {
     public:
@@ -36,7 +38,7 @@ class RosSensorAdapter
 
         double* data;
 
-        std::string msg_type;
+        msg_types msg_type;
 
         void initROS(int argc, char** argv);
         void initMUSIC(int argc, char** argv);

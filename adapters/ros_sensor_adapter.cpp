@@ -43,7 +43,12 @@ RosSensorAdapter::initROS(int argc, char** argv)
     ros::start();
 
     ros::NodeHandle n;
-    subscriber = n.subscribe(ros_topic, 1000, &RosSensorAdapter::laserscanCallback, this);
+    switch (msg_type)
+    {
+        case Laserscan:
+            subscriber = n.subscribe(ros_topic, 1000, &RosSensorAdapter::laserscanCallback, this);
+            break;
+    }
 }
 
 void
@@ -53,9 +58,21 @@ RosSensorAdapter::initMUSIC(int argc, char** argv)
 
     setup->config("ros_topic", &ros_topic);
     setup->config("stoptime", &stoptime);
-    setup->config("message_type", &msg_type);
     setup->config("sensor_update_rate", &sensor_update_rate);
     setup->config("music_timestep", &timestep);
+
+    std::string _msg_type;
+    setup->config("message_type", &_msg_type);
+
+    if (_msg_type.compare("Laserscan") == 0){
+        msg_type = Laserscan;
+    }
+    else
+    {
+        std::cout << "ERROR: msg type unknown" << std::endl;
+        finalize();
+    }
+
 
     MUSIC::ContOutputPort* port_out = setup->publishContOutput ("out");
 

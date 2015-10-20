@@ -33,7 +33,8 @@ class LinearReadoutDecoder : MUSIC::EventHandlerGlobalIndex{
         double* activity_traces;
 
         string weights_filename;
-        Json::Value readout_weights; 
+        Json::Value json_readout_weights; 
+        double** readout_weights;
         MUSIC::EventInputPort* port_in;
         MUSIC::ContOutputPort* port_out;
 

@@ -68,6 +68,12 @@ LinearReadoutDecoder::initMUSIC(int argc, char** argv)
     {
         activity_traces[i] = 0.;
     }
+
+    readout_weights = new double*[size_command_data];
+    for (int i = 0; i < size_command_data; ++i)
+    {
+        readout_weights[i] = new double[size_spike_data];
+    }
          
     // Declare where in memory to put command_data
     MUSIC::ArrayData dmap(command_data,
@@ -103,15 +109,33 @@ LinearReadoutDecoder::readWeightsFile()
     }
     weights_file.close();
     
-    if ( !json_reader.parse(json_weights, readout_weights))
+    if ( !json_reader.parse(json_weights, json_readout_weights))
     {
         // report to the user the failure and their locations in the document.
         std::cout   << "ERROR: linear readout: Failed to parse file \"" << weights_filename << "\"\n" 
-                    << json_weights << " It has to be in JSON format.\n"
+                    << json_weights << " It has to be in JSON format.\n Using 1/N for each weight."
                     << json_reader.getFormattedErrorMessages();
+        
+        for (int i = 0; i < size_command_data; ++i)
+        {
+            for (int j = 0; j < size_spike_data; ++j)
+            {
+                readout_weights[i][j] = 1. / size_spike_data;
+            }
+        }
 
-        comm.Abort(1);
         return;
+    }
+    else
+    {
+        for (int i = 0; i < size_command_data; ++i)
+        {
+            for (int j = 0; j < size_spike_data; ++j)
+            {
+                readout_weights[i][j] = json_readout_weights[i][j].asDouble();
+            }
+        }
+
     }
 
 }
@@ -141,7 +165,7 @@ LinearReadoutDecoder::runMUSIC()
             command_data[i] = 0.;
             for (int j = 0; j < size_spike_data; ++j)
             {
-                command_data[i] += activity_traces[j] * readout_weights[i][j].asDouble();
+                command_data[i] += activity_traces[j] * readout_weights[i][j];
             }
         }
         rate.sleep();

@@ -14,6 +14,7 @@
 
 const double DEFAULT_TIMESTEP = 1e-3;
 const double DEFAULT_COMMAND_RATE = 10;
+enum msg_types {Twist};
 
 class RosCommandAdapter
 {
@@ -38,8 +39,9 @@ class RosCommandAdapter
         double timestep;
         double command_rate;
 
-        std::string msg_type;
-        std::map<std::string, int> msg_map; 
+        msg_types msg_type;
+//        std::map<std::string, int> msg_map; 
+        int* msg_map;
 
         void initROS(int argc, char** argv);
         void initMUSIC(int argc, char** argv);

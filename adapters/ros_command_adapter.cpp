@@ -44,14 +44,11 @@ RosCommandAdapter::initROS(int argc, char** argv)
     ros::start();
 
     ros::NodeHandle n;
-    if (msg_type.compare("Twist") == 0)
-    {
-        publisher = n.advertise<geometry_msgs::Twist>(ros_topic, 1);
-    }
-    else
-    {
-        std::cout << "ERROR: msg type unknown" << std::endl;
-        finalize();
+    switch (msg_type)
+    {   
+        case Twist: 
+           publisher = n.advertise<geometry_msgs::Twist>(ros_topic, 1);
+           break;
     }
 }
 
@@ -62,9 +59,22 @@ RosCommandAdapter::initMUSIC(int argc, char** argv)
 
     setup->config("ros_topic", &ros_topic);
     setup->config("stoptime", &stoptime);
-    setup->config("message_type", &msg_type);
     setup->config("command_rate", &command_rate);
     setup->config("music_timestep", &timestep);
+    
+    std::string _msg_type;
+    setup->config("message_type", &_msg_type);
+
+    if (_msg_type.compare("Twist") == 0){
+        msg_type = Twist;
+    }
+    else
+    {
+        std::cout << "ERROR: msg type unknown" << std::endl;
+        finalize();
+    }
+
+
     
     MUSIC::ContInputPort* port_in = setup->publishContInput ("in"); //TODO: read portname from file
     
@@ -98,33 +108,37 @@ RosCommandAdapter::initMUSIC(int argc, char** argv)
       		 MPI::DOUBLE,
       		 rank * datasize,
       		 datasize);
-    port_in->map (&dmap, 1);
+    port_in->map (&dmap, 0.001, 1);
 
-    if (msg_type.compare("Twist") == 0)
-    {
-        int index = -1;
-        setup->config("linear.x", &index);
-        msg_map.insert(std::make_pair("linear.x", index));
+    switch (msg_type)
+    {   
+        case Twist: 
+            msg_map = new int[6];
+            int index = 0;
 
-        index = -1;
-        setup->config("linear.y", &index);
-        msg_map.insert(std::make_pair("linear.y", index));
+            setup->config("linear.x", &index);
+            msg_map[0] = index + 1;
 
-        index = -1;
-        setup->config("linear.z", &index);
-        msg_map.insert(std::make_pair("linear.z", index));
+            index = 0;
+            setup->config("linear.y", &index);
+            msg_map[1] = index + 1;
 
-        index = -1;
-        setup->config("angular.x", &index);
-        msg_map.insert(std::make_pair("angular.x", index));
+            index = 0;
+            setup->config("linear.z", &index);
+            msg_map[2] = index + 1;
 
-        index = -1;
-        setup->config("angular.y", &index);
-        msg_map.insert(std::make_pair("angular.y", index));
+            index = 0;
+            setup->config("angular.x", &index);
+            msg_map[3] = index + 1;
 
-        index = -1;
-        setup->config("angular.z", &index);
-        msg_map.insert(std::make_pair("angular.z", index));
+            index = 0;
+            setup->config("angular.y", &index);
+            msg_map[4] = index + 1;
+
+            index = 0;
+            setup->config("angular.z", &index);
+            msg_map[5] = index + 1;
+            break;
         
     } 
  
@@ -141,20 +155,23 @@ RosCommandAdapter::runROS()
     {
         ros::spinOnce();
 
-        if (msg_type.compare("Twist") == 0)
-        {
-            geometry_msgs::Twist command;
-            
-            command.linear.x = databuf[msg_map.find("linear.x")->second + 1];
-            command.linear.y = databuf[msg_map.find("linear.y")->second + 1];
-            command.linear.z = databuf[msg_map.find("linear.z")->second + 1];
+        switch (msg_type)
+        {   
+            case Twist: 
+                geometry_msgs::Twist command;
+                
+                command.linear.x = databuf[msg_map[0]];
+                command.linear.y = databuf[msg_map[1]];
+                command.linear.z = databuf[msg_map[2]];
 
-            command.angular.x = databuf[msg_map.find("angular.x")->second + 1];
-            command.angular.y = databuf[msg_map.find("angular.y")->second + 1];
-            command.angular.z = databuf[msg_map.find("angular.z")->second + 1];
-        
-            publisher.publish(command);
+                command.angular.x = databuf[msg_map[3]];
+                command.angular.y = databuf[msg_map[4]];
+                command.angular.z = databuf[msg_map[5]];
+            
+                publisher.publish(command);
+                break;
         }
+
         rate.sleep();     
     }
 
