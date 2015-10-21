@@ -69,7 +69,7 @@ ConvergeAdapter::initMUSIC(int argc, char** argv)
       		 MPI::DOUBLE,
       		 rank * size_data_in,
       		 size_data_in);
-    port_in->map (&dmap_in, 1);
+    port_in->map (&dmap_in, timestep, 1);
     
     MUSIC::ArrayData dmap_out(data_out,
       		 MPI::DOUBLE,
@@ -104,6 +104,16 @@ ConvergeAdapter::runMUSIC()
                 data_out[i] += data_in[j] * (1. / size_factor);
             }
         }
+
+#if DEBUG_OUTPUT
+        std::cout << "Converge Adapter: ";
+        for (int i = 0; i < size_data_out; ++i)
+        {
+            std::cout << data_out[i] << " ";
+        }
+        std::cout << std::endl;
+#endif
+
         rate.sleep();
     }
 

@@ -12,6 +12,8 @@
 
 #include "rate.h"
 
+#define DEBUG_OUTPUT false 
+
 const double DEFAULT_TIMESTEP = 1e-3;
 const double DEFAULT_COMMAND_RATE = 10;
 enum msg_types {Twist};
@@ -34,7 +36,6 @@ class RosCommandAdapter
         int datasize;
 
         double* data;
-        double* databuf;
 
         double timestep;
         double command_rate;

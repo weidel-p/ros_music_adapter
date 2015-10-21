@@ -8,6 +8,8 @@
 
 #include "../rate.h"
 
+#define DEBUG_OUTPUT false 
+
 const double DEFAULT_TIMESTEP = 1e-3;
 const double DEFAULT_TAU = 0.03;
 

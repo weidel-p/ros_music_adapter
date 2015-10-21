@@ -84,7 +84,7 @@ LinearReadoutDecoder::initMUSIC(int argc, char** argv)
     
     // map linear index to event out port 
     MUSIC::LinearIndex l_index_in(0, size_spike_data);
-    port_in->map(&l_index_in, this, 0.002, 1); //TODO evaluate 0.002
+    port_in->map(&l_index_in, this, timestep, 1); 
 
 
     // initialize propagator for exponential decay
@@ -168,6 +168,24 @@ LinearReadoutDecoder::runMUSIC()
                 command_data[i] += activity_traces[j] * readout_weights[i][j];
             }
         }
+
+#if DEBUG_OUTPUT
+        std::cout << "Linear Readout: Activity Traces: ";
+        for (int i = 0; i < size_spike_data; ++i)
+        {
+            std::cout << activity_traces[i] << " ";
+        }
+        std::cout << std::endl;
+
+
+        std::cout << "Linear Readout: Command Data: ";
+        for (int i = 0; i < size_command_data; ++i)
+        {
+            std::cout << command_data[i] << " ";
+        }
+        std::cout << std::endl;
+#endif
+
         rate.sleep();
     }
 

@@ -70,7 +70,7 @@ NefEncoder::initMUSIC(int argc, char** argv)
       		 MPI::DOUBLE,
       		 rank * size_sensor_data,
       		 size_sensor_data);
-    port_in->map (&dmap, 1);
+    port_in->map (&dmap, timestep, 1);
     
     // map linear index to event out port 
     MUSIC::LinearIndex l_index_out(0, size_spike_data);
@@ -108,6 +108,9 @@ NefEncoder::runMUSIC()
         {
             if (neurons[n].propagate())
             {
+#if DEBUG_OUTPUT
+                std::cout << "NEF Encoder: neuron " << n << " spiked at " << runtime->time() << std::endl;
+#endif
                 port_out->insertEvent(runtime->time(), MUSIC::GlobalIndex(n));
             }
         }

@@ -69,7 +69,7 @@ RateEncoder::initMUSIC(int argc, char** argv)
       		 MPI::DOUBLE,
       		 rank * size_data,
       		 size_data);
-    port_in->map (&dmap, 1);
+    port_in->map (&dmap, timestep, 1);
     
     // map linear index to event out port 
     MUSIC::LinearIndex l_index_out(0, size_data);
@@ -107,10 +107,14 @@ RateEncoder::runMUSIC()
         {
             while(next_spike[n] < t + timestep)
             {
+#if DEBUG_OUTPUT
+                std::cout << "Rate Encoder: neuron " << n << " spiked at " << runtime->time() << std::endl;
+#endif
                 port_out->insertEvent(runtime->time(), MUSIC::GlobalIndex(n));
                 next_spike[n] += rate2SpikeTime(rates[n]); 
             }
         }
+
         rate.sleep();
     }
 

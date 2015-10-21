@@ -99,16 +99,15 @@ RosCommandAdapter::initMUSIC(int argc, char** argv)
     }
     
     datasize = width;
-    data = new double[datasize]; 
-    databuf = new double[datasize+1]; //+1 for the leading zero needed for unspecified fiels in the message
-    databuf[0] = 0.;
+    data = new double[datasize+1]; //+1 for the leading zero needed for unspecified fiels in the message 
+    data[0] = 0.;
          
     // Declare where in memory to put data
-    MUSIC::ArrayData dmap (data,
+    MUSIC::ArrayData dmap (&data[1],
       		 MPI::DOUBLE,
       		 rank * datasize,
       		 datasize);
-    port_in->map (&dmap, 0.001, 1);
+    port_in->map (&dmap, timestep, 1);
 
     switch (msg_type)
     {   
@@ -160,15 +159,25 @@ RosCommandAdapter::runROS()
             case Twist: 
                 geometry_msgs::Twist command;
                 
-                command.linear.x = databuf[msg_map[0]];
-                command.linear.y = databuf[msg_map[1]];
-                command.linear.z = databuf[msg_map[2]];
+                command.linear.x = data[msg_map[0]];
+                command.linear.y = data[msg_map[1]];
+                command.linear.z = data[msg_map[2]];
 
-                command.angular.x = databuf[msg_map[3]];
-                command.angular.y = databuf[msg_map[4]];
-                command.angular.z = databuf[msg_map[5]];
+                command.angular.x = data[msg_map[3]];
+                command.angular.y = data[msg_map[4]];
+                command.angular.z = data[msg_map[5]];
             
                 publisher.publish(command);
+
+#if DEBUG_OUTPUT
+                std::cout << "ROS Command Adapter: ";
+                for (int i = 1; i < datasize + 1; ++i)
+                {
+                    std::cout << data[i] << " ";
+                }
+                std::cout << std::endl;
+#endif
+
                 break;
         }
 
@@ -190,7 +199,6 @@ RosCommandAdapter::runMUSIC()
     for (int t = 0; runtime->time() < stoptime; t++)
     {
         runtime->tick();
-        memcpy( &databuf[1], &data[0], datasize * sizeof( double ) );
         rate.sleep();
     }
 
