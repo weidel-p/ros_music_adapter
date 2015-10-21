@@ -10,8 +10,8 @@ add_executable(nef_encoder encoder/nef_encoder.cpp)
 add_executable(converge_adapter adapters/converge.cpp)
 add_executable(rate_encoder encoder/rate_encoder.cpp)
 
-include_directories(/home/weidel/opt/music/include/)
-find_library(MUSIC music /home/weidel/opt/music/lib)
+include_directories(${HOME}/opt/music/include/)
+find_library(MUSIC music ${HOME}/opt/music/lib)
 
 # Require MPI for this project:
 find_package(MPI REQUIRED)
