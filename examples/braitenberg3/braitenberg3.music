@@ -1,4 +1,4 @@
-stoptime=10000.
+stoptime=1000.
 music_timestep=0.001
 [sensor]
   binary=./ros_sensor_adapter
