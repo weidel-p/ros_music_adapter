@@ -12,6 +12,7 @@
 #define DEBUG_OUTPUT false 
 
 const double DEFAULT_TIMESTEP = 1e-3;
+const double DEFAULT_NEURON_RESOLUTION = 1e-3;
 
 class NefEncoder{
     public:

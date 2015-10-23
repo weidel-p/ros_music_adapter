@@ -41,7 +41,6 @@ class RosCommandAdapter
         double command_rate;
 
         msg_types msg_type;
-//        std::map<std::string, int> msg_map; 
         int* msg_map;
 
         void initROS(int argc, char** argv);

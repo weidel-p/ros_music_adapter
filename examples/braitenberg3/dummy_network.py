@@ -5,16 +5,16 @@ import numpy as np
 
 nest.ResetKernel()
 nest.set_verbosity("M_FATAL")
-#nest.SetKernelStatus({'resolution': 0.1})
+nest.SetKernelStatus({'resolution': 1.0})
 #nest.SetKernelStatus({'print_time': True})
 
 
 NUM_ENC_NEURONS = 2 
-run_time = 1000000.
+run_time = 10000.
 
 proxy_in = nest.Create('music_event_in_proxy', NUM_ENC_NEURONS)
 nest.SetStatus(proxy_in, [{'port_name': 'in', 'music_channel': c} for c in range(NUM_ENC_NEURONS)])
-nest.SetAcceptableLatency('in', .1)
+nest.SetAcceptableLatency('in', .001)
 
 proxy_out = nest.Create('music_event_out_proxy')
 nest.SetStatus(proxy_out, {'port_name': 'out'})
@@ -27,3 +27,4 @@ for i in range(NUM_ENC_NEURONS):
 
 
 nest.Simulate(run_time)
+

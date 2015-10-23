@@ -59,7 +59,7 @@ NefEncoder::initMUSIC(int argc, char** argv)
 
     for (int n = 0; n < size_spike_data; ++n){
         IAFNeuron neuron;
-        neuron.setResolution(timestep);
+        neuron.setResolution(DEFAULT_NEURON_RESOLUTION);
         neurons.push_back(neuron);
         neuron.encode(sensor_data);
     }
@@ -91,9 +91,11 @@ NefEncoder::runMUSIC()
     int ticks_skipped = 0;
     int _ticks_to_skip = 0;
 
-    for (int t = 0; runtime->time() < stoptime; t++)
+    double t = runtime->time();
+    while(t < stoptime)
     {
         runtime->tick();
+        t = runtime->time();
 
         if (sensor_data != sensor_data_buf) 
         {
@@ -104,15 +106,20 @@ NefEncoder::runMUSIC()
             sensor_data_buf = sensor_data;
         }
 
-        for (unsigned int n = 0; n < neurons.size(); ++n)
+        double next_t = t + timestep;
+        while (t <= next_t)
         {
-            if (neurons[n].propagate())
+            for (unsigned int n = 0; n < neurons.size(); ++n)
             {
+                if (neurons[n].propagate())
+                {
 #if DEBUG_OUTPUT
-                std::cout << "NEF Encoder: neuron " << n << " spiked at " << runtime->time() << std::endl;
+                    std::cout << "NEF Encoder: neuron " << n << " spiked at " << runtime->time() << std::endl;
 #endif
-                port_out->insertEvent(runtime->time(), MUSIC::GlobalIndex(n));
+                    port_out->insertEvent(runtime->time(), MUSIC::GlobalIndex(n));
+                }
             }
+            t += DEFAULT_NEURON_RESOLUTION; // propagate a ms
         }
        
         rate.sleep();
