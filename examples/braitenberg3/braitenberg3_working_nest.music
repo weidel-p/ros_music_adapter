@@ -1,0 +1,47 @@
+stoptime=10.
+[sensor]
+  binary=../../ros_sensor_adapter
+  args=
+  np=1
+  music_timestep=0.001
+  ros_topic=/Pioneer3AT/laserscan
+  message_type=Laserscan
+  sensor_update_rate=30
+[converge]
+  binary=../../converge_adapter
+  args=
+  np=1
+  music_timestep=0.001
+[encoder]
+  binary=../../rate_encoder
+  args=
+  np=1
+  music_timestep=0.001
+  rate_min=1
+  rate_max=200
+[nest]
+  binary=./dummy_network.py
+  args=
+  np=1
+[decoder]
+  binary=../../linear_readout_decoder
+  args=
+  np=1
+  music_timestep=0.05
+  tau=0.03
+  weights_filename=braitenberg3_readout_weights.dat
+[command]
+  binary=../../ros_command_adapter
+  args=
+  np=1
+  music_timestep=0.05
+  ros_topic=/Pioneer3AT/cmd_vel
+  message_type=Twist
+  linear.x=0
+  angular.z=1
+  command_rate=20
+sensor.out->converge.in[640]
+converge.out->encoder.in[2]
+encoder.out->nest.in[2]
+nest.out->decoder.in[2]
+decoder.out->command.in[2]
