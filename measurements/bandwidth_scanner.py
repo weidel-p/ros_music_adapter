@@ -5,38 +5,21 @@ import datetime
 import json
 
 ITERATIONS = 2 
-<<<<<<< HEAD
-MIN_NUM_NEURONS = 1
-MAX_NUM_NEURONS = 5002
-STEP_SIZE = 5000
-=======
 MIN_FIRING_RATE = 1
 MAX_FIRING_RATE = 201
 STEP_SIZE = 100
->>>>>>> master
 
 run_time = 10 # in sec
 run_time_build = 0.1 # in sec
 
-<<<<<<< HEAD
-data_filename = "input_scalability.dat"
-=======
 data_filename = "bandwidth.dat"
->>>>>>> master
 
 if os.path.exists(data_filename):
     os.remove(data_filename)
 
-
-<<<<<<< HEAD
-data ={"num_neurons": [], "build_time": [], "run_time": [], "real-time_factor": []}
-
-for num_neurons in np.arange(MIN_NUM_NEURONS, MAX_NUM_NEURONS, STEP_SIZE):
-=======
 data ={"build_time": [], "run_time": [], "real-time_factor": [], "firing_rate": []}
 
 for firing_rate in np.arange(MIN_FIRING_RATE, MAX_FIRING_RATE, STEP_SIZE):
->>>>>>> master
     music_base_config = \
                 "music_timestep=0.001\n\
                 [sensor]\n\
