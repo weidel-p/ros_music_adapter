@@ -8,10 +8,11 @@ stoptime=10.
   message_type=Laserscan
   sensor_update_rate=30
 [converge]
-  binary=../../converge_adapter
+  binary=../../connect_adapter
   args=
   np=1
   music_timestep=0.001
+  weights_filename=braitenberg3_converge_weights.dat
 [encoder]
   binary=../../rate_encoder
   args=

@@ -33,6 +33,7 @@ Makefile
 
 *.swp
 *.cmake
+*.dat
 
 ros_command_adapter
 ros_sensor_adapter
@@ -40,6 +41,7 @@ linear_readout_decoder
 nef_encoder
 rate_encoder
 converge_adapter
+connect_adapter
 
 catkin_ws/devel/*
 catkin_ws/install/*
@@ -47,4 +49,5 @@ catkin_ws/build/*
 catkin_ws/src/ros-pioneer3at/*
 catkin_ws/src/rosaria/*
 
+create_weights.py
 
