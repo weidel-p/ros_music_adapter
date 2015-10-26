@@ -5,13 +5,18 @@
 #include <cmath>
 #include <unistd.h>
 #include "sys/time.h"
+#include "jsoncpp/json/json.h"
+#include <iostream>
+#include <fstream>
 
 #include "../rate.h"
 
-const double DEFAULT_TIMESTEP = 1e-3;
-const double DEFAULT_TAU = 0.03;
+#define DEBUG_OUTPUT false 
 
-class ConvergeAdapter{
+const double DEFAULT_TIMESTEP = 1e-3;
+const string DEFAULT_WEIGHTS_FILENAME = "connection_weights.dat";
+
+class ConnectAdapter{
     public:
         void init(int argc, char** argv);
         void runMUSIC();
@@ -27,10 +32,15 @@ class ConvergeAdapter{
         double* data_in;
         double* data_out;
 
+        string weights_filename;
+        Json::Value json_weights; 
+        double** weights;
+
         MUSIC::ContInputPort* port_in;
         MUSIC::ContOutputPort* port_out;
 
         void initMUSIC(int argc, char** argv);
+        void readWeightsFile();
 };
 
 

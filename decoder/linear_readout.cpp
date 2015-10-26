@@ -18,6 +18,8 @@ LinearReadoutDecoder::init(int argc, char** argv)
     timestep = DEFAULT_TIMESTEP;
     weights_filename = DEFAULT_WEIGHTS_FILENAME;
     tau = DEFAULT_TAU;
+    num_spikes0 = 0;
+    num_spikes1 = 0;
 
     // init MUSIC to read config
     initMUSIC(argc, argv); 
@@ -32,6 +34,7 @@ LinearReadoutDecoder::initMUSIC(int argc, char** argv)
     setup->config("stoptime", &stoptime);
     setup->config("music_timestep", &timestep);
     setup->config("weights_filename", &weights_filename);
+    setup->config("tau", &tau);
 
     port_in = setup->publishEventInput("in");
     port_out = setup->publishContOutput("out");
@@ -84,11 +87,11 @@ LinearReadoutDecoder::initMUSIC(int argc, char** argv)
     
     // map linear index to event out port 
     MUSIC::LinearIndex l_index_in(0, size_spike_data);
-    port_in->map(&l_index_in, this, 0.002, 1); //TODO evaluate 0.002
+    port_in->map(&l_index_in, this, timestep, 1); 
 
 
     // initialize propagator for exponential decay
-    propagator = std::exp(-(timestep)/tau);
+    propagator = std::exp(-(DEFAULT_NEURON_RESOLUTION)/tau);
 
     runtime = new MUSIC::Runtime (setup, timestep);
 }
@@ -150,15 +153,40 @@ LinearReadoutDecoder::runMUSIC()
     struct timeval end;
     gettimeofday(&start, NULL);
     unsigned int ticks_skipped = 0;
+    unsigned int times_propagated = 0;
 
-    for (int t = 0; runtime->time() < stoptime; t++)
+    std::map<double, std::vector<int> >::iterator it, it_now;
+    double t = runtime->time();
+    while(t < stoptime)
     {
         runtime->tick();
-
-        for (int i = 0; i < size_spike_data; ++i)
+        t = runtime->time();
+        
+        double next_t = t + timestep;
+        while (t <= next_t)
         {
-            activity_traces[i] *= propagator;
-        } 
+            it_now = incoming_spikes.lower_bound(t);
+            if (it_now != incoming_spikes.end())
+            {
+                for (it = incoming_spikes.begin(); it != it_now; ++it)
+                {
+                    std::vector<int> ids = it->second;
+                    for (std::vector<int>::iterator i = ids.begin(); i != ids.end(); ++i)
+                    {
+                        activity_traces[*i] += 1 / tau;
+       //                 std::cout << runtime->time() << " " << t << " " << *i << std::endl;
+                        num_spikes1++;
+                    }
+                    incoming_spikes.erase(it);
+                }
+            }
+
+            for (int i = 0; i < size_spike_data; ++i)
+            {
+                activity_traces[i] *= propagator;
+            } 
+            t += DEFAULT_NEURON_RESOLUTION;
+        }
        
         for (int i = 0; i < size_command_data; ++i)
         {
@@ -168,6 +196,24 @@ LinearReadoutDecoder::runMUSIC()
                 command_data[i] += activity_traces[j] * readout_weights[i][j];
             }
         }
+
+#if DEBUG_OUTPUT
+        std::cout << "Linear Readout: Activity Traces: ";
+        for (int i = 0; i < size_spike_data; ++i)
+        {
+            std::cout << activity_traces[i] << " ";
+        }
+        std::cout << std::endl;
+
+
+        std::cout << "Linear Readout: Command Data: ";
+        for (int i = 0; i < size_command_data; ++i)
+        {
+            std::cout << command_data[i] << " ";
+        }
+        std::cout << std::endl;
+#endif
+
         rate.sleep();
     }
 
@@ -178,13 +224,28 @@ LinearReadoutDecoder::runMUSIC()
     {
         dt_us += 1000000;
     }
-    std::cout << "decoder: total simtime: " << dt_s << " " << dt_us << " ticks skipped " << ticks_skipped <<  std::endl;
+    std::cout << "decoder: total simtime: " << dt_s << " " << dt_us << " ticks skipped " << ticks_skipped << " times propagated " << times_propagated << " received spikes " << num_spikes0  << " filtered spikes " << num_spikes1 << std::endl;
 
 }
 
 void LinearReadoutDecoder::operator () (double t, MUSIC::GlobalIndex id){
     // Decoder: update neural activity traces
-    activity_traces[id] += 1;
+    num_spikes0++;
+
+    std::map<double, std::vector<int> >::iterator it = incoming_spikes.find(t + timestep);
+    if (it != incoming_spikes.end())
+    {
+        std::vector<int> ids = it->second;
+        ids.push_back(id);
+        incoming_spikes.erase(it);
+        incoming_spikes.insert(std::make_pair(t + timestep, ids));
+    }
+    else
+    {
+        std::vector<int> ids;
+        ids.push_back(id);
+        incoming_spikes.insert(std::make_pair(t + timestep, ids));
+    }
 
 }
 void LinearReadoutDecoder::finalize(){

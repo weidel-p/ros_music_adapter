@@ -137,6 +137,16 @@ RosSensorAdapter::runMUSIC()
     for (int t = 0; runtime->time() < stoptime; t++)
     {
         runtime->tick();
+
+#if DEBUG_OUTPUT
+        std::cout << "ROS Sensor Adapter: ";
+        for (int i = 0; i < datasize; ++i)
+        {
+            std::cout << data[i] << " ";
+        }
+        std::cout << std::endl;
+#endif
+
         rate.sleep(); 
     }
 

@@ -1,20 +1,23 @@
-stoptime=10000.
-music_timestep=0.001
+stoptime=10.
 [sensor]
-  binary=./ros_sensor_adapter
+  binary=../../ros_sensor_adapter
   args=
   np=1
+  music_timestep=0.001
   ros_topic=/Pioneer3AT/laserscan
   message_type=Laserscan
   sensor_update_rate=30
 [converge]
-  binary=./converge_adapter
+  binary=../../connect_adapter
   args=
   np=1
+  music_timestep=0.001
+  weights_filename=braitenberg3_converge_weights.dat
 [encoder]
-  binary=./rate_encoder
+  binary=../../rate_encoder
   args=
   np=1
+  music_timestep=0.001
   rate_min=1
   rate_max=200
 [nest]
@@ -22,15 +25,17 @@ music_timestep=0.001
   args=
   np=1
 [decoder]
-  binary=./linear_readout_decoder
+  binary=../../linear_readout_decoder
   args=
   np=1
+  music_timestep=0.001
   tau=0.03
   weights_filename=braitenberg3_readout_weights.dat
 [command]
-  binary=./ros_command_adapter
+  binary=../../ros_command_adapter
   args=
   np=1
+  music_timestep=0.001
   ros_topic=/Pioneer3AT/cmd_vel
   message_type=Twist
   linear.x=0

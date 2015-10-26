@@ -1,31 +1,34 @@
-#include "converge.h"
+#include "connect.h"
 
 int
 main(int argc, char** argv)
 {
 
-    ConvergeAdapter conv_adapter;
-    conv_adapter.init(argc, argv);
-    conv_adapter.runMUSIC();
-    conv_adapter.finalize();
+    ConnectAdapter conn_adapter;
+    conn_adapter.init(argc, argv);
+    conn_adapter.runMUSIC();
+    conn_adapter.finalize();
 
 }
 
 void
-ConvergeAdapter::init(int argc, char** argv)
+ConnectAdapter::init(int argc, char** argv)
 {
     std::cout << "initializing converge adapter" << std::endl;
     timestep = DEFAULT_TIMESTEP;
+    weights_filename = DEFAULT_WEIGHTS_FILENAME;
     initMUSIC(argc, argv);
+    readWeightsFile();
 }
 
 void
-ConvergeAdapter::initMUSIC(int argc, char** argv)
+ConnectAdapter::initMUSIC(int argc, char** argv)
 {
     MUSIC::Setup* setup = new MUSIC::Setup (argc, argv);
 
     setup->config("stoptime", &stoptime);
     setup->config("music_timestep", &timestep);
+    setup->config("weights_filename", &weights_filename);
 
     port_in = setup->publishContInput("in");
     port_out = setup->publishContOutput("out");
@@ -63,13 +66,20 @@ ConvergeAdapter::initMUSIC(int argc, char** argv)
         data_out[i] = 0.;
     }
 
+    weights = new double*[size_data_out];
+    for (int i = 0; i < size_data_out; ++i)
+    {
+        weights[i] = new double[size_data_in];
+    }
+
+
          
     // Declare where in memory to put command_data
     MUSIC::ArrayData dmap_in(data_in,
       		 MPI::DOUBLE,
       		 rank * size_data_in,
       		 size_data_in);
-    port_in->map (&dmap_in, 1);
+    port_in->map (&dmap_in, timestep, 1);
     
     MUSIC::ArrayData dmap_out(data_out,
       		 MPI::DOUBLE,
@@ -81,7 +91,54 @@ ConvergeAdapter::initMUSIC(int argc, char** argv)
 }
 
 void 
-ConvergeAdapter::runMUSIC()
+ConnectAdapter::readWeightsFile()
+{
+    Json::Reader json_reader;
+
+    std::ifstream weights_file;
+    weights_file.open(weights_filename.c_str(), std::ios::in);
+    string json_weights_ = "";
+    string line;
+
+    while (std::getline(weights_file, line))
+    {
+        json_weights_ += line;
+    }
+    weights_file.close();
+    
+    if ( !json_reader.parse(json_weights_, json_weights))
+    {
+        // report to the user the failure and their locations in the document.
+        std::cout   << "ERROR: linear readout: Failed to parse file \"" << weights_filename << "\"\n" 
+                    << json_weights_ << " It has to be in JSON format.\n Using 1/N for each weight."
+                    << json_reader.getFormattedErrorMessages();
+        
+        for (int i = 0; i < size_data_out; ++i)
+        {
+            for (int j = 0; j < size_data_in; ++j)
+            {
+                weights[i][j] = 1. / size_data_in;
+            }
+        }
+
+        return;
+    }
+    else
+    {
+        for (int i = 0; i < size_data_out; ++i)
+        {
+            for (int j = 0; j < size_data_in; ++j)
+            {
+                weights[i][j] = json_weights[i][j].asDouble();
+            }
+        }
+
+    }
+
+}
+
+void 
+ConnectAdapter::runMUSIC()
 {
     std::cout << "running converge adapter" << std::endl;
     
@@ -101,9 +158,19 @@ ConvergeAdapter::runMUSIC()
             data_out[i] = 0;
             for (int j = i * size_factor; j < (i+1) * size_factor; ++j)
             {
-                data_out[i] += data_in[j] * (1. / size_factor);
+                data_out[i] += data_in[j] * weights[i][j];
             }
         }
+
+#if DEBUG_OUTPUT
+        std::cout << "Connect Adapter: ";
+        for (int i = 0; i < size_data_out; ++i)
+        {
+            std::cout << data_out[i] << " ";
+        }
+        std::cout << std::endl;
+#endif
+
         rate.sleep();
     }
 
@@ -118,7 +185,7 @@ ConvergeAdapter::runMUSIC()
 }
 
 void
-ConvergeAdapter::finalize(){
+ConnectAdapter::finalize(){
     runtime->finalize();
     delete runtime;
 }

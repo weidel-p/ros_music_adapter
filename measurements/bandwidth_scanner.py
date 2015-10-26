@@ -5,22 +5,38 @@ import datetime
 import json
 
 ITERATIONS = 2 
+<<<<<<< HEAD
 MIN_NUM_NEURONS = 1
 MAX_NUM_NEURONS = 5002
 STEP_SIZE = 5000
+=======
+MIN_FIRING_RATE = 1
+MAX_FIRING_RATE = 201
+STEP_SIZE = 100
+>>>>>>> master
 
 run_time = 10 # in sec
 run_time_build = 0.1 # in sec
 
+<<<<<<< HEAD
 data_filename = "input_scalability.dat"
+=======
+data_filename = "bandwidth.dat"
+>>>>>>> master
 
 if os.path.exists(data_filename):
     os.remove(data_filename)
 
 
+<<<<<<< HEAD
 data ={"num_neurons": [], "build_time": [], "run_time": [], "real-time_factor": []}
 
 for num_neurons in np.arange(MIN_NUM_NEURONS, MAX_NUM_NEURONS, STEP_SIZE):
+=======
+data ={"build_time": [], "run_time": [], "real-time_factor": [], "firing_rate": []}
+
+for firing_rate in np.arange(MIN_FIRING_RATE, MAX_FIRING_RATE, STEP_SIZE):
+>>>>>>> master
     music_base_config = \
                 "music_timestep=0.001\n\
                 [sensor]\n\
@@ -30,10 +46,16 @@ for num_neurons in np.arange(MIN_NUM_NEURONS, MAX_NUM_NEURONS, STEP_SIZE):
                   ros_topic=/jubot/laserscan\n\
                   message_type=Laserscan\n\
                   sensor_update_rate=30\n\
+                [diverse]
+                  binary=../connect_adapter\n
+                  args=
+                  np=1
                 [encoder]\n\
-                  binary=../nef_encoder\n\
+                  binary=../rate_encoder\n\
                   args=\n\
                   np=1\n\
+                  rate_min=" + firing_rate + "\n
+                  rate_max=" + firing_rate + "\n
                 [decoder]\n\
                   binary=../linear_readout_decoder\n\
                   args=\n\
@@ -48,8 +70,9 @@ for num_neurons in np.arange(MIN_NUM_NEURONS, MAX_NUM_NEURONS, STEP_SIZE):
                   linear.x=0\n\
                   angular.z=1\n\
                   command_rate=20\n\
-                sensor.out->encoder.in[640]\n\
-                encoder.out->decoder.in[" + str(num_neurons) +"]\n\
+                sensor.out->diverse.in[640]
+                diverse.out->encoder.in[5000]\n\
+                encoder.out->decoder.in[5000]\n\
                 decoder.out->command.in[2]"
 
     music_config_build = "stoptime=" + str(run_time_build) + "\n"\
