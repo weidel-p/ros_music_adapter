@@ -14,7 +14,7 @@ main(int argc, char** argv)
 void
 ConnectAdapter::init(int argc, char** argv)
 {
-    std::cout << "initializing converge adapter" << std::endl;
+    std::cout << "initializing connect adapter" << std::endl;
     timestep = DEFAULT_TIMESTEP;
     weights_filename = DEFAULT_WEIGHTS_FILENAME;
     initMUSIC(argc, argv);
@@ -140,7 +140,7 @@ ConnectAdapter::readWeightsFile()
 void 
 ConnectAdapter::runMUSIC()
 {
-    std::cout << "running converge adapter" << std::endl;
+    std::cout << "running connect adapter" << std::endl;
     
     Rate rate(1./timestep);
     struct timeval start;
@@ -181,7 +181,7 @@ ConnectAdapter::runMUSIC()
     {
         dt_us += 1000000;
     }
-    std::cout << "converge adapter: total simtime: " << dt_s << " " << dt_us << " ticks skipped " << ticks_skipped <<  std::endl;
+    std::cout << "connect adapter: total simtime: " << dt_s << " " << dt_us << " ticks skipped " << ticks_skipped <<  std::endl;
 }
 
 void
