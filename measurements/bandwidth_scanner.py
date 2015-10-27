@@ -6,18 +6,20 @@ import json
 
 ITERATIONS = 2 
 MIN_FIRING_RATE = 1
-MAX_FIRING_RATE = 201
+MAX_FIRING_RATE = 102
 STEP_SIZE = 100
 
 run_time = 10 # in sec
 run_time_build = 0.1 # in sec
+
+num_neurons = 100
 
 data_filename = "bandwidth.dat"
 
 if os.path.exists(data_filename):
     os.remove(data_filename)
 
-data ={"build_time": [], "run_time": [], "real-time_factor": [], "firing_rate": []}
+data = {"build_time": [], "run_time": [], "real-time_factor": [], "firing_rate": []}
 
 for firing_rate in np.arange(MIN_FIRING_RATE, MAX_FIRING_RATE, STEP_SIZE):
     music_base_config = \
@@ -29,16 +31,16 @@ for firing_rate in np.arange(MIN_FIRING_RATE, MAX_FIRING_RATE, STEP_SIZE):
                   ros_topic=/jubot/laserscan\n\
                   message_type=Laserscan\n\
                   sensor_update_rate=30\n\
-                [diverse]
-                  binary=../connect_adapter\n
-                  args=
-                  np=1
+                [diverse]\n\
+                  binary=../connect_adapter\n\
+                  args=\n\
+                  np=1\n\
                 [encoder]\n\
                   binary=../rate_encoder\n\
                   args=\n\
                   np=1\n\
-                  rate_min=" + firing_rate + "\n
-                  rate_max=" + firing_rate + "\n
+                  rate_min=" + str(firing_rate) + "\n\
+                  rate_max=" + str(firing_rate) + "\n\
                 [decoder]\n\
                   binary=../linear_readout_decoder\n\
                   args=\n\
@@ -53,9 +55,9 @@ for firing_rate in np.arange(MIN_FIRING_RATE, MAX_FIRING_RATE, STEP_SIZE):
                   linear.x=0\n\
                   angular.z=1\n\
                   command_rate=20\n\
-                sensor.out->diverse.in[640]
-                diverse.out->encoder.in[5000]\n\
-                encoder.out->decoder.in[5000]\n\
+                sensor.out->diverse.in[640]\n\
+                diverse.out->encoder.in[" + str(num_neurons) + "]\n\
+                encoder.out->decoder.in[" + str(num_neurons) + "]\n\
                 decoder.out->command.in[2]"
 
     music_config_build = "stoptime=" + str(run_time_build) + "\n"\
@@ -75,20 +77,20 @@ for firing_rate in np.arange(MIN_FIRING_RATE, MAX_FIRING_RATE, STEP_SIZE):
 
     for _ in range(ITERATIONS):
         start = datetime.datetime.now()
-        os.system("mpirun \-np 4 music config_build.music ")
+        os.system("mpirun \-np 5 music config_build.music ")
         end = datetime.datetime.now()
 
         dt_build = end - start
         data["build_time"].append((dt_build.seconds * 1000000 + dt_build.microseconds) / 1000000.)
 
         start = datetime.datetime.now()
-        os.system("mpirun \-np 4 music config_run.music ")
+        os.system("mpirun \-np 5 music config_run.music ")
         end = datetime.datetime.now()
         
         dt_run = end - start
         data["run_time"].append((dt_run.seconds * 1000000 + dt_run.microseconds) / 1000000.)
 
-        data["num_neurons"].append(num_neurons)
+        data["firing_rate"].append(firing_rate)
 
         rtf = run_time / (data["run_time"][-1] - data["build_time"][-1])
         data["real-time_factor"].append(rtf)
