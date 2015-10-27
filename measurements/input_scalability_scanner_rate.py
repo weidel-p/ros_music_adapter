@@ -30,10 +30,16 @@ for num_neurons in np.arange(MIN_NUM_NEURONS, MAX_NUM_NEURONS, STEP_SIZE):
                   ros_topic=/jubot/laserscan\n\
                   message_type=Laserscan\n\
                   sensor_update_rate=30\n\
-                [encoder]\n\
-                  binary=../nef_encoder\n\
+                [connect]\n\
+                  binary=../connect_adapter\n\
                   args=\n\
                   np=1\n\
+                [encoder]\n\
+                  binary=../rate_encoder\n\
+                  args=\n\
+                  np=1\n\
+                  rate_min=1\n\
+                  rate_max=20\n\
                 [decoder]\n\
                   binary=../linear_readout_decoder\n\
                   args=\n\
@@ -48,7 +54,8 @@ for num_neurons in np.arange(MIN_NUM_NEURONS, MAX_NUM_NEURONS, STEP_SIZE):
                   linear.x=0\n\
                   angular.z=1\n\
                   command_rate=20\n\
-                sensor.out->encoder.in[640]\n\
+                sensor.out->connect.in[640]\n\
+                connect.out->encoder.in[" + str(num_neurons) +"]\n\
                 encoder.out->decoder.in[" + str(num_neurons) +"]\n\
                 decoder.out->command.in[2]"
 
@@ -69,14 +76,14 @@ for num_neurons in np.arange(MIN_NUM_NEURONS, MAX_NUM_NEURONS, STEP_SIZE):
 
     for _ in range(ITERATIONS):
         start = datetime.datetime.now()
-        os.system("mpirun \-np 4 music config_build.music ")
+        os.system("mpirun \-np 5 music config_build.music ")
         end = datetime.datetime.now()
 
         dt_build = end - start
         data["build_time"].append((dt_build.seconds * 1000000 + dt_build.microseconds) / 1000000.)
 
         start = datetime.datetime.now()
-        os.system("mpirun \-np 4 music config_run.music ")
+        os.system("mpirun \-np 5 music config_run.music ")
         end = datetime.datetime.now()
         
         dt_run = end - start
