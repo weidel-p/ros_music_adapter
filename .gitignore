@@ -33,7 +33,6 @@ Makefile
 
 *.swp
 *.cmake
-*.dat
 
 ros_command_adapter
 ros_sensor_adapter
