@@ -7,14 +7,14 @@ import json
 ITERATIONS = 2 
 MIN_FIRING_RATE = 1
 MAX_FIRING_RATE = 102
-STEP_SIZE = 100
+STEP_SIZE = 10
 
 run_time = 10 # in sec
 run_time_build = 0.001 # in sec
 
-num_neurons = 100
+num_neurons = 13000
 
-data_filename = "bandwidth.dat"
+data_filename = sys.argv[1] 
 
 if os.path.exists(data_filename):
     os.remove(data_filename)
@@ -22,12 +22,13 @@ if os.path.exists(data_filename):
 data = {"build_time": [], "run_time": [], "real-time_factor": [], "firing_rate": []}
 
 for firing_rate in np.arange(MIN_FIRING_RATE, MAX_FIRING_RATE, STEP_SIZE):
+    print "\n\n\n\n\ RUNNING", num_neurons, "NEURONS WITH A FIRING RATE OF", firing_rate, "\n\n\n\n"
     music_base_config = \
-                "music_timestep=0.001\n\
-                [sensor]\n\
+                "[sensor]\n\
                   binary=../ros_sensor_adapter\n\
                   args=\n\
                   np=1\n\
+                  music_timestep=0.03333\n\
                   ros_topic=/jubot/laserscan\n\
                   message_type=Laserscan\n\
                   sensor_update_rate=30\n\
@@ -35,21 +36,25 @@ for firing_rate in np.arange(MIN_FIRING_RATE, MAX_FIRING_RATE, STEP_SIZE):
                   binary=../connect_adapter\n\
                   args=\n\
                   np=1\n\
+                  music_timestep=0.03333\n\
                 [encoder]\n\
                   binary=../rate_encoder\n\
                   args=\n\
                   np=1\n\
+                  music_timestep=0.03333\n\
                   rate_min=" + str(firing_rate) + "\n\
                   rate_max=" + str(firing_rate) + "\n\
                 [decoder]\n\
                   binary=../linear_readout_decoder\n\
                   args=\n\
                   np=1\n\
+                  music_timestep=0.05\n\
                   tau=0.03\n\
                 [command]\n\
                   binary=../ros_command_adapter\n\
                   args=\n\
                   np=1\n\
+                  music_timestep=0.05\n\
                   ros_topic=/jubot/cmd_vel\n\
                   message_type=Twist\n\
                   linear.x=0\n\

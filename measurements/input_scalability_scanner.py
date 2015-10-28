@@ -21,12 +21,13 @@ if os.path.exists(data_filename):
 data ={"num_neurons": [], "build_time": [], "run_time": [], "real-time_factor": []}
 
 for num_neurons in np.arange(MIN_NUM_NEURONS, MAX_NUM_NEURONS, STEP_SIZE):
+    print "\n\n\n\n\ RUNNING", num_neurons, "NEURONS \n\n\n\n"
     music_base_config = \
-                "music_timestep=0.001\n\
-                [sensor]\n\
+                "[sensor]\n\
                   binary=../ros_sensor_adapter\n\
                   args=\n\
                   np=1\n\
+                  music_timestep=0.03333\n\
                   ros_topic=/jubot/laserscan\n\
                   message_type=Laserscan\n\
                   sensor_update_rate=30\n\
@@ -34,15 +35,18 @@ for num_neurons in np.arange(MIN_NUM_NEURONS, MAX_NUM_NEURONS, STEP_SIZE):
                   binary=../nef_encoder\n\
                   args=\n\
                   np=1\n\
+                  music_timestep=0.03333\n\
                 [decoder]\n\
                   binary=../linear_readout_decoder\n\
                   args=\n\
                   np=1\n\
+                  music_timestep=0.05\n\
                   tau=0.03\n\
                 [command]\n\
                   binary=../ros_command_adapter\n\
                   args=\n\
                   np=1\n\
+                  music_timestep=0.05\n\
                   ros_topic=/jubot/cmd_vel\n\
                   message_type=Twist\n\
                   linear.x=0\n\
