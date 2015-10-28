@@ -229,20 +229,18 @@ LinearReadoutDecoder::runMUSIC()
 }
 
 void LinearReadoutDecoder::operator () (double t, MUSIC::GlobalIndex id){
-    // Decoder: update neural activity traces
+    // Decoder: add incoming spikes to map
     num_spikes0++;
 
+    // check if a spike with the same timestamp is already in the map
     std::map<double, std::vector<int> >::iterator it = incoming_spikes.find(t + timestep);
-    if (it != incoming_spikes.end())
+    if (it != incoming_spikes.end()) // if so
     {
-        std::vector<int> ids = it->second;
-        ids.push_back(id);
-        incoming_spikes.erase(it);
-        incoming_spikes.insert(std::make_pair(t + timestep, ids));
+        it->second.push_back(id); // add new spike to vector
     }
-    else
+    else // if not
     {
-        std::vector<int> ids;
+        std::vector<int> ids; // create new vector and add to map
         ids.push_back(id);
         incoming_spikes.insert(std::make_pair(t + timestep, ids));
     }
