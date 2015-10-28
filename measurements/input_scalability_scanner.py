@@ -10,7 +10,7 @@ MAX_NUM_NEURONS = 5002
 STEP_SIZE = 5000
 
 run_time = 10 # in sec
-run_time_build = 0.1 # in sec
+run_time_build = 0.001 # in sec
 
 data_filename = sys.argv[1]
 

@@ -10,7 +10,7 @@ MAX_FIRING_RATE = 102
 STEP_SIZE = 100
 
 run_time = 10 # in sec
-run_time_build = 0.1 # in sec
+run_time_build = 0.001 # in sec
 
 num_neurons = 100
 

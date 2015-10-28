@@ -6,11 +6,11 @@ import json
 
 ITERATIONS = 2 
 MIN_NUM_NEURONS = 1
-MAX_NUM_NEURONS = 5002
+MAX_NUM_NEURONS = 50002
 STEP_SIZE = 5000
 
 run_time = 10 # in sec
-run_time_build = 0.1 # in sec
+run_time_build = 0.001 # in sec
 
 data_filename = sys.argv[1]
 
