@@ -152,8 +152,6 @@ LinearReadoutDecoder::runMUSIC()
     struct timeval start;
     struct timeval end;
     gettimeofday(&start, NULL);
-    unsigned int ticks_skipped = 0;
-    unsigned int times_propagated = 0;
 
     std::map<double, std::vector<int> >::iterator it, it_now;
     double t = runtime->time();
@@ -162,11 +160,11 @@ LinearReadoutDecoder::runMUSIC()
         runtime->tick();
         t = runtime->time();
         
-        double next_t = t + timestep;
-        while (t <= next_t)
+        double next_t = t + timestep; //time at next timestep
+        while (t <= next_t) // update the activity traces in higher resolution than the MUSIC timestep
         {
-            it_now = incoming_spikes.lower_bound(t);
-            if (it_now != incoming_spikes.end())
+            it_now = incoming_spikes.lower_bound(t); // get all incoming spikes until t
+            if (it_now != incoming_spikes.end()) 
             {
                 for (it = incoming_spikes.begin(); it != it_now; ++it)
                 {
@@ -174,11 +172,11 @@ LinearReadoutDecoder::runMUSIC()
                     for (std::vector<int>::iterator i = ids.begin(); i != ids.end(); ++i)
                     {
                         activity_traces[*i] += 1 / tau;
-       //                 std::cout << runtime->time() << " " << t << " " << *i << std::endl;
+                        ///std::cout << runtime->time() << " " << t << " " << *i << std::endl;
                         num_spikes1++;
                     }
-                    incoming_spikes.erase(it);
                 }
+                incoming_spikes.erase(incoming_spikes.begin(), it_now);
             }
 
             for (int i = 0; i < size_spike_data; ++i)
@@ -224,27 +222,25 @@ LinearReadoutDecoder::runMUSIC()
     {
         dt_us += 1000000;
     }
-    std::cout << "decoder: total simtime: " << dt_s << " " << dt_us << " ticks skipped " << ticks_skipped << " times propagated " << times_propagated << " received spikes " << num_spikes0  << " filtered spikes " << num_spikes1 << std::endl;
+    std::cout << "decoder: total simtime: " << dt_s << " " << dt_us << " received spikes " << num_spikes0  << " filtered spikes " << num_spikes1 << std::endl;
 
 }
 
 void LinearReadoutDecoder::operator () (double t, MUSIC::GlobalIndex id){
-    // Decoder: update neural activity traces
+    // Decoder: add incoming spikes to map
     num_spikes0++;
 
+    // check if a spike with the same timestamp is already in the map
     std::map<double, std::vector<int> >::iterator it = incoming_spikes.find(t + timestep);
-    if (it != incoming_spikes.end())
+    if (it != incoming_spikes.end()) // if so
     {
-        std::vector<int> ids = it->second;
-        ids.push_back(id);
-        incoming_spikes.erase(it);
-        incoming_spikes.insert(std::make_pair(t + timestep, ids));
+        it->second.push_back(id); // add new spike to vector
     }
-    else
+    else // if not
     {
-        std::vector<int> ids;
+        std::vector<int> ids; // create new vector and add to map
         ids.push_back(id);
-        incoming_spikes.insert(std::make_pair(t + timestep, ids));
+        incoming_spikes.insert(std::make_pair(t + timestep, ids)); // insert spike with delay of one timestep
     }
 
 }

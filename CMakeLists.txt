@@ -10,8 +10,7 @@ add_executable(nef_encoder encoder/nef_encoder.cpp)
 add_executable(connect_adapter adapters/connect.cpp)
 add_executable(rate_encoder encoder/rate_encoder.cpp)
 
-include_directories(${HOME}/opt/music/include/)
-find_library(MUSIC music ${HOME}/opt/music/lib)
+find_library(MUSIC music)
 
 # Require MPI for this project:
 find_package(MPI REQUIRED)
