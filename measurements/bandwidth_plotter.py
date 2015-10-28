@@ -14,8 +14,6 @@ data_file = open(sys.argv[1], 'r')
 data = pd.DataFrame(json.load(data_file))
 data_file.close()
 
-sbn.pointplot(x="firing_rate", y="run_time", data=data, color=palette[0])
-sbn.pointplot(x="firing_rate", y="build_time", data=data, color=palette[1])
-sbn.pointplot(x="firing_rate", y="real-time_factor", data=data, color=palette[2])
+sbn.tsplot(time="firing_rate", value="time", unit="iteration", condition="type", data=data)
 plt.show()
 
