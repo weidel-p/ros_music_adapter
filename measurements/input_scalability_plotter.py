@@ -14,5 +14,6 @@ data = pd.DataFrame(json.load(data_file))
 data_file.close()
 
 sbn.tsplot(time="num_neurons", value="time", unit="iteration", condition="type", data=data)
+plt.savefig("input_scalability.pdf", dpi=500)
 plt.show()
 

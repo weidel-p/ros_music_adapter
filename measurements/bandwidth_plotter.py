@@ -15,5 +15,6 @@ data = pd.DataFrame(json.load(data_file))
 data_file.close()
 
 sbn.tsplot(time="firing_rate", value="time", unit="iteration", condition="type", data=data)
+plt.savefig("bandwidth.pdf", dpi=500)
 plt.show()
 
