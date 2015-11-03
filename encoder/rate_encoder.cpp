@@ -93,11 +93,6 @@ RateEncoder::runMUSIC()
     {
         runtime->tick();
         t = runtime->time();
-        
-       // for (int n = 0; n < size_data; ++n)
-       // {
-       //     next_spike[n] = rate2SpikeTime(next_spike[n], rates[n]);
-       // }
 
         double next_t = t + timestep;
         for (int n = 0; n < size_data; ++n)
@@ -130,6 +125,10 @@ inline double
 RateEncoder::rate2SpikeTime(double r)
 {
     // the incoming data, which is interpreted as rate, is between -1 and 1.
+    //
+    // scales rate between [rate_min, rate_max]
+    //
+    // returns next spike time
     return 1. / ((r+1) * (rate_max - rate_min) / 2. + rate_min);
 }
 
