@@ -50,5 +50,4 @@ catkin_ws/src/ros-pioneer3at/*
 catkin_ws/src/rosaria/*
 
 create_weights.py
-measurements/ps_mem.py
 

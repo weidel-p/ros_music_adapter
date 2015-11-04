@@ -1,0 +1,3 @@
+#!/bin/bash
+
+sudo ./ps_mem.py -p "$(pgrep ros_sensor_adap), $(pgrep connect_adapter), $(pgrep rate_encoder), $(pgrep python), $(pgrep linear_readout_), $(pgrep ros_command_)"
