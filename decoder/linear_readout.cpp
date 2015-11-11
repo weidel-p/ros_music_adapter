@@ -4,10 +4,10 @@ int
 main(int argc, char** argv)
 {
 
-    LinearReadoutDecoder lin_encoder;
-    lin_encoder.init(argc, argv);
-    lin_encoder.runMUSIC();
-    lin_encoder.finalize();
+    LinearReadoutDecoder lin_decoder;
+    lin_decoder.init(argc, argv);
+    lin_decoder.runMUSIC();
+    lin_decoder.finalize();
 
 }
 
