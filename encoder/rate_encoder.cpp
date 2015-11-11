@@ -100,11 +100,12 @@ RateEncoder::runMUSIC()
             while(next_spike[n] < next_t)
             {
 #if DEBUG_OUTPUT
-                std::cout << "Rate Encoder: neuron " << n << " spiked at " << next_spike[n] << std::endl;
+                std::cout << "Rate Encoder: neuron " << n << " spikes at " << next_spike[n] << " simtime: " << t << std::endl;
 #endif
                 num_spikes++;
                 port_out->insertEvent(next_spike[n], MUSIC::GlobalIndex(n));
                 next_spike[n] += rate2SpikeTime(rates[n]); 
+                
             }
         }
 
@@ -129,6 +130,10 @@ RateEncoder::rate2SpikeTime(double r)
     // scales rate between [rate_min, rate_max]
     //
     // returns next spike time
+    if (r == 0)
+    {
+        return 2 * timestep;
+    }
     return 1. / ((r+1) * (rate_max - rate_min) / 2. + rate_min);
 }
 
