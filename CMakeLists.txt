@@ -10,6 +10,8 @@ add_executable(nef_encoder encoder/nef_encoder.cpp)
 add_executable(connect_adapter adapters/connect.cpp)
 add_executable(rate_encoder encoder/rate_encoder.cpp)
 add_executable(poisson_encoder encoder/poisson_encoder.cpp)
+add_executable(latency_encoder encoder/latency_encoder.cpp)
+add_executable(latency_decoder decoder/latency_decoder.cpp)
 
 find_library(MUSIC music)
 
@@ -38,6 +40,8 @@ target_link_libraries(linear_readout_decoder ${MUSIC} ${MPI_LIBRARIES} ${Boost_L
 target_link_libraries(nef_encoder ${MUSIC} ${MPI_LIBRARIES} ${Boost_LIBRARIES})
 target_link_libraries(rate_encoder ${MUSIC} ${MPI_LIBRARIES} ${Boost_LIBRARIES})
 target_link_libraries(poisson_encoder ${MUSIC} ${MPI_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(latency_encoder ${MUSIC} ${MPI_LIBRARIES} ${Boost_LIBRARIES})
 target_link_libraries(connect_adapter ${MUSIC} ${MPI_LIBRARIES} ${Boost_LIBRARIES} ${JSON})
+target_link_libraries(latency_decoder ${MUSIC} ${MPI_LIBRARIES} ${Boost_LIBRARIES})
 
 

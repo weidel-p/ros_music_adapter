@@ -42,6 +42,8 @@ rate_encoder
 poisson_encoder
 converge_adapter
 connect_adapter
+latency_encoder
+latency_decoder
 
 catkin_ws/devel/*
 catkin_ws/install/*
