@@ -12,7 +12,7 @@ STEP_SIZE = 10
 sim_time = 10 # in sec
 sim_time_build = 0.001 # in sec
 
-num_neurons = 13000
+num_neurons = 50000
 
 data_filename = sys.argv[1] 
 
@@ -89,7 +89,7 @@ for firing_rate in np.arange(MIN_FIRING_RATE, MAX_FIRING_RATE, STEP_SIZE):
         build_time = dt_build.seconds + dt_build.microseconds / 1000000.
 
         data["firing_rate"].append(firing_rate)
-        data['type'].append("build time")
+        data['type'].append("build-time")
         data['iteration'].append(it)
         data["time"].append(build_time)
 
@@ -101,7 +101,7 @@ for firing_rate in np.arange(MIN_FIRING_RATE, MAX_FIRING_RATE, STEP_SIZE):
         run_time = dt_run.seconds + dt_run.microseconds / 1000000.
 
         data["firing_rate"].append(firing_rate)
-        data['type'].append("run time")
+        data['type'].append("total-time")
         data['iteration'].append(it)
         data["time"].append(run_time)
 

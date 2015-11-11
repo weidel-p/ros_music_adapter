@@ -7,6 +7,8 @@ import sys
 import seaborn as sbn
 sbn.set_palette("deep", desat=.6)
 sbn.set_context(rc={"figure.figsize": (16, 8)})
+sbn.set_style("whitegrid")
+sbn.despine()
 palette = sbn.color_palette()
 
 # load files
