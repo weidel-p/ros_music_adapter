@@ -69,7 +69,7 @@ RateEncoder::initMUSIC(int argc, char** argv)
       		 MPI::DOUBLE,
       		 rank * size_data,
       		 size_data);
-    port_in->map (&dmap, timestep, 1);
+    port_in->map (&dmap, 0., 1, false);
     
     // map linear index to event out port 
     MUSIC::LinearIndex l_index_out(0, size_data);
@@ -83,7 +83,6 @@ RateEncoder::runMUSIC()
 {
 
     std::cout << "running poisson encoder" << std::endl;
-    Rate rate(1./timestep);
     struct timeval start;
     struct timeval end;
     gettimeofday(&start, NULL);
@@ -93,7 +92,6 @@ RateEncoder::runMUSIC()
     while(t < stoptime)
     {
         t = runtime->time();
-        runtime->tick();
         if (rates != rates_buf) 
         {
             for (int n = 0; n < size_data; ++n)
@@ -115,7 +113,7 @@ RateEncoder::runMUSIC()
             }
         }
 
-        rate.sleep();
+        runtime->tick();
     }
 
     gettimeofday(&end, NULL);

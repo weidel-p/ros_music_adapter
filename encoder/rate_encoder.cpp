@@ -67,7 +67,7 @@ RateEncoder::initMUSIC(int argc, char** argv)
       		 MPI::DOUBLE,
       		 rank * size_data,
       		 size_data);
-    port_in->map (&dmap, timestep, 1);
+    port_in->map (&dmap, 0., 1, false);
     
     // map linear index to event out port 
     MUSIC::LinearIndex l_index_out(0, size_data);
@@ -81,7 +81,6 @@ RateEncoder::runMUSIC()
 {
 
     std::cout << "running rate encoder" << std::endl;
-    Rate rate(1./timestep);
     struct timeval start;
     struct timeval end;
     gettimeofday(&start, NULL);
@@ -91,7 +90,6 @@ RateEncoder::runMUSIC()
     double t = runtime->time();
     while(t < stoptime)
     {
-        runtime->tick();
         t = runtime->time();
 
         double next_t = t + timestep;
@@ -100,8 +98,10 @@ RateEncoder::runMUSIC()
             while(next_spike[n] < next_t)
             {
 #if DEBUG_OUTPUT
-                std::cout << "Rate Encoder: neuron " << n << " spikes at " << next_spike[n] << " simtime: " << t << std::endl;
+                std::cout << "Rate Encoder: neuron " << n << " spikes at " << next_spike[n] << " simtime: " << t << " rate " << rates[n] << std::endl;
 #endif
+                if (next_spike[n] < 0)
+                    comm.Abort(1);
                 num_spikes++;
                 port_out->insertEvent(next_spike[n], MUSIC::GlobalIndex(n));
                 next_spike[n] += rate2SpikeTime(rates[n]); 
@@ -109,7 +109,7 @@ RateEncoder::runMUSIC()
             }
         }
 
-        rate.sleep();
+        runtime->tick();
     }
 
     gettimeofday(&end, NULL);

@@ -11,9 +11,10 @@
 
 #include "../rate.h"
 
-#define DEBUG_OUTPUT false 
+#define DEBUG_OUTPUT true 
 
 const double DEFAULT_TIMESTEP = 1e-3;
+const double DEFAULT_ACCEPTABLE_LATENCY = 1e-3;
 const double DEFAULT_TAU = 0.03;
 const double DEFAULT_NEURON_RESOLUTION = 1e-3;
 const string DEFAULT_WEIGHTS_FILENAME = "readout_weights.dat";
@@ -30,6 +31,7 @@ class LinearReadoutDecoder : MUSIC::EventHandlerGlobalIndex{
         MUSIC::Runtime* runtime;
         double stoptime;
         double timestep;
+        double acceptable_latency;
         int size_command_data;
         int size_spike_data;
         double* command_data;

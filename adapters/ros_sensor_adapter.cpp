@@ -116,12 +116,13 @@ void
 RosSensorAdapter::runROS()
 {
     Rate rate(sensor_update_rate);
+    ros::Time stop_time = ros::Time::now() + ros::Duration(stoptime);
     std::cout << "running sensor adapter with update rate of " << sensor_update_rate << std::endl;
 
-    for (int t = 0; runtime->time() < stoptime; t++)
+    for (ros::Time t = ros::Time::now(); t < stop_time; t = ros::Time::now())
     {
-        ros::spinOnce();
         rate.sleep();
+        ros::spinOnce();
    }
 }
 
@@ -136,7 +137,6 @@ RosSensorAdapter::runMUSIC()
 
     for (int t = 0; runtime->time() < stoptime; t++)
     {
-        runtime->tick();
 
 #if DEBUG_OUTPUT
         std::cout << "ROS Sensor Adapter: ";
@@ -148,6 +148,7 @@ RosSensorAdapter::runMUSIC()
 #endif
 
         rate.sleep(); 
+        runtime->tick();
     }
 
     gettimeofday(&end, NULL);

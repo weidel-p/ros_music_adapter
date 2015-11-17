@@ -107,7 +107,7 @@ RosCommandAdapter::initMUSIC(int argc, char** argv)
       		 MPI::DOUBLE,
       		 rank * datasize,
       		 datasize);
-    port_in->map (&dmap, timestep, 1);
+    port_in->map (&dmap, 0., 1, false);
 
     switch (msg_type)
     {   
@@ -149,10 +149,10 @@ RosCommandAdapter::runROS()
 {
     std::cout << "running command adapter with update rate of " << command_rate << std::endl;
     Rate rate(command_rate);
+    ros::Time stop_time = ros::Time::now() + ros::Duration(stoptime);
 
-    for (int t = 0; runtime->time() < stoptime; t++)
+    for (ros::Time t = ros::Time::now(); t < stop_time; t = ros::Time::now())
     {
-        ros::spinOnce();
 
         switch (msg_type)
         {   
@@ -181,6 +181,7 @@ RosCommandAdapter::runROS()
                 break;
         }
 
+        ros::spinOnce();
         rate.sleep();     
     }
 
@@ -198,8 +199,8 @@ RosCommandAdapter::runMUSIC()
 
     for (int t = 0; runtime->time() < stoptime; t++)
     {
-        runtime->tick();
         rate.sleep();
+        runtime->tick();
     }
 
     gettimeofday(&end, NULL);

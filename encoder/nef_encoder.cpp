@@ -70,7 +70,7 @@ NefEncoder::initMUSIC(int argc, char** argv)
       		 MPI::DOUBLE,
       		 rank * size_sensor_data,
       		 size_sensor_data);
-    port_in->map (&dmap, timestep, 1);
+    port_in->map (&dmap, 0., 1, false);
     
     // map linear index to event out port 
     MUSIC::LinearIndex l_index_out(0, size_spike_data);
@@ -84,7 +84,6 @@ NefEncoder::runMUSIC()
 {
     std::cout << "running nef encoder" << std::endl;
 
-    Rate rate(1./timestep);
     struct timeval start;
     struct timeval end;
     gettimeofday(&start, NULL);
@@ -94,7 +93,6 @@ NefEncoder::runMUSIC()
     double t = runtime->time();
     while(t < stoptime)
     {
-        runtime->tick();
         t = runtime->time();
 
         if (sensor_data != sensor_data_buf) 
@@ -122,7 +120,7 @@ NefEncoder::runMUSIC()
             t += DEFAULT_NEURON_RESOLUTION; // propagate a ms
         }
        
-        rate.sleep();
+        runtime->tick();
     }
 
     gettimeofday(&end, NULL);

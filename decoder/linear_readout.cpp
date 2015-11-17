@@ -16,6 +16,7 @@ LinearReadoutDecoder::init(int argc, char** argv)
 {
     std::cout << "initializing linear readout decoder" << std::endl;
     timestep = DEFAULT_TIMESTEP;
+    acceptable_latency = DEFAULT_ACCEPTABLE_LATENCY;
     weights_filename = DEFAULT_WEIGHTS_FILENAME;
     tau = DEFAULT_TAU;
     num_spikes0 = 0;
@@ -34,6 +35,7 @@ LinearReadoutDecoder::initMUSIC(int argc, char** argv)
     setup->config("stoptime", &stoptime);
     setup->config("music_timestep", &timestep);
     setup->config("weights_filename", &weights_filename);
+    setup->config("music_acceptable_latency", &acceptable_latency);
     setup->config("tau", &tau);
 
     port_in = setup->publishEventInput("in");
@@ -87,7 +89,7 @@ LinearReadoutDecoder::initMUSIC(int argc, char** argv)
     
     // map linear index to event out port 
     MUSIC::LinearIndex l_index_in(0, size_spike_data);
-    port_in->map(&l_index_in, this, timestep, 1); 
+    port_in->map(&l_index_in, this, acceptable_latency, 1); 
 
 
     // initialize propagator for exponential decay
@@ -148,7 +150,6 @@ LinearReadoutDecoder::runMUSIC()
 {
     std::cout << "running linear readout decoder" << std::endl;
     
-    Rate rate(1./timestep);
     struct timeval start;
     struct timeval end;
     gettimeofday(&start, NULL);
@@ -157,7 +158,6 @@ LinearReadoutDecoder::runMUSIC()
     double t = runtime->time();
     while(t < stoptime)
     {
-        runtime->tick();
         t = runtime->time();
         
         double next_t = t + timestep; //time at next timestep
@@ -212,7 +212,7 @@ LinearReadoutDecoder::runMUSIC()
         std::cout << std::endl;
 #endif
 
-        rate.sleep();
+        runtime->tick();
     }
 
     gettimeofday(&end, NULL);
@@ -231,7 +231,7 @@ void LinearReadoutDecoder::operator () (double t, MUSIC::GlobalIndex id){
     num_spikes0++;
 
     // check if a spike with the same timestamp is already in the map
-    std::map<double, std::vector<int> >::iterator it = incoming_spikes.find(t + timestep);
+    std::map<double, std::vector<int> >::iterator it = incoming_spikes.find(t + acceptable_latency);
     if (it != incoming_spikes.end()) // if so
     {
         it->second.push_back(id); // add new spike to vector
@@ -240,7 +240,7 @@ void LinearReadoutDecoder::operator () (double t, MUSIC::GlobalIndex id){
     {
         std::vector<int> ids; // create new vector and add to map
         ids.push_back(id);
-        incoming_spikes.insert(std::make_pair(t + timestep, ids)); // insert spike with delay of one timestep
+        incoming_spikes.insert(std::make_pair(t + acceptable_latency, ids)); // insert spike with delay of one acceptable latency 
     }
 
 }

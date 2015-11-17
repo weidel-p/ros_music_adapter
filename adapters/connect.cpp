@@ -79,7 +79,7 @@ ConnectAdapter::initMUSIC(int argc, char** argv)
       		 MPI::DOUBLE,
       		 rank * size_data_in,
       		 size_data_in);
-    port_in->map (&dmap_in, timestep, 1);
+    port_in->map (&dmap_in, 0., 1, false);
     
     MUSIC::ArrayData dmap_out(data_out,
       		 MPI::DOUBLE,
@@ -142,7 +142,6 @@ ConnectAdapter::runMUSIC()
 {
     std::cout << "running connect adapter" << std::endl;
     
-    Rate rate(1./timestep);
     struct timeval start;
     struct timeval end;
     gettimeofday(&start, NULL);
@@ -152,7 +151,6 @@ ConnectAdapter::runMUSIC()
 
     for (int t = 0; runtime->time() < stoptime; t++)
     {
-        runtime->tick();
         for (int i = 0; i < size_data_out; ++i)
         {
             data_out[i] = 0;
@@ -160,6 +158,15 @@ ConnectAdapter::runMUSIC()
             {
                 data_out[i] += data_in[j] * weights[i][j];
             }
+
+            if (data_out[i] > 1)
+                data_out[i] = 1;
+            if (data_out[i] < -1)
+            {
+                data_out[i] = -1;
+                std::cout << data_in << std::endl;
+            }
+
         }
 
 #if DEBUG_OUTPUT
@@ -171,7 +178,7 @@ ConnectAdapter::runMUSIC()
         std::cout << std::endl;
 #endif
 
-        rate.sleep();
+        runtime->tick();
     }
 
     gettimeofday(&end, NULL);
