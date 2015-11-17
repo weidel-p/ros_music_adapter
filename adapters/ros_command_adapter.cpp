@@ -137,7 +137,6 @@ RosCommandAdapter::initMUSIC(int argc, char** argv)
             index = -1;
             setup->config("angular.z", &index);
             msg_map[5] = index + 1;
-            std::cout << msg_map[0] << " " << msg_map[1] << " " << msg_map[2] << " " << msg_map[3] << " " << msg_map[4] << " " << msg_map[5] << std::endl; 
             break;
         
     } 
