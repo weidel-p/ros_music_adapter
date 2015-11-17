@@ -96,7 +96,7 @@ RateEncoder::runMUSIC()
         {
             for (int n = 0; n < size_data; ++n)
             {
-                next_spike[n] += negexp(denormalize(rates[n]));
+                next_spike[n] = t + negexp(denormalize(rates[n]));
             }
             rates_buf = rates;
         }
