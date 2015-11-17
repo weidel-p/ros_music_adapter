@@ -30,6 +30,7 @@ RateEncoder::initMUSIC(int argc, char** argv)
     setup->config("music_timestep", &timestep);
     setup->config("rate_min", &rate_min);
     setup->config("rate_max", &rate_max);
+    normalization_factor = (rate_max - rate_min) / 2.; 
 
     port_in = setup->publishContInput("in");
     port_out = setup->publishEventOutput("out");
@@ -133,10 +134,10 @@ RateEncoder::denormalize(double s)
     // 
     // returns interspike interval with rate between [min_rate, max_rate]
     
-    return 1. / ((s+1) * (rate_max - rate_min) / 2. + rate_min);
+    return 1. / ((s+1) * normalization_factor + rate_min);
 }
 
-inline double
+double
 RateEncoder::negexp (double m)
 {
     return - m * log (drand48 ());

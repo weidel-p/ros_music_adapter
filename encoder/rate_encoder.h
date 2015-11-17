@@ -27,6 +27,7 @@ class RateEncoder{
         double stoptime;
         double timestep;
         int size_data;
+        double normalization_factor;
 
         double rate_min, rate_max;
         double* next_spike;

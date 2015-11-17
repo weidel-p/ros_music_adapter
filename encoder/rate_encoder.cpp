@@ -30,6 +30,7 @@ RateEncoder::initMUSIC(int argc, char** argv)
     setup->config("music_timestep", &timestep);
     setup->config("rate_min", &rate_min);
     setup->config("rate_max", &rate_max);
+    normalization_factor = (rate_max - rate_min) / 2.; 
 
     port_in = setup->publishContInput("in");
     port_out = setup->publishEventOutput("out");
@@ -156,7 +157,7 @@ RateEncoder::runMUSIC()
     std::cout << "rate encoder: total simtime: " << dt_s << " " << dt_us << " ticks skipped " << ticks_skipped << " num spikes " << num_spikes << std::endl;
 }
 
-inline double
+double
 RateEncoder::rate2SpikeTime(double r)
 {
     // the incoming data, which is interpreted as rate, is between -1 and 1.
@@ -164,7 +165,7 @@ RateEncoder::rate2SpikeTime(double r)
     // scales rate between [rate_min, rate_max]
     //
     // returns next spike time
-    return 1. / ((r+1) * (rate_max - rate_min) / 2. + rate_min);
+    return 1. / ((r+1) * normalization_factor + rate_min);
 }
 
 void
