@@ -68,7 +68,7 @@ NefEncoder::initMUSIC(int argc, char** argv)
     // Declare where in memory to put sensor_data
     MUSIC::ArrayData dmap(&sensor_data[0],
       		 MPI::DOUBLE,
-      		 rank * size_sensor_data,
+      		 size_sensor_data,
       		 size_sensor_data);
     port_in->map (&dmap, 0., 1, false);
     

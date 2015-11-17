@@ -11,7 +11,7 @@
 
 #include "../rate.h"
 
-#define DEBUG_OUTPUT true 
+#define DEBUG_OUTPUT false 
 
 const double DEFAULT_TIMESTEP = 1e-3;
 const double DEFAULT_ACCEPTABLE_LATENCY = 1e-3;

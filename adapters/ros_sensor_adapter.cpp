@@ -105,7 +105,7 @@ RosSensorAdapter::initMUSIC(int argc, char** argv)
     // Declare where in memory to put data
     MUSIC::ArrayData dmap (data,
       		 MPI::DOUBLE,
-      		 rank * datasize,
+      		 datasize,
       		 datasize);
     port_out->map (&dmap, 1);
     

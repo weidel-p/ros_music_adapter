@@ -83,7 +83,7 @@ LinearReadoutDecoder::initMUSIC(int argc, char** argv)
     // Declare where in memory to put command_data
     MUSIC::ArrayData dmap(command_data,
       		 MPI::DOUBLE,
-      		 rank * size_command_data,
+      		 size_command_data,
       		 size_command_data);
     port_out->map (&dmap, 1);
     
