@@ -60,9 +60,9 @@ RateEncoder::initMUSIC(int argc, char** argv)
     for (int i = 0; i < size_data; ++i)
     {
         rates[i] = 0.;
+        rates_buf[i] = 0.;
         next_spike[i] = negexp(denormalize(rates[i])); 
     }
-    rates_buf = rates;
          
     // Declare where in memory to put sensor_data
     MUSIC::ArrayData dmap(rates,

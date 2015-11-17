@@ -55,11 +55,16 @@ RateEncoder::initMUSIC(int argc, char** argv)
     }
     
     rates = new double[size_data];
+    rates_buf = new double[size_data];
     next_spike = new double[size_data];
+    last_spike = new double[size_data];
     for (int i = 0; i < size_data; ++i)
     {
-        rates[i] = 0.;
+        rates[i] = -1.;
+        rates_buf[i] = -1.;
+        last_spike[i] = 0.;
         next_spike[i] = rate2SpikeTime(rates[i]); 
+        std::cout << next_spike[i] << std::endl;
     }
          
     // Declare where in memory to put sensor_data
@@ -91,6 +96,28 @@ RateEncoder::runMUSIC()
     while(t < stoptime)
     {
         t = runtime->time();
+        
+        if (rates != rates_buf) 
+        {
+            std::cout <<" changed input " << std::endl;
+            for (int n = 0; n < size_data; ++n)
+            {
+                double new_isi = rate2SpikeTime(rates[n]);
+                if (rates[n] > rates_buf[n])
+                {
+                    next_spike[n] = last_spike[n] + new_isi;
+                    if (next_spike[n] < t)
+                        next_spike[n] = t;
+                }
+                else if (rates[n] < rates_buf[n])
+                {
+                    double old_isi = next_spike[n] - last_spike[n];
+                    next_spike[n] = last_spike[n] + (new_isi - old_isi);
+                }
+
+            }
+            rates_buf = rates;
+        }
 
         double next_t = t + timestep;
         for (int n = 0; n < size_data; ++n)
@@ -100,14 +127,21 @@ RateEncoder::runMUSIC()
 #if DEBUG_OUTPUT
                 std::cout << "Rate Encoder: neuron " << n << " spikes at " << next_spike[n] << " simtime: " << t << " rate " << rates[n] << std::endl;
 #endif
-                if (next_spike[n] < 0)
-                    comm.Abort(1);
                 num_spikes++;
                 port_out->insertEvent(next_spike[n], MUSIC::GlobalIndex(n));
+                last_spike[n] = next_spike[n];
                 next_spike[n] += rate2SpikeTime(rates[n]); 
                 
             }
         }
+//#if DEBUG_OUTPUT
+//        std::cout << "Rate Encoder: ";
+//        for (int i = 0; i < size_data; ++i)
+//        {
+//            std::cout << rates[i] << " " << rates_buf[i] << " ";
+//        }
+//        std::cout << std::endl;
+//#endif
 
         runtime->tick();
     }
@@ -130,10 +164,6 @@ RateEncoder::rate2SpikeTime(double r)
     // scales rate between [rate_min, rate_max]
     //
     // returns next spike time
-    if (r == 0)
-    {
-        return 2 * timestep;
-    }
     return 1. / ((r+1) * (rate_max - rate_min) / 2. + rate_min);
 }
 

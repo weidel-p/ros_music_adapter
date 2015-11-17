@@ -30,7 +30,9 @@ class RateEncoder{
 
         double rate_min, rate_max;
         double* next_spike;
+        double* last_spike;
         double* rates;
+        double* rates_buf;
         MUSIC::EventOutputPort* port_out;
         MUSIC::ContInputPort* port_in;
 

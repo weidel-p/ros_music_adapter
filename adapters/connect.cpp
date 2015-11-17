@@ -147,26 +147,16 @@ ConnectAdapter::runMUSIC()
     gettimeofday(&start, NULL);
     unsigned int ticks_skipped = 0;
 
-    double size_factor = double(size_data_in) / size_data_out;
 
     for (int t = 0; runtime->time() < stoptime; t++)
     {
         for (int i = 0; i < size_data_out; ++i)
         {
             data_out[i] = 0;
-            for (int j = i * size_factor; j < (i+1) * size_factor; ++j)
+            for (int j = 0; j < size_data_in; ++j)
             {
                 data_out[i] += data_in[j] * weights[i][j];
             }
-
-            if (data_out[i] > 1)
-                data_out[i] = 1;
-            if (data_out[i] < -1)
-            {
-                data_out[i] = -1;
-                std::cout << data_in << std::endl;
-            }
-
         }
 
 #if DEBUG_OUTPUT
