@@ -113,30 +113,31 @@ RosCommandAdapter::initMUSIC(int argc, char** argv)
     {   
         case Twist: 
             msg_map = new int[6];
-            int index = 0;
+            int index = -1;
 
             setup->config("linear.x", &index);
             msg_map[0] = index + 1;
 
-            index = 0;
+            index = -1;
             setup->config("linear.y", &index);
             msg_map[1] = index + 1;
 
-            index = 0;
+            index = -1;
             setup->config("linear.z", &index);
             msg_map[2] = index + 1;
 
-            index = 0;
+            index = -1;
             setup->config("angular.x", &index);
             msg_map[3] = index + 1;
 
-            index = 0;
+            index = -1;
             setup->config("angular.y", &index);
             msg_map[4] = index + 1;
 
-            index = 0;
+            index = -1;
             setup->config("angular.z", &index);
             msg_map[5] = index + 1;
+            std::cout << msg_map[0] << " " << msg_map[1] << " " << msg_map[2] << " " << msg_map[3] << " " << msg_map[4] << " " << msg_map[5] << std::endl; 
             break;
         
     } 
