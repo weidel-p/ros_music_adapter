@@ -71,7 +71,7 @@ RateEncoder::initMUSIC(int argc, char** argv)
     // Declare where in memory to put sensor_data
     MUSIC::ArrayData dmap(rates,
       		 MPI::DOUBLE,
-      		 size_data,
+      		 0,
       		 size_data);
     port_in->map (&dmap, 0., 1, false);
     
