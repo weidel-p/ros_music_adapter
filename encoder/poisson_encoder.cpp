@@ -93,17 +93,15 @@ RateEncoder::runMUSIC()
     while(t < stoptime)
     {
         t = runtime->time();
-        if (rates != rates_buf) 
-        {
-            for (int n = 0; n < size_data; ++n)
-            {
-                next_spike[n] = t + negexp(denormalize(rates[n]));
-            }
-            rates_buf = rates;
-        }
 
         for (int n = 0; n < size_data; ++n)
         {
+            if (rates[n] != rates_buf[n])
+            {
+                next_spike[n] = t + negexp(denormalize(rates[n]));
+                rates_buf[n] = rates[n];
+            }
+
             while(next_spike[n] < t + timestep)
             {
 #if DEBUG_OUTPUT

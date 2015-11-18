@@ -98,31 +98,24 @@ RateEncoder::runMUSIC()
     {
         t = runtime->time();
         
-        if (rates != rates_buf) 
+        for (int n = 0; n < size_data; ++n)
         {
-            std::cout <<" changed input " << std::endl;
-            for (int n = 0; n < size_data; ++n)
-            {
-                double new_isi = rate2SpikeTime(rates[n]);
-                if (rates[n] > rates_buf[n])
-                {
-                    next_spike[n] = last_spike[n] + new_isi;
-                    if (next_spike[n] < t)
-                        next_spike[n] = t;
-                }
-                else if (rates[n] < rates_buf[n])
-                {
-                    double old_isi = next_spike[n] - last_spike[n];
-                    next_spike[n] = last_spike[n] + (new_isi - old_isi);
-                }
-
-            }
-            rates_buf = rates;
+            
         }
 
         double next_t = t + timestep;
         for (int n = 0; n < size_data; ++n)
         {
+            if (rates[n] != rates_buf[n])
+            {
+                double old_isi = next_spike[n] - last_spike[n];
+                double part_time_left = (t - last_spike[n]) / old_isi; 
+                double new_isi = rate2SpikeTime(rates[n]) * part_time_left;
+                next_spike[n] = t + new_isi;
+                rates_buf[n] = rates[n];
+            }
+
+
             while(next_spike[n] < next_t)
             {
 #if DEBUG_OUTPUT
@@ -132,7 +125,6 @@ RateEncoder::runMUSIC()
                 port_out->insertEvent(next_spike[n], MUSIC::GlobalIndex(n));
                 last_spike[n] = next_spike[n];
                 next_spike[n] += rate2SpikeTime(rates[n]); 
-                
             }
         }
 //#if DEBUG_OUTPUT
