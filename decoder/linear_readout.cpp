@@ -164,9 +164,8 @@ LinearReadoutDecoder::runMUSIC()
 	    double t_spike = spikes.top ().t;
 	    int id = spikes.top ().id;
 
-	    activity_traces[id] = (activity_traces[id]
-				   * std::exp ((t_spike - t) * inv_tau)
-				   + inv_tau);
+	    activity_traces[id] += (std::exp ((t_spike - t) * inv_tau)
+				    * inv_tau);
 	    
 	    spikes.pop (); // remove spike from queue
 	  }
