@@ -77,13 +77,13 @@ ConnectAdapter::initMUSIC(int argc, char** argv)
     // Declare where in memory to put command_data
     MUSIC::ArrayData dmap_in(data_in,
       		 MPI::DOUBLE,
-      		 size_data_in,
+      		 0,
       		 size_data_in);
     port_in->map (&dmap_in, 0., 1, false);
     
     MUSIC::ArrayData dmap_out(data_out,
       		 MPI::DOUBLE,
-      		 size_data_out,
+      		 0,
       		 size_data_out);
     port_out ->map (&dmap_out, 1);
 

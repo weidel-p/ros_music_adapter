@@ -105,7 +105,7 @@ RosCommandAdapter::initMUSIC(int argc, char** argv)
     // Declare where in memory to put data
     MUSIC::ArrayData dmap (&data[1],
       		 MPI::DOUBLE,
-      		 datasize,
+      		 0,
       		 datasize);
     port_in->map (&dmap, 0., 1, false);
 
