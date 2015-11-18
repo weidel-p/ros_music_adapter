@@ -159,7 +159,7 @@ LinearReadoutDecoder::runMUSIC()
     for (t = runtime->time (); t < stoptime; t = runtime->time ())
       {
 	double next_t = t + timestep;
-	while (spikes.top ().t < next_t)
+	while (!spikes.empty () && spikes.top ().t < next_t)
 	  {
 	    double t_spike = spikes.top ().t;
 	    int id = spikes.top ().id;
