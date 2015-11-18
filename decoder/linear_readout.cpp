@@ -20,7 +20,6 @@ LinearReadoutDecoder::init(int argc, char** argv)
     weights_filename = DEFAULT_WEIGHTS_FILENAME;
     tau = DEFAULT_TAU;
     num_spikes0 = 0;
-    num_spikes1 = 0;
 
     // init MUSIC to read config
     initMUSIC(argc, argv); 
@@ -37,6 +36,7 @@ LinearReadoutDecoder::initMUSIC(int argc, char** argv)
     setup->config("weights_filename", &weights_filename);
     setup->config("music_acceptable_latency", &acceptable_latency);
     setup->config("tau", &tau);
+    inv_tau = 1. / tau;
 
     port_in = setup->publishEventInput("in");
     port_out = setup->publishContOutput("out");
@@ -82,9 +82,9 @@ LinearReadoutDecoder::initMUSIC(int argc, char** argv)
          
     // Declare where in memory to put command_data
     MUSIC::ArrayData dmap(command_data,
-      		 MPI::DOUBLE,
-      		 size_command_data,
-      		 size_command_data);
+			  MPI::DOUBLE,
+			  0,
+			  size_command_data);
     port_out->map (&dmap, 1);
     
     // map linear index to event out port 
@@ -93,7 +93,7 @@ LinearReadoutDecoder::initMUSIC(int argc, char** argv)
 
 
     // initialize propagator for exponential decay
-    propagator = std::exp(-(DEFAULT_NEURON_RESOLUTION)/tau);
+    propagator = std::exp(-timestep/tau);
 
     runtime = new MUSIC::Runtime (setup, timestep);
 }
@@ -156,63 +156,30 @@ LinearReadoutDecoder::runMUSIC()
 
     std::map<double, std::vector<int> >::iterator it, it_now;
     double t = runtime->time();
-    while(t < stoptime)
-    {
-        t = runtime->time();
-        
-        double next_t = t + timestep; //time at next timestep
-        while (t <= next_t) // update the activity traces in higher resolution than the MUSIC timestep
-        {
-            it_now = incoming_spikes.lower_bound(t); // get all incoming spikes until t
-            if (it_now != incoming_spikes.end()) 
-            {
-                for (it = incoming_spikes.begin(); it != it_now; ++it)
-                {
-                    std::vector<int> ids = it->second;
-                    for (std::vector<int>::iterator i = ids.begin(); i != ids.end(); ++i)
-                    {
-                        activity_traces[*i] += 1 / tau;
-                        ///std::cout << runtime->time() << " " << t << " " << *i << std::endl;
-                        num_spikes1++;
-                    }
-                }
-                incoming_spikes.erase(incoming_spikes.begin(), it_now);
-            }
+    for (t = runtime->time (); t < stoptime; t = runtime->time ())
+      {
+	double next_t = t + timestep;
+	while (spikes.top ().t < next_t)
+	  {
+	    double t_spike = spikes.top ().t;
+	    int id = spikes.top ().id;
 
-            for (int i = 0; i < size_spike_data; ++i)
-            {
-                activity_traces[i] *= propagator;
-            } 
-            t += DEFAULT_NEURON_RESOLUTION;
-        }
-       
-        for (int i = 0; i < size_command_data; ++i)
-        {
-            command_data[i] = 0.;
-            for (int j = 0; j < size_spike_data; ++j)
-            {
-                command_data[i] += activity_traces[j] * readout_weights[i][j];
-            }
-        }
-
-#if DEBUG_OUTPUT
-        std::cout << "Linear Readout: Activity Traces: ";
-        for (int i = 0; i < size_spike_data; ++i)
-        {
-            std::cout << activity_traces[i] << " ";
-        }
-        std::cout << std::endl;
-
-
-        std::cout << "Linear Readout: Command Data: ";
-        for (int i = 0; i < size_command_data; ++i)
-        {
-            std::cout << command_data[i] << " ";
-        }
-        std::cout << std::endl;
-#endif
-
-        runtime->tick();
+	    activity_traces[id] = (activity_traces[id]
+				   * std::exp ((t_spike - t) * inv_tau)
+				   + inv_tau);
+	    
+	    spikes.pop (); // remove spike from queue
+	  }
+	for (int i = 0; i < size_command_data; ++i)
+	  {
+	    command_data[i] = 0.;
+	    for (int j = 0; j < size_spike_data; ++j)
+	      {
+		activity_traces[j] *= propagator; // decay
+		command_data[i] += activity_traces[j] * readout_weights[i][j];
+	      }
+	  }
+	runtime->tick();
     }
 
     gettimeofday(&end, NULL);
@@ -222,7 +189,7 @@ LinearReadoutDecoder::runMUSIC()
     {
         dt_us += 1000000;
     }
-    std::cout << "decoder: total simtime: " << dt_s << " " << dt_us << " received spikes " << num_spikes0  << " filtered spikes " << num_spikes1 << std::endl;
+    std::cout << "decoder: total simtime: " << dt_s << " " << dt_us << " received spikes " << num_spikes0  << std::endl;
 
 }
 
@@ -230,25 +197,9 @@ void LinearReadoutDecoder::operator () (double t, MUSIC::GlobalIndex id){
     // Decoder: add incoming spikes to map
     num_spikes0++;
 
-    // check if a spike with the same timestamp is already in the map
-    std::map<double, std::vector<int> >::iterator it = incoming_spikes.find(t + acceptable_latency);
-    if (it != incoming_spikes.end()) // if so
-    {
-        it->second.push_back(id); // add new spike to vector
-    }
-    else // if not
-    {
-        std::vector<int> ids; // create new vector and add to map
-        ids.push_back(id);
-        incoming_spikes.insert(std::make_pair(t + acceptable_latency, ids)); // insert spike with delay of one acceptable latency 
-    }
-
+    spikes.push (Event (t + acceptable_latency, id));
 }
 void LinearReadoutDecoder::finalize(){
     runtime->finalize();
     delete runtime;
 }
-
-
-
-
