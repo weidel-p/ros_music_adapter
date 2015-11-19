@@ -7,7 +7,6 @@
 #include "sys/time.h"
 
 #include "iaf_neuron.h"
-#include "../rate.h"
 
 #define DEBUG_OUTPUT false 
 

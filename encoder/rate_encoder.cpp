@@ -65,7 +65,6 @@ RateEncoder::initMUSIC(int argc, char** argv)
         rates_buf[i] = -1.;
         last_spike[i] = 0.;
         next_spike[i] = rate2SpikeTime(rates[i]); 
-        std::cout << next_spike[i] << std::endl;
     }
          
     // Declare where in memory to put sensor_data
@@ -97,11 +96,6 @@ RateEncoder::runMUSIC()
     while(t < stoptime)
     {
         t = runtime->time();
-        
-        for (int n = 0; n < size_data; ++n)
-        {
-            
-        }
 
         double next_t = t + timestep;
         for (int n = 0; n < size_data; ++n)
@@ -110,7 +104,7 @@ RateEncoder::runMUSIC()
             {
                 double old_isi = next_spike[n] - last_spike[n];
                 double part_time_left = (t - last_spike[n]) / old_isi; 
-                double new_isi = rate2SpikeTime(rates[n]) * part_time_left;
+                double new_isi = rate2SpikeTime(rates[n]) * (1 - part_time_left);
                 next_spike[n] = t + new_isi;
                 rates_buf[n] = rates[n];
             }

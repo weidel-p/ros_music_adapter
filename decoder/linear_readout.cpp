@@ -67,18 +67,21 @@ LinearReadoutDecoder::initMUSIC(int argc, char** argv)
     {
         command_data[i] = 0.;
     }
+    vec_command_data = gsl_vector_view_array(command_data, size_command_data);
 
     activity_traces = new double[size_spike_data];
     for (int i = 0; i < size_spike_data; ++i)
     {
         activity_traces[i] = 0.;
     }
+    vec_activity_traces = gsl_vector_view_array(activity_traces, size_spike_data);
 
-    readout_weights = new double*[size_command_data];
-    for (int i = 0; i < size_command_data; ++i)
+    readout_weights = new double[size_command_data * size_spike_data];
+    for (int i = 0; i < size_command_data * size_spike_data; ++i)
     {
-        readout_weights[i] = new double[size_spike_data];
+        readout_weights[i] = 0.;
     }
+    mat_readout_weights = gsl_matrix_view_array(readout_weights, size_command_data, size_spike_data);
          
     // Declare where in memory to put command_data
     MUSIC::ArrayData dmap(command_data,
@@ -90,7 +93,6 @@ LinearReadoutDecoder::initMUSIC(int argc, char** argv)
     // map linear index to event out port 
     MUSIC::LinearIndex l_index_in(0, size_spike_data);
     port_in->map(&l_index_in, this, acceptable_latency, 1); 
-
 
     // initialize propagator for exponential decay
     propagator = std::exp(-timestep/tau);
@@ -121,12 +123,9 @@ LinearReadoutDecoder::readWeightsFile()
                     << json_weights << " It has to be in JSON format.\n Using 1/N for each weight."
                     << json_reader.getFormattedErrorMessages();
         
-        for (int i = 0; i < size_command_data; ++i)
+        for (int i = 0; i < size_command_data * size_spike_data; ++i)
         {
-            for (int j = 0; j < size_spike_data; ++j)
-            {
-                readout_weights[i][j] = 1. / size_spike_data;
-            }
+            readout_weights[i] = 1. / size_spike_data;
         }
 
         return;
@@ -137,7 +136,7 @@ LinearReadoutDecoder::readWeightsFile()
         {
             for (int j = 0; j < size_spike_data; ++j)
             {
-                readout_weights[i][j] = json_readout_weights[i][j].asDouble();
+                readout_weights[i * size_spike_data + j] = json_readout_weights[i][j].asDouble();
             }
         }
 
@@ -153,34 +152,32 @@ LinearReadoutDecoder::runMUSIC()
     struct timeval start;
     struct timeval end;
     gettimeofday(&start, NULL);
-
+    
     std::map<double, std::vector<int> >::iterator it, it_now;
     double t = runtime->time();
     for (t = runtime->time (); t < stoptime; t = runtime->time ())
-      {
-	double next_t = t + timestep;
-	while (!spikes.empty () && spikes.top ().t < next_t)
-	  {
-	    double t_spike = spikes.top ().t;
-	    int id = spikes.top ().id;
+    {
+        double next_t = t + timestep;
+        while (!spikes.empty () && spikes.top ().t < next_t)
+        {
+            double t_spike = spikes.top ().t;
+            int id = spikes.top ().id;
+            
+            activity_traces[id] += (std::exp ((t_spike - t) * inv_tau) * inv_tau);
+            
+            spikes.pop (); // remove spike from queue
+        }
 
-	    activity_traces[id] += (std::exp ((t_spike - t) * inv_tau)
-				    * inv_tau);
-	    
-	    spikes.pop (); // remove spike from queue
-	  }
-	for (int i = 0; i < size_command_data; ++i)
-	  {
-	    command_data[i] = 0.;
-	    for (int j = 0; j < size_spike_data; ++j)
-	      {
-		activity_traces[j] *= propagator; // decay
-		command_data[i] += activity_traces[j] * readout_weights[i][j];
-	      }
-	  }
-	runtime->tick();
+        for (int j = 0; j < size_spike_data; ++j)
+        {
+            activity_traces[j] *= propagator; // decay
+        }
+
+        gsl_blas_dgemv(CblasNoTrans, 1., &mat_readout_weights.matrix, &vec_activity_traces.vector, 0., &vec_command_data.vector);
+
+        runtime->tick();
     }
-
+    
     gettimeofday(&end, NULL);
     unsigned int dt_s = end.tv_sec - start.tv_sec;
     unsigned int dt_us = end.tv_usec - start.tv_usec;
@@ -189,7 +186,7 @@ LinearReadoutDecoder::runMUSIC()
         dt_us += 1000000;
     }
     std::cout << "decoder: total simtime: " << dt_s << " " << dt_us << " received spikes " << num_spikes0  << std::endl;
-
+    
 }
 
 void LinearReadoutDecoder::operator () (double t, MUSIC::GlobalIndex id){

@@ -9,7 +9,9 @@
 #include "sys/time.h"
 #include "jsoncpp/json/json.h"
 
-#include "../rate.h"
+#include <gsl/gsl_matrix_double.h>
+#include <gsl/gsl_vector_double.h>
+#include <gsl/gsl_blas.h>
 
 #define DEBUG_OUTPUT false 
 
@@ -42,12 +44,17 @@ class LinearReadoutDecoder : MUSIC::EventHandlerGlobalIndex{
         int size_command_data;
         int size_spike_data;
         double* command_data;
+        gsl_vector_view vec_command_data;
         double* activity_traces;
+        gsl_vector_view vec_activity_traces;
         unsigned int num_spikes0;
 
         string weights_filename;
         Json::Value json_readout_weights; 
-        double** readout_weights;
+        double* readout_weights;
+        gsl_matrix_view mat_readout_weights;
+
+
         MUSIC::EventInputPort* port_in;
         MUSIC::ContOutputPort* port_out;
 

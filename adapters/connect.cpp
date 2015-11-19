@@ -53,27 +53,28 @@ ConnectAdapter::initMUSIC(int argc, char** argv)
         std::cout << "ERROR: Port-width not defined" << std::endl;
         comm.Abort(1);
     }
-    
+
     data_in = new double[size_data_in];
     for (int i = 0; i < size_data_in; ++i)
     {
         data_in[i] = 0.;
     }
+    vec_data_in = gsl_vector_view_array(data_in, size_data_in);
 
     data_out = new double[size_data_out];
     for (int i = 0; i < size_data_out; ++i)
     {
         data_out[i] = 0.;
     }
+    vec_data_out = gsl_vector_view_array(data_out, size_data_out);
 
-    weights = new double*[size_data_out];
-    for (int i = 0; i < size_data_out; ++i)
+    weights = new double[size_data_out * size_data_in];
+    for (int i = 0; i < size_data_out * size_data_in; ++i)
     {
-        weights[i] = new double[size_data_in];
+        weights[i] = 0.; 
     }
+    mat_weights = gsl_matrix_view_array(weights, size_data_out, size_data_in);
 
-
-         
     // Declare where in memory to put command_data
     MUSIC::ArrayData dmap_in(data_in,
       		 MPI::DOUBLE,
@@ -113,12 +114,9 @@ ConnectAdapter::readWeightsFile()
                     << json_weights_ << " It has to be in JSON format.\n Using 1/N for each weight."
                     << json_reader.getFormattedErrorMessages();
         
-        for (int i = 0; i < size_data_out; ++i)
+        for (int i = 0; i < size_data_out * size_data_in; ++i)
         {
-            for (int j = 0; j < size_data_in; ++j)
-            {
-                weights[i][j] = 1. / size_data_in;
-            }
+            weights[i] = 1. / size_data_in;
         }
 
         return;
@@ -129,7 +127,7 @@ ConnectAdapter::readWeightsFile()
         {
             for (int j = 0; j < size_data_in; ++j)
             {
-                weights[i][j] = json_weights[i][j].asDouble();
+                weights[i*size_data_in + j] = json_weights[i][j].asDouble();
             }
         }
 
@@ -150,15 +148,9 @@ ConnectAdapter::runMUSIC()
 
     for (int t = 0; runtime->time() < stoptime; t++)
     {
-        for (int i = 0; i < size_data_out; ++i)
-        {
-            data_out[i] = 0;
-            for (int j = 0; j < size_data_in; ++j)
-            {
-                data_out[i] += data_in[j] * weights[i][j];
-            }
-        }
-
+   
+        gsl_blas_dgemv(CblasNoTrans, 1., &mat_weights.matrix, &vec_data_in.vector, 0., &vec_data_out.vector);
+       
 #if DEBUG_OUTPUT
         std::cout << "Connect Adapter: ";
         for (int i = 0; i < size_data_out; ++i)

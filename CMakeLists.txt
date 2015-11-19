@@ -18,6 +18,7 @@ find_package(MPI REQUIRED)
 include_directories(${MPI_INCLUDE_PATH})
 set(CMAKE_CXX_COMPILE_FLAGS ${CMAKE_CXX_COMPILE_FLAGS} ${MPI_COMPILE_FLAGS})
 set(CMAKE_CXX_LINK_FLAGS ${CMAKE_CXX_LINK_FLAGS} ${MPI_LINK_FLAGS})
+set(CMAKE_MODULE_PATH /home/weidel/cmake/)
 
 
 find_library(ROS_CPP roscpp /opt/ros/jade/lib)
@@ -30,14 +31,17 @@ include_directories(/opt/ros/jade/include/)
 find_package(Boost COMPONENTS thread system date_time REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
+find_library(GSL gsl REQUIRED)
+find_library(BLAS gslcblas REQUIRED)
+
 find_library(JSON jsoncpp)
 
 target_link_libraries(ros_command_adapter ${MUSIC} ${ROS_CPP} ${ROS_CPP_SER} ${ROSCONSOLE} ${ROSTIME} ${MPI_LIBRARIES} ${Boost_LIBRARIES})
 target_link_libraries(ros_sensor_adapter ${MUSIC} ${ROS_CPP} ${ROS_CPP_SER} ${ROSCONSOLE} ${ROSTIME} ${MPI_LIBRARIES} ${Boost_LIBRARIES})
-target_link_libraries(linear_readout_decoder ${MUSIC} ${MPI_LIBRARIES} ${Boost_LIBRARIES} ${JSON})
+target_link_libraries(linear_readout_decoder ${MUSIC} ${MPI_LIBRARIES} ${Boost_LIBRARIES} ${JSON} ${GSL} ${BLAS})
 target_link_libraries(nef_encoder ${MUSIC} ${MPI_LIBRARIES} ${Boost_LIBRARIES})
 target_link_libraries(rate_encoder ${MUSIC} ${MPI_LIBRARIES} ${Boost_LIBRARIES})
 target_link_libraries(poisson_encoder ${MUSIC} ${MPI_LIBRARIES} ${Boost_LIBRARIES})
-target_link_libraries(connect_adapter ${MUSIC} ${MPI_LIBRARIES} ${Boost_LIBRARIES} ${JSON})
+target_link_libraries(connect_adapter ${MUSIC} ${MPI_LIBRARIES} ${Boost_LIBRARIES} ${JSON} ${GSL} ${BLAS})
 
 
