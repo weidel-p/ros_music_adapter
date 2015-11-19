@@ -134,6 +134,8 @@ void
 RosSensorAdapter::runROSMUSIC()
 {
     RTClock clock(1. / sensor_update_rate);
+    
+    ros::spinOnce();
     for (int t = 0; runtime->time() < stoptime; t++)
     {
 
