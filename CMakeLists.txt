@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
 
-project("MUSIC-ROS Adapter")
+project("MUSIC-ROS_Adapter")
 
+add_library(rtclock STATIC lib/rtclock.cpp)
 
 add_executable(ros_command_adapter adapters/ros_command_adapter.cpp)
 add_executable(ros_sensor_adapter adapters/ros_sensor_adapter.cpp)
@@ -11,7 +12,9 @@ add_executable(connect_adapter adapters/connect.cpp)
 add_executable(rate_encoder encoder/rate_encoder.cpp)
 add_executable(poisson_encoder encoder/poisson_encoder.cpp)
 
-find_library(MUSIC music)
+
+find_library(MUSIC music REQUIRED)
+include_directories(lib/)
 
 # Require MPI for this project:
 find_package(MPI REQUIRED)
@@ -37,7 +40,7 @@ find_library(BLAS gslcblas REQUIRED)
 find_library(JSON jsoncpp)
 
 target_link_libraries(ros_command_adapter ${MUSIC} ${ROS_CPP} ${ROS_CPP_SER} ${ROSCONSOLE} ${ROSTIME} ${MPI_LIBRARIES} ${Boost_LIBRARIES})
-target_link_libraries(ros_sensor_adapter ${MUSIC} ${ROS_CPP} ${ROS_CPP_SER} ${ROSCONSOLE} ${ROSTIME} ${MPI_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(ros_sensor_adapter ${MUSIC} ${ROS_CPP} ${ROS_CPP_SER} ${ROSCONSOLE} ${ROSTIME} ${MPI_LIBRARIES} ${Boost_LIBRARIES} rtclock)
 target_link_libraries(linear_readout_decoder ${MUSIC} ${MPI_LIBRARIES} ${Boost_LIBRARIES} ${JSON} ${GSL} ${BLAS})
 target_link_libraries(nef_encoder ${MUSIC} ${MPI_LIBRARIES} ${Boost_LIBRARIES})
 target_link_libraries(rate_encoder ${MUSIC} ${MPI_LIBRARIES} ${Boost_LIBRARIES})
