@@ -44,6 +44,8 @@ class RosSensorAdapter
 
         msg_types msg_type;
 
+	    MUSIC::Setup* setup;
+
         void initROS(int argc, char** argv);
         void initMUSIC(int argc, char** argv);
 

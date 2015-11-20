@@ -72,7 +72,7 @@ RosSensorAdapter::initROS(int argc, char** argv)
 void
 RosSensorAdapter::initMUSIC(int argc, char** argv)
 {
-    MUSIC::Setup* setup = new MUSIC::Setup (argc, argv);
+    setup = new MUSIC::Setup (argc, argv);
 
     setup->config("ros_topic", &ros_topic);
     setup->config("stoptime", &stoptime);
@@ -126,8 +126,6 @@ RosSensorAdapter::initMUSIC(int argc, char** argv)
       		 0,
       		 datasize);
     port_out->map (&dmap, 1);
-    
-    runtime = new MUSIC::Runtime (setup, timestep);
 }
 
 void
@@ -136,6 +134,8 @@ RosSensorAdapter::runROSMUSIC()
     RTClock clock(1. / sensor_update_rate);
     
     ros::spinOnce();
+    runtime = new MUSIC::Runtime (setup, timestep);
+
     for (int t = 0; runtime->time() < stoptime; t++)
     {
 
@@ -176,6 +176,8 @@ RosSensorAdapter::runMUSIC()
 {
     RTClock clock(timestep);
 
+    runtime = new MUSIC::Runtime (setup, timestep);
+    
     for (int t = 0; runtime->time() < stoptime; t++)
     {
 
