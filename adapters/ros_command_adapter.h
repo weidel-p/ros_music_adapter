@@ -3,6 +3,7 @@
 
 #include <ros/ros.h>
 #include "geometry_msgs/Twist.h"
+#include "std_msgs/Float64MultiArray.h"
 
 #include <music.hh>
 #include <mpi.h>
@@ -14,9 +15,11 @@
 
 #define DEBUG_OUTPUT false 
 
+enum msg_types {Float64MultiArray, Twist};
+
 const double DEFAULT_TIMESTEP = 1e-3;
 const double DEFAULT_COMMAND_RATE = 10;
-enum msg_types {Twist};
+const msg_types DEFAULT_MESSAGE_TYPE = Float64MultiArray;
 
 class RosCommandAdapter
 {

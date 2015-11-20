@@ -30,6 +30,7 @@ RosCommandAdapter::init(int argc, char** argv)
 
     timestep = DEFAULT_TIMESTEP;
     command_rate = DEFAULT_COMMAND_RATE;
+    msg_type = DEFAULT_MESSAGE_TYPE;
 
     // MUSIC before ROS to read the config first!
     initMUSIC(argc, argv);
@@ -46,9 +47,16 @@ RosCommandAdapter::initROS(int argc, char** argv)
     ros::NodeHandle n;
     switch (msg_type)
     {   
+        case Float64MultiArray:
+        {
+            publisher = n.advertise<std_msgs::Float64MultiArray>(ros_topic, 1);
+            break;
+        }
         case Twist: 
-           publisher = n.advertise<geometry_msgs::Twist>(ros_topic, 1);
-           break;
+        {
+            publisher = n.advertise<geometry_msgs::Twist>(ros_topic, 1);
+            break;
+        }
     }
 }
 
@@ -64,8 +72,12 @@ RosCommandAdapter::initMUSIC(int argc, char** argv)
     
     std::string _msg_type;
     setup->config("message_type", &_msg_type);
-
-    if (_msg_type.compare("Twist") == 0){
+    if (_msg_type.compare("Float64MultiArray") == 0)
+    {
+        msg_type = Float64MultiArray;
+    }
+    else if (_msg_type.compare("Twist") == 0)
+    {
         msg_type = Twist;
     }
     else
@@ -111,6 +123,9 @@ RosCommandAdapter::initMUSIC(int argc, char** argv)
 
     switch (msg_type)
     {   
+        case Float64MultiArray:
+            // no mapping needed
+            break;
         case Twist: 
             msg_map = new int[6];
             int index = -1;
@@ -156,30 +171,43 @@ RosCommandAdapter::runROS()
 
         switch (msg_type)
         {   
-            case Twist: 
-                geometry_msgs::Twist command;
-                
-                command.linear.x = data[msg_map[0]];
-                command.linear.y = data[msg_map[1]];
-                command.linear.z = data[msg_map[2]];
-
-                command.angular.x = data[msg_map[3]];
-                command.angular.y = data[msg_map[4]];
-                command.angular.z = data[msg_map[5]];
-            
-                publisher.publish(command);
-
-#if DEBUG_OUTPUT
-                std::cout << "ROS Command Adapter: ";
-                for (int i = 1; i < datasize + 1; ++i)
+            case Float64MultiArray:
+            {
+                std_msgs::Float64MultiArray msg;
+                for (int i = 1; i < datasize+1; ++i)
                 {
-                    std::cout << data[i] << " ";
+                    msg.data.push_back(data[i]);
                 }
-                std::cout << std::endl;
+                publisher.publish(msg);
+                break;
+            }
+
+            case Twist: 
+            {
+                geometry_msgs::Twist msg;
+                
+                msg.linear.x = data[msg_map[0]];
+                msg.linear.y = data[msg_map[1]];
+                msg.linear.z = data[msg_map[2]];
+
+                msg.angular.x = data[msg_map[3]];
+                msg.angular.y = data[msg_map[4]];
+                msg.angular.z = data[msg_map[5]];
+            
+                publisher.publish(msg);
+                break;
+            }
+
+        }
+#if DEBUG_OUTPUT
+        std::cout << "ROS Command Adapter: ";
+        for (int i = 1; i < datasize + 1; ++i)
+        {
+        std::cout << data[i] << " ";
+        }
+        std::cout << std::endl;
 #endif
 
-                break;
-        }
 
         ros::spinOnce();
         rate.sleep();     
