@@ -23,10 +23,10 @@ class RosSensorAdapter
 {
     public:
         void init(int argc, char** argv);
-	bool ratesMatch (double precision);
+	    bool ratesMatch (double precision);
         void runMUSIC();
         void runROS();
-	void runROSMUSIC();
+	    void runROSMUSIC();
         void finalize();
 
     private:

@@ -17,16 +17,16 @@ main(int argc, char** argv)
     // precision of 0.1%, lump the ROS and MUSIC event loops
     // together.
     if (ros_adapter.ratesMatch (0.001))
-      {
-	ros_adapter.runROSMUSIC();
-      }
+    {
+	    ros_adapter.runROSMUSIC();
+    }
     else
-      {
-	boost::thread t = boost::thread(ros_thread, ros_adapter);
+    {
+        boost::thread t = boost::thread(ros_thread, ros_adapter);
 
-	ros_adapter.runMUSIC();
-	t.join();
-      }
+        ros_adapter.runMUSIC();
+        t.join();
+    }
 
     ros_adapter.finalize();
 
@@ -36,7 +36,7 @@ main(int argc, char** argv)
 bool
 RosSensorAdapter::ratesMatch (double precision)
 {
-  return abs (sensor_update_rate * timestep - 1.) < precision;
+    return std::abs (sensor_update_rate * timestep - 1.) < precision;
 }
 
 
@@ -133,6 +133,7 @@ RosSensorAdapter::initMUSIC(int argc, char** argv)
 void
 RosSensorAdapter::runROSMUSIC()
 {
+    std::cout << "RUNNING IN ONE LOOP" << std::endl;
     RTClock clock(1. / sensor_update_rate);
     
     ros::spinOnce();
@@ -174,6 +175,7 @@ RosSensorAdapter::runROS()
 void 
 RosSensorAdapter::runMUSIC()
 {
+    std::cout << "RUNNING IN TWO LOOPS" << std::endl;
     RTClock clock(timestep);
 
     for (int t = 0; runtime->time() < stoptime; t++)
