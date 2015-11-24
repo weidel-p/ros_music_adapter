@@ -145,7 +145,6 @@ ConnectAdapter::runMUSIC()
     gettimeofday(&start, NULL);
     unsigned int ticks_skipped = 0;
 
-
     for (int t = 0; runtime->time() < stoptime; t++)
     {
    
@@ -159,7 +158,6 @@ ConnectAdapter::runMUSIC()
         }
         std::cout << std::endl;
 #endif
-
         runtime->tick();
     }
 

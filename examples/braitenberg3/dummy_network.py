@@ -10,7 +10,7 @@ nest.SetKernelStatus({'resolution': 1.0})
 
 
 NUM_ENC_NEURONS = 2 
-run_time = 10000.
+run_time = 1000000.
 
 proxy_in = nest.Create('music_event_in_proxy', NUM_ENC_NEURONS)
 nest.SetStatus(proxy_in, [{'port_name': 'in', 'music_channel': c} for c in range(NUM_ENC_NEURONS)])

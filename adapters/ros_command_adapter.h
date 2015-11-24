@@ -11,6 +11,9 @@
 #include "boost/thread.hpp"
 #include "sys/time.h"
 
+#include "jsoncpp/json/json.h"
+#include <iostream>
+#include <fstream>
 #include "rate.h"
 
 #define DEBUG_OUTPUT false 
@@ -43,10 +46,14 @@ class RosCommandAdapter
         double timestep;
         double command_rate;
 
+        string mapping_filename;
+        Json::Value json_mapping; 
         msg_types msg_type;
         int* msg_map;
 
         void initROS(int argc, char** argv);
         void initMUSIC(int argc, char** argv);
+
+        void readMappingFile();
 
 };

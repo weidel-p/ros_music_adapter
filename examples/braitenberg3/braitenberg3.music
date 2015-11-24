@@ -1,10 +1,10 @@
-stoptime=10.
+stoptime=1000.
 [sensor]
   binary=../../ros_sensor_adapter
   args=
   np=1
   music_timestep=0.03333
-  ros_topic=/Pioneer3AT/laserscan
+  ros_topic=/jubot/laserscan
   message_type=Laserscan
   sensor_update_rate=30
 [converge]
@@ -18,7 +18,7 @@ stoptime=10.
   args=
   np=1
   music_timestep=0.03333
-  rate_min=0
+  rate_min=1
   rate_max=200
 [nest]
   binary=./dummy_network.py
@@ -37,10 +37,8 @@ stoptime=10.
   args=
   np=1
   music_timestep=0.05
-  ros_topic=/Pioneer3AT/cmd_vel
-  message_type=Twist
-  linear.x=0
-  angular.z=1
+  ros_topic=/jubot/cmd_vel
+  message_type=Float64MultiArray
   command_rate=20
 sensor.out->converge.in[640]
 converge.out->encoder.in[2]

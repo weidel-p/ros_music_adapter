@@ -175,6 +175,22 @@ LinearReadoutDecoder::runMUSIC()
 
         gsl_blas_dgemv(CblasNoTrans, 1., &mat_readout_weights.matrix, &vec_activity_traces.vector, 0., &vec_command_data.vector);
 
+#if DEBUG_OUTPUT
+        std::cout << "Linear Readout: Activity Traces: ";
+        for (int i = 0; i < size_spike_data; ++i)
+        {
+            std::cout << activity_traces[i] << " ";
+        }
+        std::cout << std::endl;
+
+
+        std::cout << "Linear Readout: Command Data: ";
+        for (int i = 0; i < size_command_data; ++i)
+        {
+            std::cout << command_data[i] << " ";
+        }
+        std::cout << std::endl;
+#endif
         runtime->tick();
     }
     
