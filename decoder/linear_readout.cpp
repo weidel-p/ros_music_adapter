@@ -153,7 +153,6 @@ LinearReadoutDecoder::runMUSIC()
     struct timeval end;
     gettimeofday(&start, NULL);
     
-    std::map<double, std::vector<int> >::iterator it, it_now;
     double t = runtime->time();
     for (t = runtime->time (); t < stoptime; t = runtime->time ())
     {

@@ -137,7 +137,6 @@ RosCommandAdapter::readMappingFile()
     }
     else
     {
-        std::cout << json_mapping << std::endl;
         std::string _msg_type;
         _msg_type = json_mapping["message_type"].asString();
         if (_msg_type.compare("Float64MultiArray") == 0)

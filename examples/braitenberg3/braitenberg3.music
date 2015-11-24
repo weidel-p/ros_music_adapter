@@ -38,7 +38,7 @@ stoptime=1000.
   np=1
   music_timestep=0.05
   ros_topic=/jubot/cmd_vel
-  message_type=Float64MultiArray
+  message_mapping_filename=braitenberg3_float_mapping.dat
   command_rate=20
 sensor.out->converge.in[640]
 converge.out->encoder.in[2]
