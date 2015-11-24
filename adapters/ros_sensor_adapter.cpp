@@ -13,14 +13,32 @@ main(int argc, char** argv)
     RosSensorAdapter ros_adapter;
     ros_adapter.init(argc, argv);
 
-    boost::thread t = boost::thread(ros_thread, ros_adapter);
+    // If sensor_update_rate and timestep match to a relative
+    // precision of 0.1%, lump the ROS and MUSIC event loops
+    // together.
+    if (ros_adapter.ratesMatch (0.001))
+    {
+	    ros_adapter.runROSMUSIC();
+    }
+    else
+    {
+        boost::thread t = boost::thread(ros_thread, ros_adapter);
 
-    ros_adapter.runMUSIC();
-    t.join();
+        ros_adapter.runMUSIC();
+        t.join();
+    }
 
     ros_adapter.finalize();
 
 }
+
+
+bool
+RosSensorAdapter::ratesMatch (double precision)
+{
+    return std::abs (sensor_update_rate * timestep - 1.) < precision;
+}
+
 
 void
 RosSensorAdapter::init(int argc, char** argv)
@@ -54,7 +72,7 @@ RosSensorAdapter::initROS(int argc, char** argv)
 void
 RosSensorAdapter::initMUSIC(int argc, char** argv)
 {
-    MUSIC::Setup* setup = new MUSIC::Setup (argc, argv);
+    setup = new MUSIC::Setup (argc, argv);
 
     setup->config("ros_topic", &ros_topic);
     setup->config("stoptime", &stoptime);
@@ -105,38 +123,21 @@ RosSensorAdapter::initMUSIC(int argc, char** argv)
     // Declare where in memory to put data
     MUSIC::ArrayData dmap (data,
       		 MPI::DOUBLE,
-      		 rank * datasize,
+      		 0,
       		 datasize);
     port_out->map (&dmap, 1);
-    
-    runtime = new MUSIC::Runtime (setup, timestep);
 }
 
 void
-RosSensorAdapter::runROS()
+RosSensorAdapter::runROSMUSIC()
 {
-    Rate rate(sensor_update_rate);
-    std::cout << "running sensor adapter with update rate of " << sensor_update_rate << std::endl;
+    RTClock clock(1. / sensor_update_rate);
+    
+    ros::spinOnce();
+    runtime = new MUSIC::Runtime (setup, timestep);
 
     for (int t = 0; runtime->time() < stoptime; t++)
     {
-        ros::spinOnce();
-        rate.sleep();
-   }
-}
-
-void 
-RosSensorAdapter::runMUSIC()
-{
-    Rate rate(1./timestep);
-    struct timeval start;
-    struct timeval end;
-    gettimeofday(&start, NULL);
-    unsigned int ticks_skipped = 0;
-
-    for (int t = 0; runtime->time() < stoptime; t++)
-    {
-        runtime->tick();
 
 #if DEBUG_OUTPUT
         std::cout << "ROS Sensor Adapter: ";
@@ -147,18 +148,53 @@ RosSensorAdapter::runMUSIC()
         std::cout << std::endl;
 #endif
 
-        rate.sleep(); 
+        clock.sleepNext(); 
+        ros::spinOnce();
+        runtime->tick();
     }
 
-    gettimeofday(&end, NULL);
-    unsigned int dt_s = end.tv_sec - start.tv_sec;
-    unsigned int dt_us = end.tv_usec - start.tv_usec;
-    if (end.tv_sec > start.tv_sec)
+    std::cout << "sensor: total simtime: " << clock.time () << " s" << std::endl;
+}
+
+void
+RosSensorAdapter::runROS()
+{
+    RTClock clock(1. / sensor_update_rate);
+    ros::Time stop_time = ros::Time::now() + ros::Duration(stoptime);
+    std::cout << "running sensor adapter with update rate of " << sensor_update_rate << std::endl;
+
+    ros::spinOnce();
+    for (ros::Time t = ros::Time::now(); t < stop_time; t = ros::Time::now())
     {
-        dt_us += 1000000;
-    }
-    std::cout << "sensor: total simtime: " << dt_s << " " << dt_us << " ticks skipped " << ticks_skipped <<  std::endl;
+        clock.sleepNext();
+        ros::spinOnce();
+   }
+}
 
+void 
+RosSensorAdapter::runMUSIC()
+{
+    RTClock clock(timestep);
+
+    runtime = new MUSIC::Runtime (setup, timestep);
+    
+    for (int t = 0; runtime->time() < stoptime; t++)
+    {
+
+#if DEBUG_OUTPUT
+        std::cout << "ROS Sensor Adapter: ";
+        for (int i = 0; i < datasize; ++i)
+        {
+            std::cout << data[i] << " ";
+        }
+        std::cout << std::endl;
+#endif
+
+        clock.sleepNext(); 
+        runtime->tick();
+    }
+
+    std::cout << "sensor: total simtime: " << clock.time () << " s" << std::endl;
 }
 
 void

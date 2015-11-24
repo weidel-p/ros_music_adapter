@@ -30,6 +30,7 @@ RateEncoder::initMUSIC(int argc, char** argv)
     setup->config("music_timestep", &timestep);
     setup->config("rate_min", &rate_min);
     setup->config("rate_max", &rate_max);
+    normalization_factor = (rate_max - rate_min) / 2.; 
 
     port_in = setup->publishContInput("in");
     port_out = setup->publishEventOutput("out");
@@ -60,16 +61,16 @@ RateEncoder::initMUSIC(int argc, char** argv)
     for (int i = 0; i < size_data; ++i)
     {
         rates[i] = 0.;
+        rates_buf[i] = 0.;
         next_spike[i] = negexp(denormalize(rates[i])); 
     }
-    rates_buf = rates;
          
     // Declare where in memory to put sensor_data
     MUSIC::ArrayData dmap(rates,
       		 MPI::DOUBLE,
-      		 rank * size_data,
+      		 0,
       		 size_data);
-    port_in->map (&dmap, timestep, 1);
+    port_in->map (&dmap, 0., 1, false);
     
     // map linear index to event out port 
     MUSIC::LinearIndex l_index_out(0, size_data);
@@ -83,7 +84,6 @@ RateEncoder::runMUSIC()
 {
 
     std::cout << "running poisson encoder" << std::endl;
-    Rate rate(1./timestep);
     struct timeval start;
     struct timeval end;
     gettimeofday(&start, NULL);
@@ -93,18 +93,15 @@ RateEncoder::runMUSIC()
     while(t < stoptime)
     {
         t = runtime->time();
-        runtime->tick();
-        if (rates != rates_buf) 
-        {
-            for (int n = 0; n < size_data; ++n)
-            {
-                next_spike[n] += negexp(denormalize(rates[n]));
-            }
-            rates_buf = rates;
-        }
 
         for (int n = 0; n < size_data; ++n)
         {
+            if (rates[n] != rates_buf[n])
+            {
+                next_spike[n] = t + negexp(denormalize(rates[n]));
+                rates_buf[n] = rates[n];
+            }
+
             while(next_spike[n] < t + timestep)
             {
 #if DEBUG_OUTPUT
@@ -115,7 +112,7 @@ RateEncoder::runMUSIC()
             }
         }
 
-        rate.sleep();
+        runtime->tick();
     }
 
     gettimeofday(&end, NULL);
@@ -135,10 +132,10 @@ RateEncoder::denormalize(double s)
     // 
     // returns interspike interval with rate between [min_rate, max_rate]
     
-    return 1. / ((s+1) * (rate_max - rate_min) / 2. + rate_min);
+    return 1. / ((s+1) * normalization_factor + rate_min);
 }
 
-inline double
+double
 RateEncoder::negexp (double m)
 {
     return - m * log (drand48 ());

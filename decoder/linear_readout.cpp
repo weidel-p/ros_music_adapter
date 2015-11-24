@@ -4,10 +4,10 @@ int
 main(int argc, char** argv)
 {
 
-    LinearReadoutDecoder lin_encoder;
-    lin_encoder.init(argc, argv);
-    lin_encoder.runMUSIC();
-    lin_encoder.finalize();
+    LinearReadoutDecoder lin_decoder;
+    lin_decoder.init(argc, argv);
+    lin_decoder.runMUSIC();
+    lin_decoder.finalize();
 
 }
 
@@ -16,10 +16,10 @@ LinearReadoutDecoder::init(int argc, char** argv)
 {
     std::cout << "initializing linear readout decoder" << std::endl;
     timestep = DEFAULT_TIMESTEP;
+    acceptable_latency = DEFAULT_ACCEPTABLE_LATENCY;
     weights_filename = DEFAULT_WEIGHTS_FILENAME;
     tau = DEFAULT_TAU;
     num_spikes0 = 0;
-    num_spikes1 = 0;
 
     // init MUSIC to read config
     initMUSIC(argc, argv); 
@@ -34,7 +34,9 @@ LinearReadoutDecoder::initMUSIC(int argc, char** argv)
     setup->config("stoptime", &stoptime);
     setup->config("music_timestep", &timestep);
     setup->config("weights_filename", &weights_filename);
+    setup->config("music_acceptable_latency", &acceptable_latency);
     setup->config("tau", &tau);
+    inv_tau = 1. / tau;
 
     port_in = setup->publishEventInput("in");
     port_out = setup->publishContOutput("out");
@@ -65,33 +67,35 @@ LinearReadoutDecoder::initMUSIC(int argc, char** argv)
     {
         command_data[i] = 0.;
     }
+    vec_command_data = gsl_vector_view_array(command_data, size_command_data);
 
     activity_traces = new double[size_spike_data];
     for (int i = 0; i < size_spike_data; ++i)
     {
         activity_traces[i] = 0.;
     }
+    vec_activity_traces = gsl_vector_view_array(activity_traces, size_spike_data);
 
-    readout_weights = new double*[size_command_data];
-    for (int i = 0; i < size_command_data; ++i)
+    readout_weights = new double[size_command_data * size_spike_data];
+    for (int i = 0; i < size_command_data * size_spike_data; ++i)
     {
-        readout_weights[i] = new double[size_spike_data];
+        readout_weights[i] = 0.;
     }
+    mat_readout_weights = gsl_matrix_view_array(readout_weights, size_command_data, size_spike_data);
          
     // Declare where in memory to put command_data
     MUSIC::ArrayData dmap(command_data,
-      		 MPI::DOUBLE,
-      		 rank * size_command_data,
-      		 size_command_data);
+			  MPI::DOUBLE,
+			  0,
+			  size_command_data);
     port_out->map (&dmap, 1);
     
     // map linear index to event out port 
     MUSIC::LinearIndex l_index_in(0, size_spike_data);
-    port_in->map(&l_index_in, this, timestep, 1); 
-
+    port_in->map(&l_index_in, this, acceptable_latency, 1); 
 
     // initialize propagator for exponential decay
-    propagator = std::exp(-(DEFAULT_NEURON_RESOLUTION)/tau);
+    propagator = std::exp(-timestep/tau);
 
     runtime = new MUSIC::Runtime (setup, timestep);
 }
@@ -119,12 +123,9 @@ LinearReadoutDecoder::readWeightsFile()
                     << json_weights << " It has to be in JSON format.\n Using 1/N for each weight."
                     << json_reader.getFormattedErrorMessages();
         
-        for (int i = 0; i < size_command_data; ++i)
+        for (int i = 0; i < size_command_data * size_spike_data; ++i)
         {
-            for (int j = 0; j < size_spike_data; ++j)
-            {
-                readout_weights[i][j] = 1. / size_spike_data;
-            }
+            readout_weights[i] = 1. / size_spike_data;
         }
 
         return;
@@ -135,7 +136,7 @@ LinearReadoutDecoder::readWeightsFile()
         {
             for (int j = 0; j < size_spike_data; ++j)
             {
-                readout_weights[i][j] = json_readout_weights[i][j].asDouble();
+                readout_weights[i * size_spike_data + j] = json_readout_weights[i][j].asDouble();
             }
         }
 
@@ -148,52 +149,30 @@ LinearReadoutDecoder::runMUSIC()
 {
     std::cout << "running linear readout decoder" << std::endl;
     
-    Rate rate(1./timestep);
     struct timeval start;
     struct timeval end;
     gettimeofday(&start, NULL);
-
-    std::map<double, std::vector<int> >::iterator it, it_now;
+    
     double t = runtime->time();
-    while(t < stoptime)
+    for (t = runtime->time (); t < stoptime; t = runtime->time ())
     {
-        runtime->tick();
-        t = runtime->time();
-        
-        double next_t = t + timestep; //time at next timestep
-        while (t <= next_t) // update the activity traces in higher resolution than the MUSIC timestep
+        double next_t = t + timestep;
+        while (!spikes.empty () && spikes.top ().t < next_t)
         {
-            it_now = incoming_spikes.lower_bound(t); // get all incoming spikes until t
-            if (it_now != incoming_spikes.end()) 
-            {
-                for (it = incoming_spikes.begin(); it != it_now; ++it)
-                {
-                    std::vector<int> ids = it->second;
-                    for (std::vector<int>::iterator i = ids.begin(); i != ids.end(); ++i)
-                    {
-                        activity_traces[*i] += 1 / tau;
-                        ///std::cout << runtime->time() << " " << t << " " << *i << std::endl;
-                        num_spikes1++;
-                    }
-                }
-                incoming_spikes.erase(incoming_spikes.begin(), it_now);
-            }
+            double t_spike = spikes.top ().t;
+            int id = spikes.top ().id;
+            
+            activity_traces[id] += (std::exp ((t_spike - t) * inv_tau) * inv_tau);
+            
+            spikes.pop (); // remove spike from queue
+        }
 
-            for (int i = 0; i < size_spike_data; ++i)
-            {
-                activity_traces[i] *= propagator;
-            } 
-            t += DEFAULT_NEURON_RESOLUTION;
-        }
-       
-        for (int i = 0; i < size_command_data; ++i)
+        for (int j = 0; j < size_spike_data; ++j)
         {
-            command_data[i] = 0.;
-            for (int j = 0; j < size_spike_data; ++j)
-            {
-                command_data[i] += activity_traces[j] * readout_weights[i][j];
-            }
+            activity_traces[j] *= propagator; // decay
         }
+
+        gsl_blas_dgemv(CblasNoTrans, 1., &mat_readout_weights.matrix, &vec_activity_traces.vector, 0., &vec_command_data.vector);
 
 #if DEBUG_OUTPUT
         std::cout << "Linear Readout: Activity Traces: ";
@@ -211,10 +190,9 @@ LinearReadoutDecoder::runMUSIC()
         }
         std::cout << std::endl;
 #endif
-
-        rate.sleep();
+        runtime->tick();
     }
-
+    
     gettimeofday(&end, NULL);
     unsigned int dt_s = end.tv_sec - start.tv_sec;
     unsigned int dt_us = end.tv_usec - start.tv_usec;
@@ -222,33 +200,17 @@ LinearReadoutDecoder::runMUSIC()
     {
         dt_us += 1000000;
     }
-    std::cout << "decoder: total simtime: " << dt_s << " " << dt_us << " received spikes " << num_spikes0  << " filtered spikes " << num_spikes1 << std::endl;
-
+    std::cout << "decoder: total simtime: " << dt_s << " " << dt_us << " received spikes " << num_spikes0  << std::endl;
+    
 }
 
 void LinearReadoutDecoder::operator () (double t, MUSIC::GlobalIndex id){
     // Decoder: add incoming spikes to map
     num_spikes0++;
 
-    // check if a spike with the same timestamp is already in the map
-    std::map<double, std::vector<int> >::iterator it = incoming_spikes.find(t + timestep);
-    if (it != incoming_spikes.end()) // if so
-    {
-        it->second.push_back(id); // add new spike to vector
-    }
-    else // if not
-    {
-        std::vector<int> ids; // create new vector and add to map
-        ids.push_back(id);
-        incoming_spikes.insert(std::make_pair(t + timestep, ids)); // insert spike with delay of one timestep
-    }
-
+    spikes.push (Event (t + acceptable_latency, id));
 }
 void LinearReadoutDecoder::finalize(){
     runtime->finalize();
     delete runtime;
 }
-
-
-
-

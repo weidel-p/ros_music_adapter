@@ -3,6 +3,7 @@
 
 #include <ros/ros.h>
 #include "geometry_msgs/Twist.h"
+#include "std_msgs/Float64MultiArray.h"
 
 #include <music.hh>
 #include <mpi.h>
@@ -10,13 +11,18 @@
 #include "boost/thread.hpp"
 #include "sys/time.h"
 
+#include "jsoncpp/json/json.h"
+#include <iostream>
+#include <fstream>
 #include "rate.h"
 
 #define DEBUG_OUTPUT false 
 
+enum msg_types {Float64MultiArray, Twist};
+
 const double DEFAULT_TIMESTEP = 1e-3;
 const double DEFAULT_COMMAND_RATE = 10;
-enum msg_types {Twist};
+const msg_types DEFAULT_MESSAGE_TYPE = Float64MultiArray;
 
 class RosCommandAdapter
 {
@@ -40,10 +46,14 @@ class RosCommandAdapter
         double timestep;
         double command_rate;
 
+        string mapping_filename;
+        Json::Value json_mapping; 
         msg_types msg_type;
         int* msg_map;
 
         void initROS(int argc, char** argv);
         void initMUSIC(int argc, char** argv);
+
+        void readMappingFile();
 
 };

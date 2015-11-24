@@ -10,7 +10,7 @@
 #include "boost/thread.hpp"
 #include "sys/time.h"
 
-#include "rate.h"
+#include "rtclock.h"
 
 #define DEBUG_OUTPUT false 
 
@@ -23,8 +23,10 @@ class RosSensorAdapter
 {
     public:
         void init(int argc, char** argv);
+	    bool ratesMatch (double precision);
         void runMUSIC();
         void runROS();
+	    void runROSMUSIC();
         void finalize();
 
     private:
@@ -41,6 +43,8 @@ class RosSensorAdapter
         double* data;
 
         msg_types msg_type;
+
+	    MUSIC::Setup* setup;
 
         void initROS(int argc, char** argv);
         void initMUSIC(int argc, char** argv);

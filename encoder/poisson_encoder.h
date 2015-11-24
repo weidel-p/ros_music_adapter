@@ -6,8 +6,6 @@
 #include <unistd.h>
 #include "sys/time.h"
 
-#include "../rate.h"
-
 #define DEBUG_OUTPUT false 
 
 const double DEFAULT_TIMESTEP = 1e-3;
@@ -26,6 +24,7 @@ class RateEncoder{
         double stoptime;
         double timestep;
         int size_data;
+        double normalization_factor;
 
         double rate_min, rate_max;
         double* next_spike;

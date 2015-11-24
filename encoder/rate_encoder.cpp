@@ -30,6 +30,7 @@ RateEncoder::initMUSIC(int argc, char** argv)
     setup->config("music_timestep", &timestep);
     setup->config("rate_min", &rate_min);
     setup->config("rate_max", &rate_max);
+    normalization_factor = (rate_max - rate_min) / 2.; 
 
     port_in = setup->publishContInput("in");
     port_out = setup->publishEventOutput("out");
@@ -55,19 +56,23 @@ RateEncoder::initMUSIC(int argc, char** argv)
     }
     
     rates = new double[size_data];
+    rates_buf = new double[size_data];
     next_spike = new double[size_data];
+    last_spike = new double[size_data];
     for (int i = 0; i < size_data; ++i)
     {
-        rates[i] = 0.;
+        rates[i] = -1.;
+        rates_buf[i] = -1.;
+        last_spike[i] = 0.;
         next_spike[i] = rate2SpikeTime(rates[i]); 
     }
          
     // Declare where in memory to put sensor_data
     MUSIC::ArrayData dmap(rates,
       		 MPI::DOUBLE,
-      		 rank * size_data,
+      		 0,
       		 size_data);
-    port_in->map (&dmap, timestep, 1);
+    port_in->map (&dmap, 0., 1, false);
     
     // map linear index to event out port 
     MUSIC::LinearIndex l_index_out(0, size_data);
@@ -81,7 +86,6 @@ RateEncoder::runMUSIC()
 {
 
     std::cout << "running rate encoder" << std::endl;
-    Rate rate(1./timestep);
     struct timeval start;
     struct timeval end;
     gettimeofday(&start, NULL);
@@ -91,25 +95,42 @@ RateEncoder::runMUSIC()
     double t = runtime->time();
     while(t < stoptime)
     {
-        runtime->tick();
         t = runtime->time();
 
         double next_t = t + timestep;
         for (int n = 0; n < size_data; ++n)
         {
+            if (rates[n] != rates_buf[n])
+            {
+                double old_isi = next_spike[n] - last_spike[n];
+                double part_time_left = (t - last_spike[n]) / old_isi; 
+                double new_isi = rate2SpikeTime(rates[n]) * (1 - part_time_left);
+                next_spike[n] = t + new_isi;
+                rates_buf[n] = rates[n];
+            }
+
+
             while(next_spike[n] < next_t)
             {
 #if DEBUG_OUTPUT
-                std::cout << "Rate Encoder: neuron " << n << " spikes at " << next_spike[n] << " simtime: " << t << std::endl;
+                std::cout << "Rate Encoder: neuron " << n << " spikes at " << next_spike[n] << " simtime: " << t << " rate " << rates[n] << std::endl;
 #endif
                 num_spikes++;
                 port_out->insertEvent(next_spike[n], MUSIC::GlobalIndex(n));
+                last_spike[n] = next_spike[n];
                 next_spike[n] += rate2SpikeTime(rates[n]); 
-                
             }
         }
+//#if DEBUG_OUTPUT
+//        std::cout << "Rate Encoder: ";
+//        for (int i = 0; i < size_data; ++i)
+//        {
+//            std::cout << rates[i] << " " << rates_buf[i] << " ";
+//        }
+//        std::cout << std::endl;
+//#endif
 
-        rate.sleep();
+        runtime->tick();
     }
 
     gettimeofday(&end, NULL);
@@ -122,7 +143,7 @@ RateEncoder::runMUSIC()
     std::cout << "rate encoder: total simtime: " << dt_s << " " << dt_us << " ticks skipped " << ticks_skipped << " num spikes " << num_spikes << std::endl;
 }
 
-inline double
+double
 RateEncoder::rate2SpikeTime(double r)
 {
     // the incoming data, which is interpreted as rate, is between -1 and 1.
@@ -130,11 +151,7 @@ RateEncoder::rate2SpikeTime(double r)
     // scales rate between [rate_min, rate_max]
     //
     // returns next spike time
-    if (r == 0)
-    {
-        return 2 * timestep;
-    }
-    return 1. / ((r+1) * (rate_max - rate_min) / 2. + rate_min);
+    return 1. / ((r+1) * normalization_factor + rate_min);
 }
 
 void

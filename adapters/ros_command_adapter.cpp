@@ -30,6 +30,7 @@ RosCommandAdapter::init(int argc, char** argv)
 
     timestep = DEFAULT_TIMESTEP;
     command_rate = DEFAULT_COMMAND_RATE;
+    msg_type = DEFAULT_MESSAGE_TYPE;
 
     // MUSIC before ROS to read the config first!
     initMUSIC(argc, argv);
@@ -46,9 +47,16 @@ RosCommandAdapter::initROS(int argc, char** argv)
     ros::NodeHandle n;
     switch (msg_type)
     {   
+        case Float64MultiArray:
+        {
+            publisher = n.advertise<std_msgs::Float64MultiArray>(ros_topic, 1);
+            break;
+        }
         case Twist: 
-           publisher = n.advertise<geometry_msgs::Twist>(ros_topic, 1);
-           break;
+        {
+            publisher = n.advertise<geometry_msgs::Twist>(ros_topic, 1);
+            break;
+        }
     }
 }
 
@@ -62,17 +70,8 @@ RosCommandAdapter::initMUSIC(int argc, char** argv)
     setup->config("command_rate", &command_rate);
     setup->config("music_timestep", &timestep);
     
-    std::string _msg_type;
-    setup->config("message_type", &_msg_type);
-
-    if (_msg_type.compare("Twist") == 0){
-        msg_type = Twist;
-    }
-    else
-    {
-        std::cout << "ERROR: msg type unknown" << std::endl;
-        finalize();
-    }
+    setup->config("message_mapping_filename", &mapping_filename);
+    readMappingFile();
 
 
     
@@ -105,43 +104,85 @@ RosCommandAdapter::initMUSIC(int argc, char** argv)
     // Declare where in memory to put data
     MUSIC::ArrayData dmap (&data[1],
       		 MPI::DOUBLE,
-      		 rank * datasize,
+      		 0,
       		 datasize);
-    port_in->map (&dmap, timestep, 1);
-
-    switch (msg_type)
-    {   
-        case Twist: 
-            msg_map = new int[6];
-            int index = 0;
-
-            setup->config("linear.x", &index);
-            msg_map[0] = index + 1;
-
-            index = 0;
-            setup->config("linear.y", &index);
-            msg_map[1] = index + 1;
-
-            index = 0;
-            setup->config("linear.z", &index);
-            msg_map[2] = index + 1;
-
-            index = 0;
-            setup->config("angular.x", &index);
-            msg_map[3] = index + 1;
-
-            index = 0;
-            setup->config("angular.y", &index);
-            msg_map[4] = index + 1;
-
-            index = 0;
-            setup->config("angular.z", &index);
-            msg_map[5] = index + 1;
-            break;
-        
-    } 
+    port_in->map (&dmap, 0., 1, false);
  
     runtime = new MUSIC::Runtime (setup, timestep);
+}
+
+void 
+RosCommandAdapter::readMappingFile()
+{
+    Json::Reader json_reader;
+
+    std::ifstream mapping_file;
+    mapping_file.open(mapping_filename.c_str(), std::ios::in);
+    string json_mapping_= "";
+    string line;
+
+    while (std::getline(mapping_file, line))
+    {
+        json_mapping_ += line;
+    }
+    mapping_file.close();
+    
+    if ( !json_reader.parse(json_mapping_, json_mapping))
+    {
+        // report to the user the failure and their locations in the document.
+        std::cout   << "ERROR: ROS Command Adapter: Failed to parse file \"" << mapping_filename << "\"\n" 
+                    << json_mapping_ << " It has to be in JSON format.\n"
+                    << json_reader.getFormattedErrorMessages();
+        return;
+    }
+    else
+    {
+        std::string _msg_type;
+        _msg_type = json_mapping["message_type"].asString();
+        if (_msg_type.compare("Float64MultiArray") == 0)
+        {
+            msg_type = Float64MultiArray;
+            // no mapping needed
+        }
+        else if (_msg_type.compare("Twist") == 0)
+        {
+            msg_type = Twist;
+            
+            msg_map = new int[6];
+            int index = -1;
+
+            index = json_mapping["mapping"]["linear.x"].asInt();
+            msg_map[0] = index + 1;
+
+            index = -1;
+            index = json_mapping["mapping"]["linear.y"].asInt();
+            msg_map[1] = index + 1;
+
+            index = -1;
+            index = json_mapping["mapping"]["linear.z"].asInt();
+            msg_map[2] = index + 1;
+
+            index = -1;
+            index = json_mapping["mapping"]["angular.x"].asInt();
+            msg_map[3] = index + 1;
+
+            index = -1;
+            index = json_mapping["mapping"]["angular.y"].asInt();
+            msg_map[4] = index + 1;
+
+            index = -1;
+            index = json_mapping["mapping"]["angular.z"].asInt();
+            msg_map[5] = index + 1;
+            std::cout << msg_map << std::endl;
+        }
+        else
+        {
+            std::cout << "ERROR: msg type unknown" << std::endl;
+            finalize();
+        }
+
+    }
+
 }
 
 void
@@ -149,38 +190,52 @@ RosCommandAdapter::runROS()
 {
     std::cout << "running command adapter with update rate of " << command_rate << std::endl;
     Rate rate(command_rate);
+    ros::Time stop_time = ros::Time::now() + ros::Duration(stoptime);
 
-    for (int t = 0; runtime->time() < stoptime; t++)
+    for (ros::Time t = ros::Time::now(); t < stop_time; t = ros::Time::now())
     {
-        ros::spinOnce();
 
         switch (msg_type)
         {   
-            case Twist: 
-                geometry_msgs::Twist command;
-                
-                command.linear.x = data[msg_map[0]];
-                command.linear.y = data[msg_map[1]];
-                command.linear.z = data[msg_map[2]];
-
-                command.angular.x = data[msg_map[3]];
-                command.angular.y = data[msg_map[4]];
-                command.angular.z = data[msg_map[5]];
-            
-                publisher.publish(command);
-
-#if DEBUG_OUTPUT
-                std::cout << "ROS Command Adapter: ";
-                for (int i = 1; i < datasize + 1; ++i)
+            case Float64MultiArray:
+            {
+                std_msgs::Float64MultiArray msg;
+                for (int i = 1; i < datasize+1; ++i)
                 {
-                    std::cout << data[i] << " ";
+                    msg.data.push_back(data[i]);
                 }
-                std::cout << std::endl;
+                publisher.publish(msg);
+                break;
+            }
+
+            case Twist: 
+            {
+                geometry_msgs::Twist msg;
+                
+                msg.linear.x = data[msg_map[0]];
+                msg.linear.y = data[msg_map[1]];
+                msg.linear.z = data[msg_map[2]];
+
+                msg.angular.x = data[msg_map[3]];
+                msg.angular.y = data[msg_map[4]];
+                msg.angular.z = data[msg_map[5]];
+            
+                publisher.publish(msg);
+                break;
+            }
+
+        }
+#if DEBUG_OUTPUT
+        std::cout << "ROS Command Adapter: ";
+        for (int i = 1; i < datasize + 1; ++i)
+        {
+        std::cout << data[i] << " ";
+        }
+        std::cout << std::endl;
 #endif
 
-                break;
-        }
 
+        ros::spinOnce();
         rate.sleep();     
     }
 
@@ -198,8 +253,8 @@ RosCommandAdapter::runMUSIC()
 
     for (int t = 0; runtime->time() < stoptime; t++)
     {
-        runtime->tick();
         rate.sleep();
+        runtime->tick();
     }
 
     gettimeofday(&end, NULL);
