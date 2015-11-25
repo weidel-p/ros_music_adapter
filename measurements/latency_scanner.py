@@ -44,8 +44,7 @@ music_config = \
           np=1\n\
           music_timestep=0.001\n\
           ros_topic=/jubot/cmd_vel\n\
-          message_type=Twist\n\
-          linear.x=0\n\
+          message_mapping_filename=twist_mapping.dat\n\
           command_rate=20\n\
         sensor.out->diverse.in[640]\n\
         diverse.out->encoder.in[1]\n\
@@ -120,8 +119,7 @@ music_config = \
           np=1\n\
           music_timestep=0.05\n\
           ros_topic=/jubot/cmd_vel\n\
-          message_type=Twist\n\
-          linear.x=0\n\
+          message_mapping_filename=twist_mapping.dat\n\
           command_rate=20\n\
         sensor.out->diverse.in[640]\n\
         diverse.out->encoder.in[1]\n\
