@@ -5,8 +5,8 @@ import datetime
 import json
 
 ITERATIONS = 2 
-MIN_FIRING_RATE = 1
-MAX_FIRING_RATE = 102
+MIN_FIRING_RATE = 0
+MAX_FIRING_RATE = 101
 STEP_SIZE = 10
 
 sim_time = 10 # in sec
@@ -23,6 +23,10 @@ data = {"time": [], "type": [], "iteration": [], "firing_rate": []}
 
 for firing_rate in np.arange(MIN_FIRING_RATE, MAX_FIRING_RATE, STEP_SIZE):
     print "\n\n\n\n\ RUNNING", num_neurons, "NEURONS WITH A FIRING RATE OF", firing_rate, "\n\n\n\n"
+
+    if firing_rate == 0:
+        firing_rate = 1
+
     music_base_config = \
                 "[sensor]\n\
                   binary=../ros_sensor_adapter\n\

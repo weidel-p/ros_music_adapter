@@ -5,8 +5,8 @@ import datetime
 import json
 
 ITERATIONS = 2 
-MIN_NUM_NEURONS = 1
-MAX_NUM_NEURONS = 15002
+MIN_NUM_NEURONS = 0
+MAX_NUM_NEURONS = 15001
 STEP_SIZE = 1000
 
 sim_time = 10 # in sec
@@ -22,6 +22,9 @@ data ={"num_neurons": [], "time": [], "type": [], "iteration": []}
 
 for num_neurons in np.arange(MIN_NUM_NEURONS, MAX_NUM_NEURONS, STEP_SIZE):
     print "\n\n\n\n\ RUNNING", num_neurons, "NEURONS \n\n\n\n"
+
+    if num_neurons == 0:
+        num_neurons = 1
 
     music_base_config = \
                 "[sensor]\n\
