@@ -36,6 +36,7 @@ for num_neurons in np.arange(MIN_NUM_NEURONS, MAX_NUM_NEURONS, STEP_SIZE):
                   np=1\n\
                 [decoder]\n\
                   binary=../linear_readout_decoder\n\
+                  music_acceptable_latency=0.001\n\
                   args=\n\
                   np=1\n\
                   tau=0.03\n\

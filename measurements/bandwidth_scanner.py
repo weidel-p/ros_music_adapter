@@ -53,6 +53,7 @@ for firing_rate in np.arange(MIN_FIRING_RATE, MAX_FIRING_RATE, STEP_SIZE):
                   args=\n\
                   np=1\n\
                   music_timestep=0.05\n\
+                  music_acceptable_latency=0.05\n\
                   tau=0.03\n\
                 [command]\n\
                   binary=../ros_command_adapter\n\

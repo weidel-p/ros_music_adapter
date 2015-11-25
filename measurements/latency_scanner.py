@@ -38,6 +38,7 @@ music_config = \
           args=\n\
           np=1\n\
           music_timestep=0.001\n\
+          music_acceptable_latency=0.001\n\
         [command]\n\
           binary=../ros_command_adapter\n\
           args=\n\

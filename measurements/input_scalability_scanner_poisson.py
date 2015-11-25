@@ -52,6 +52,7 @@ for num_neurons in np.arange(MIN_NUM_NEURONS, MAX_NUM_NEURONS, STEP_SIZE):
                   args=\n\
                   np=1\n\
                   music_timestep=0.05\n\
+                  music_acceptable_latency=0.05\n\
                   tau=0.03\n\
                 [command]\n\
                   binary=../ros_command_adapter\n\
