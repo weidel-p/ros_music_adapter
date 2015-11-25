@@ -55,10 +55,8 @@ for num_neurons in np.arange(MIN_NUM_NEURONS, MAX_NUM_NEURONS, STEP_SIZE):
                   args=\n\
                   np=1\n\
                   music_timestep=0.05\n\
+                  message_mapping_filename=float_mapping.dat\n\
                   ros_topic=/jubot/cmd_vel\n\
-                  message_type=Twist\n\
-                  linear.x=0\n\
-                  angular.z=1\n\
                   command_rate=20\n\
                 sensor.out->connect.in[640]\n\
                 connect.out->encoder.in[" + str(num_neurons) +"]\n\
