@@ -2,10 +2,11 @@
 
 #include "rtclock.h"
 
-void
-ros_thread(RosCommandAdapter ros_adapter)
+static void*
+ros_thread(void* arg)
 {
-    ros_adapter.runROS();
+    RosCommandAdapter* ros_adapter = static_cast<RosCommandAdapter*>(arg);
+    ros_adapter->runROS();
 }
 
 int
@@ -24,10 +25,11 @@ main(int argc, char** argv)
     }
     else
     {
-    	boost::thread t = boost::thread(ros_thread, ros_adapter);
+        pthread_t t;
+	pthread_create (&t, NULL, ros_thread, &ros_adapter);
 
     	ros_adapter.runMUSIC();
-    	t.join();
+    	pthread_join(t, NULL);
     }
 
     ros_adapter.finalize();
@@ -50,6 +52,8 @@ RosCommandAdapter::init(int argc, char** argv)
     timestep = DEFAULT_TIMESTEP;
     command_rate = DEFAULT_COMMAND_RATE;
     msg_type = DEFAULT_MESSAGE_TYPE;
+
+    pthread_mutex_init(&data_mutex, NULL);
 
     // MUSIC before ROS to read the config first!
     initMUSIC(argc, argv);
@@ -265,7 +269,9 @@ RosCommandAdapter::runROS()
     ros::spinOnce();
     for (ros::Time t = ros::Time::now(); t < stop_time; t = ros::Time::now())
     {
+	pthread_mutex_lock (&data_mutex);
         sendROS();
+	pthread_mutex_unlock (&data_mutex);
 #if DEBUG_OUTPUT
         std::cout << "ROS Command Adapter: ";
         for (int i = 1; i < datasize + 1; ++i)
@@ -292,7 +298,9 @@ RosCommandAdapter::runMUSIC()
     for (int t = 0; runtime->time() < stoptime; t++)
     {
         clock.sleepNext();
+	pthread_mutex_lock (&data_mutex);
         runtime->tick();
+	pthread_mutex_unlock (&data_mutex);
     }
 
     std::cout << "command: total simtime: " << clock.time () << " s" <<  std::endl;

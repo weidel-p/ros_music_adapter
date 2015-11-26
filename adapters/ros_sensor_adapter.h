@@ -7,10 +7,7 @@
 #include <music.hh>
 #include <mpi.h>
 
-#include "boost/thread.hpp"
 #include "sys/time.h"
-
-#include "rtclock.h"
 
 #define DEBUG_OUTPUT false 
 
@@ -23,10 +20,10 @@ class RosSensorAdapter
 {
     public:
         void init(int argc, char** argv);
-	    bool ratesMatch (double precision);
+        bool ratesMatch (double precision);
         void runMUSIC();
         void runROS();
-	    void runROSMUSIC();
+	void runROSMUSIC();
         void finalize();
 
     private:
@@ -34,17 +31,17 @@ class RosSensorAdapter
         ros::Subscriber subscriber;
 
         MPI::Intracomm comm;
+	MUSIC::Setup* setup;
         MUSIC::Runtime* runtime;
         double stoptime;
         int datasize;
         double sensor_update_rate;
         double timestep;
 
+	pthread_mutex_t data_mutex;
         double* data;
 
         msg_types msg_type;
-
-	    MUSIC::Setup* setup;
 
         void initROS(int argc, char** argv);
         void initMUSIC(int argc, char** argv);

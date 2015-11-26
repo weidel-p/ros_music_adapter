@@ -8,12 +8,12 @@
 #include <music.hh>
 #include <mpi.h>
 
-#include "boost/thread.hpp"
 #include "sys/time.h"
 
 #include "jsoncpp/json/json.h"
 #include <iostream>
 #include <fstream>
+#include <pthread.h>
 
 #define DEBUG_OUTPUT false 
 
@@ -43,6 +43,7 @@ class RosCommandAdapter
         double stoptime;
         int datasize;
 
+	pthread_mutex_t data_mutex;
         double* data;
 
         double timestep;
