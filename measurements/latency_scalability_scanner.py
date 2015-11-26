@@ -71,7 +71,7 @@ for timestep in np.arange(MIN_TIMESTEP, MAX_TIMESTEP, TIMESTEP_STEP_SIZE):
                       np=1\n\
                       music_timestep="+ str(timestep) +"\n\
                       ros_topic=/jubot/cmd_vel\n\
-                      message_mapping_filename=float_mapping.dat\n\
+                      message_mapping_filename=twist_mapping.dat\n\
                       command_rate=20\n\
                     sensor.out->connect.in[100]\n\
                     connect.out->encoder.in[" + str(num_neurons) +"]\n\
