@@ -5,9 +5,9 @@ import datetime
 import json
 
 ITERATIONS = 2 
-MIN_NUM_NEURONS = 0
-MAX_NUM_NEURONS = 15001
-STEP_SIZE = 1000
+MIN_NUM_NEURONS = 160000
+MAX_NUM_NEURONS = 250001
+STEP_SIZE = 10000
 
 sim_time = 10 # in sec
 sim_time_build = 0.001 # in sec
@@ -59,10 +59,10 @@ for num_neurons in np.arange(MIN_NUM_NEURONS, MAX_NUM_NEURONS, STEP_SIZE):
                   args=\n\
                   np=1\n\
                   music_timestep=0.05\n\
-                  message_mapping_filename=float_mapping.dat\n\
+                  message_mapping_filename=twist_mapping.dat\n\
                   ros_topic=/jubot/cmd_vel\n\
                   command_rate=20\n\
-                sensor.out->connect.in[640]\n\
+                sensor.out->connect.in[100]\n\
                 connect.out->encoder.in[" + str(num_neurons) +"]\n\
                 encoder.out->decoder.in[" + str(num_neurons) +"]\n\
                 decoder.out->command.in[2]"

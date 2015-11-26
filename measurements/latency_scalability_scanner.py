@@ -25,6 +25,7 @@ if os.path.exists(data_filename):
 
 data ={"num_neurons": [], "time": [], "type": [], "iteration": [], "timestep": []}
 
+last_rtf = 1
 
 for timestep in np.arange(MIN_TIMESTEP, MAX_TIMESTEP, TIMESTEP_STEP_SIZE):
     for num_neurons in np.arange(MIN_NUM_NEURONS, MAX_NUM_NEURONS, STEP_SIZE):
@@ -91,6 +92,8 @@ for timestep in np.arange(MIN_TIMESTEP, MAX_TIMESTEP, TIMESTEP_STEP_SIZE):
         music_config_run_file.writelines(music_config_run)
         music_config_run_file.close()
     
+        if last_rtf < 0.5:
+            continue
     
         for it in range(ITERATIONS):
     
@@ -127,6 +130,8 @@ for timestep in np.arange(MIN_TIMESTEP, MAX_TIMESTEP, TIMESTEP_STEP_SIZE):
             data['iteration'].append(it)
             data["time"].append(rtf)
             data["timestep"].append(timestep)
+
+            last_rtf = min(rtf, last_rtf)
         
         if os.path.exists("config_run.music"):
             os.remove("config_run.music")
