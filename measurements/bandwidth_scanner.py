@@ -63,7 +63,7 @@ for firing_rate in np.arange(MIN_FIRING_RATE, MAX_FIRING_RATE, STEP_SIZE):
                   ros_topic=/jubot/cmd_vel\n\
                   message_mapping_filename=float_mapping.dat\n\
                   command_rate=20\n\
-                sensor.out->diverse.in[640]\n\
+                sensor.out->diverse.in[100]\n\
                 diverse.out->encoder.in[" + str(num_neurons) + "]\n\
                 encoder.out->decoder.in[" + str(num_neurons) + "]\n\
                 decoder.out->command.in[2]"

@@ -47,7 +47,7 @@ music_config = \
           ros_topic=/jubot/cmd_vel\n\
           message_mapping_filename=twist_mapping.dat\n\
           command_rate=20\n\
-        sensor.out->diverse.in[640]\n\
+        sensor.out->diverse.in[100]\n\
         diverse.out->encoder.in[1]\n\
         encoder.out->decoder.in[1]\n\
         decoder.out->command.in[1]"
@@ -122,7 +122,7 @@ music_config = \
           ros_topic=/jubot/cmd_vel\n\
           message_mapping_filename=twist_mapping.dat\n\
           command_rate=20\n\
-        sensor.out->diverse.in[640]\n\
+        sensor.out->diverse.in[100]\n\
         diverse.out->encoder.in[1]\n\
         encoder.out->decoder.in[1]\n\
         decoder.out->command.in[1]"

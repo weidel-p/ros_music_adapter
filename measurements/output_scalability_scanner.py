@@ -47,7 +47,7 @@ for num_neurons in np.arange(MIN_NUM_NEURONS, MAX_NUM_NEURONS, STEP_SIZE):
                   ros_topic=/jubot/cmd_vel\n\
                   message_mapping_filename=float_mapping.dat\n\
                   command_rate=20\n\
-                sensor.out->encoder.in[640]\n\
+                sensor.out->encoder.in[100]\n\
                 encoder.out->decoder.in[" + str(num_neurons) +"]\n\
                 decoder.out->command.in[2]"
 

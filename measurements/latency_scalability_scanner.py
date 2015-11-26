@@ -73,7 +73,7 @@ for timestep in np.arange(MIN_TIMESTEP, MAX_TIMESTEP, TIMESTEP_STEP_SIZE):
                       ros_topic=/jubot/cmd_vel\n\
                       message_mapping_filename=float_mapping.dat\n\
                       command_rate=20\n\
-                    sensor.out->connect.in[640]\n\
+                    sensor.out->connect.in[100]\n\
                     connect.out->encoder.in[" + str(num_neurons) +"]\n\
                     encoder.out->decoder.in[" + str(num_neurons) +"]\n\
                     decoder.out->command.in[2]"
