@@ -110,7 +110,7 @@ ConnectAdapter::readWeightsFile()
     if ( !json_reader.parse(json_weights_, json_weights))
     {
         // report to the user the failure and their locations in the document.
-        std::cout   << "ERROR: linear readout: Failed to parse file \"" << weights_filename << "\"\n" 
+        std::cout   << "WARNING: linear readout: Failed to parse file \"" << weights_filename << "\"\n" 
                     << json_weights_ << " It has to be in JSON format.\n Using 1/N for each weight."
                     << json_reader.getFormattedErrorMessages();
         

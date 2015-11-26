@@ -95,8 +95,6 @@ RosCommandAdapter::initMUSIC(int argc, char** argv)
     
     setup->config("message_mapping_filename", &mapping_filename);
     readMappingFile();
-
-
     
     MUSIC::ContInputPort* port_in = setup->publishContInput ("in"); //TODO: read portname from file
     
@@ -151,7 +149,7 @@ RosCommandAdapter::readMappingFile()
     if ( !json_reader.parse(json_mapping_, json_mapping))
     {
         // report to the user the failure and their locations in the document.
-        std::cout   << "ERROR: ROS Command Adapter: Failed to parse file \"" << mapping_filename << "\"\n" 
+        std::cout   << "WARNING: ROS Command Adapter: Failed to parse file \"" << mapping_filename << "\"\n" 
                     << json_mapping_ << " It has to be in JSON format.\n"
                     << json_reader.getFormattedErrorMessages();
         return;
@@ -194,7 +192,6 @@ RosCommandAdapter::readMappingFile()
             index = -1;
             index = json_mapping["mapping"]["angular.z"].asInt();
             msg_map[5] = index + 1;
-            std::cout << msg_map << std::endl;
         }
         else
         {
