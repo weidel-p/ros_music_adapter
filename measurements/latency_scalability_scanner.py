@@ -4,10 +4,18 @@ import numpy as np
 import datetime
 import json
 
+def insert_datapoint(n, t, ty, i, ts):
+    data["num_neurons"].append(n)
+    data['type'].append(ty)
+    data['iteration'].append(i)
+    data["time"].append(t)
+    data["timestep"].append(ts)
+
+
 ITERATIONS = 2 
 MIN_NUM_NEURONS = 0
-MAX_NUM_NEURONS = 2001
-STEP_SIZE = 1000
+MAX_NUM_NEURONS = 400001
+STEP_SIZE = 100000
 
 MIN_TIMESTEP = 0.000
 MAX_TIMESTEP = 0.011
@@ -27,6 +35,7 @@ data ={"num_neurons": [], "time": [], "type": [], "iteration": [], "timestep": [
 
 
 for timestep in np.arange(MIN_TIMESTEP, MAX_TIMESTEP, TIMESTEP_STEP_SIZE):
+    last_rtf = 1
     for num_neurons in np.arange(MIN_NUM_NEURONS, MAX_NUM_NEURONS, STEP_SIZE):
 
         if timestep == 0:
@@ -91,11 +100,14 @@ for timestep in np.arange(MIN_TIMESTEP, MAX_TIMESTEP, TIMESTEP_STEP_SIZE):
         music_config_run_file.writelines(music_config_run)
         music_config_run_file.close()
     
-        last_rtf = 1
 
         for it in range(ITERATIONS):
     
             if last_rtf < 0.5:
+                # fill data up with zeros if computation takes too long
+                insert_datapoint (num_neurons, 0, "build-time", it, timestep) 
+                insert_datapoint (num_neurons, 0, "total-time", it, timestep) 
+                insert_datapoint (num_neurons, 0, "real-time factor", it, timestep) 
                 continue
     
             start = datetime.datetime.now()
@@ -105,11 +117,7 @@ for timestep in np.arange(MIN_TIMESTEP, MAX_TIMESTEP, TIMESTEP_STEP_SIZE):
             dt_build = end - start
             build_time = dt_build.seconds + dt_build.microseconds / 1000000.
     
-            data["num_neurons"].append(num_neurons)
-            data['type'].append("build-time")
-            data['iteration'].append(it)
-            data["time"].append(build_time)
-            data["timestep"].append(timestep)
+            insert_datapoint (num_neurons, build_time, "build-time", it, timestep) 
     
             start = datetime.datetime.now()
             os.system("mpirun \-np 5 music config_run.music ")
@@ -118,19 +126,11 @@ for timestep in np.arange(MIN_TIMESTEP, MAX_TIMESTEP, TIMESTEP_STEP_SIZE):
             dt_run = end - start
             run_time = dt_run.seconds + dt_run.microseconds / 1000000.
     
-            data["num_neurons"].append(num_neurons)
-            data['type'].append("total-time")
-            data['iteration'].append(it)
-            data["time"].append(run_time)
-            data["timestep"].append(timestep)
+            insert_datapoint (num_neurons, run_time, "total-time", it, timestep) 
     
             rtf = sim_time / (run_time - build_time)
     
-            data["num_neurons"].append(num_neurons)
-            data['type'].append("real-time factor")
-            data['iteration'].append(it)
-            data["time"].append(rtf)
-            data["timestep"].append(timestep)
+            insert_datapoint (num_neurons, rtf, "real-time factor", it, timestep) 
 
             last_rtf = min(rtf, last_rtf)
         
