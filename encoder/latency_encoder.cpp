@@ -75,7 +75,6 @@ LatencyEncoder::runMUSIC()
 {
 
     std::cout << "running latency encoder" << std::endl;
-    Rate rate(1./timestep);
     struct timeval start;
     struct timeval end;
     gettimeofday(&start, NULL);
@@ -98,8 +97,6 @@ LatencyEncoder::runMUSIC()
                 port_out->insertEvent(t, MUSIC::GlobalIndex(n));
             }
         }
-
-        rate.sleep();
     }
 
     gettimeofday(&end, NULL);

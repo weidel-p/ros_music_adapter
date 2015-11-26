@@ -33,21 +33,20 @@ find_library(ROSTIME rostime /opt/ros/jade/lib)
 
 include_directories(/opt/ros/jade/include/)
 
-find_package(Boost COMPONENTS thread system date_time REQUIRED)
-include_directories(${Boost_INCLUDE_DIRS})
-
 find_library(GSL gsl REQUIRED)
 find_library(BLAS gslcblas REQUIRED)
 
 find_library(JSON jsoncpp)
 
-target_link_libraries(ros_command_adapter ${MUSIC} ${ROS_CPP} ${ROS_CPP_SER} ${ROSCONSOLE} ${ROSTIME} ${MPI_LIBRARIES} ${Boost_LIBRARIES} ${JSON} rtclock)
-target_link_libraries(ros_sensor_adapter ${MUSIC} ${ROS_CPP} ${ROS_CPP_SER} ${ROSCONSOLE} ${ROSTIME} ${MPI_LIBRARIES} ${Boost_LIBRARIES} rtclock)
-target_link_libraries(linear_readout_decoder ${MUSIC} ${MPI_LIBRARIES} ${Boost_LIBRARIES} ${JSON} ${GSL} ${BLAS})
-target_link_libraries(nef_encoder ${MUSIC} ${MPI_LIBRARIES} ${Boost_LIBRARIES})
-target_link_libraries(rate_encoder ${MUSIC} ${MPI_LIBRARIES} ${Boost_LIBRARIES}) 
-target_link_libraries(poisson_encoder ${MUSIC} ${MPI_LIBRARIES} ${Boost_LIBRARIES})
-target_link_libraries(connect_adapter ${MUSIC} ${MPI_LIBRARIES} ${Boost_LIBRARIES} ${JSON} ${GSL} ${BLAS})
+find_library(PTHREAD pthread)
+
+target_link_libraries(ros_command_adapter ${MUSIC} ${ROS_CPP} ${ROS_CPP_SER} ${ROSCONSOLE} ${ROSTIME} ${PTHREAD} ${MPI_LIBRARIES} ${JSON} rtclock)
+target_link_libraries(ros_sensor_adapter ${MUSIC} ${ROS_CPP} ${ROS_CPP_SER} ${ROSCONSOLE} ${ROSTIME} ${PTHREAD} ${MPI_LIBRARIES} rtclock)
+target_link_libraries(linear_readout_decoder ${MUSIC} ${MPI_LIBRARIES} ${JSON} ${GSL} ${BLAS})
+target_link_libraries(nef_encoder ${MUSIC} ${MPI_LIBRARIES})
+target_link_libraries(rate_encoder ${MUSIC} ${MPI_LIBRARIES}) 
+target_link_libraries(poisson_encoder ${MUSIC} ${MPI_LIBRARIES})
+target_link_libraries(connect_adapter ${MUSIC} ${MPI_LIBRARIES} ${JSON} ${GSL} ${BLAS})
 target_link_libraries(latency_encoder ${MUSIC} ${MPI_LIBRARIES} ${Boost_LIBRARIES})
 target_link_libraries(latency_decoder ${MUSIC} ${MPI_LIBRARIES} ${Boost_LIBRARIES})
 

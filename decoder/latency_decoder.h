@@ -9,8 +9,6 @@
 #include "sys/time.h"
 #include "jsoncpp/json/json.h"
 
-#include "../rate.h"
-
 #define DEBUG_OUTPUT false 
 
 const double DEFAULT_TIMESTEP = 1e-3;

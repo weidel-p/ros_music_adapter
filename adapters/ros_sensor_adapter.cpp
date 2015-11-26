@@ -1,9 +1,12 @@
 #include "ros_sensor_adapter.h"
 
-void
-ros_thread(RosSensorAdapter ros_adapter)
+#include "rtclock.h"
+
+static void*
+ros_thread(void* arg)
 {
-    ros_adapter.runROS();
+    RosSensorAdapter* ros_adapter = static_cast<RosSensorAdapter*>(arg);
+    ros_adapter->runROS();
 }
 
 int
@@ -22,10 +25,11 @@ main(int argc, char** argv)
     }
     else
     {
-        boost::thread t = boost::thread(ros_thread, ros_adapter);
+        pthread_t t;
+	pthread_create (&t, NULL, ros_thread, &ros_adapter);
 
-        ros_adapter.runMUSIC();
-        t.join();
+    	ros_adapter.runMUSIC();
+    	pthread_join(t, NULL);
     }
 
     ros_adapter.finalize();
@@ -47,6 +51,8 @@ RosSensorAdapter::init(int argc, char** argv)
 
     timestep = DEFAULT_TIMESTEP;
     sensor_update_rate = DEFAULT_SENSOR_UPDATE_RATE;
+
+    pthread_mutex_init(&data_mutex, NULL);
 
     // MUSIC before ROS to read the config first!
     initMUSIC(argc, argv);
@@ -191,7 +197,9 @@ RosSensorAdapter::runMUSIC()
 #endif
 
         clock.sleepNext(); 
+	pthread_mutex_lock(&data_mutex);
         runtime->tick();
+	pthread_mutex_unlock(&data_mutex);
     }
 
     std::cout << "sensor: total simtime: " << clock.time () << " s" << std::endl;
@@ -200,13 +208,14 @@ RosSensorAdapter::runMUSIC()
 void
 RosSensorAdapter::laserscanCallback(const sensor_msgs::LaserScanConstPtr& msg)
 {
+    pthread_mutex_lock(&data_mutex);
     for (unsigned int i = 0; i < msg->ranges.size(); ++i)
     {
         // scale data between -1 and 1
         // TODO: catch exception if ranges.size not width of port
         data[i] = ((msg->ranges.at(i) - msg->range_min) / (msg->range_max - msg->range_min) ) * 2 - 1;
     }
-    
+    pthread_mutex_unlock(&data_mutex);    
 }
 
 void RosSensorAdapter::finalize(){

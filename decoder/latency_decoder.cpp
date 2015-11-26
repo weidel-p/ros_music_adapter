@@ -78,8 +78,6 @@ void
 LatencyDecoder::runMUSIC()
 {
     std::cout << "running latency decoder" << std::endl;
-    
-    Rate rate(1./timestep);
     struct timeval start;
     struct timeval end;
     gettimeofday(&start, NULL);
@@ -108,8 +106,6 @@ LatencyDecoder::runMUSIC()
         }
         std::cout << std::endl;
 #endif
-
-        rate.sleep();
     }
 
     gettimeofday(&end, NULL);
