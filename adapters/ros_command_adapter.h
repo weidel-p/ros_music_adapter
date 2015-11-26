@@ -14,7 +14,6 @@
 #include "jsoncpp/json/json.h"
 #include <iostream>
 #include <fstream>
-#include "rate.h"
 
 #define DEBUG_OUTPUT false 
 
@@ -28,8 +27,10 @@ class RosCommandAdapter
 {
     public:
         void init(int argc, char** argv);
+        bool ratesMatch (double precision);
         void runMUSIC();
         void runROS();
+	void runROSMUSIC();
         void finalize();
 
     private:
@@ -37,6 +38,7 @@ class RosCommandAdapter
         ros::Publisher publisher;
 
         MPI::Intracomm comm;
+	MUSIC::Setup* setup;
         MUSIC::Runtime* runtime;
         double stoptime;
         int datasize;
@@ -53,6 +55,7 @@ class RosCommandAdapter
 
         void initROS(int argc, char** argv);
         void initMUSIC(int argc, char** argv);
+	void sendROS();
 
         void readMappingFile();
 

@@ -1,5 +1,6 @@
 #include "ros_command_adapter.h"
 
+#include "rtclock.h"
 
 void
 ros_thread(RosCommandAdapter ros_adapter)
@@ -14,14 +15,32 @@ main(int argc, char** argv)
     RosCommandAdapter ros_adapter;
     ros_adapter.init(argc, argv);
 
-    boost::thread t = boost::thread(ros_thread, ros_adapter);
+    // If sensor_update_rate and timestep match to a relative
+    // precision of 0.1%, lump the ROS and MUSIC event loops
+    // together.
+    if (ros_adapter.ratesMatch (0.001))
+    {
+	ros_adapter.runROSMUSIC();
+    }
+    else
+    {
+    	boost::thread t = boost::thread(ros_thread, ros_adapter);
 
-    ros_adapter.runMUSIC();
-    t.join();
+    	ros_adapter.runMUSIC();
+    	t.join();
+    }
 
     ros_adapter.finalize();
 
 }
+
+
+bool
+RosCommandAdapter::ratesMatch (double precision)
+{
+    return std::abs (command_rate * timestep - 1.) < precision;
+}
+
 
 void
 RosCommandAdapter::init(int argc, char** argv)
@@ -63,7 +82,7 @@ RosCommandAdapter::initROS(int argc, char** argv)
 void
 RosCommandAdapter::initMUSIC(int argc, char** argv)
 {
-    MUSIC::Setup* setup = new MUSIC::Setup (argc, argv);
+    setup = new MUSIC::Setup (argc, argv);
 
     setup->config("ros_topic", &ros_topic);
     setup->config("stoptime", &stoptime);
@@ -107,8 +126,6 @@ RosCommandAdapter::initMUSIC(int argc, char** argv)
       		 0,
       		 datasize);
     port_in->map (&dmap, 0., 1, false);
- 
-    runtime = new MUSIC::Runtime (setup, timestep);
 }
 
 void 
@@ -186,45 +203,69 @@ RosCommandAdapter::readMappingFile()
 }
 
 void
+RosCommandAdapter::sendROS ()
+{
+  switch (msg_type)
+  {   
+      case Float64MultiArray:
+      {
+          std_msgs::Float64MultiArray msg;
+          for (int i = 1; i < datasize+1; ++i)
+          {
+              msg.data.push_back(data[i]);
+          }
+          publisher.publish(msg);
+          break;
+      }
+
+      case Twist: 
+      {
+          geometry_msgs::Twist msg;
+          
+          msg.linear.x = data[msg_map[0]];
+          msg.linear.y = data[msg_map[1]];
+          msg.linear.z = data[msg_map[2]];
+
+          msg.angular.x = data[msg_map[3]];
+          msg.angular.y = data[msg_map[4]];
+          msg.angular.z = data[msg_map[5]];
+      
+          publisher.publish(msg);
+          break;
+      }
+  }
+}
+
+void
+RosCommandAdapter::runROSMUSIC()
+{
+    RTClock clock(1. / command_rate);
+
+    runtime = new MUSIC::Runtime (setup, timestep);
+    ros::spinOnce();
+    
+    for (int t = 0; runtime->time() < stoptime; t++)
+    {
+        sendROS();
+        clock.sleepNext();
+        runtime->tick();
+	ros::spinOnce();
+    }
+
+    std::cout << "command: total simtime: " << clock.time () << " s" <<  std::endl;
+}
+
+void
 RosCommandAdapter::runROS()
 {
     std::cout << "running command adapter with update rate of " << command_rate << std::endl;
-    Rate rate(command_rate);
+    RTClock clock(1. / command_rate);
     ros::Time stop_time = ros::Time::now() + ros::Duration(stoptime);
 
+    ros::spinOnce();
     for (ros::Time t = ros::Time::now(); t < stop_time; t = ros::Time::now())
     {
-
-        switch (msg_type)
-        {   
-            case Float64MultiArray:
-            {
-                std_msgs::Float64MultiArray msg;
-                for (int i = 1; i < datasize+1; ++i)
-                {
-                    msg.data.push_back(data[i]);
-                }
-                publisher.publish(msg);
-                break;
-            }
-
-            case Twist: 
-            {
-                geometry_msgs::Twist msg;
-                
-                msg.linear.x = data[msg_map[0]];
-                msg.linear.y = data[msg_map[1]];
-                msg.linear.z = data[msg_map[2]];
-
-                msg.angular.x = data[msg_map[3]];
-                msg.angular.y = data[msg_map[4]];
-                msg.angular.z = data[msg_map[5]];
-            
-                publisher.publish(msg);
-                break;
-            }
-
-        }
+        sendROS();
 #if DEBUG_OUTPUT
         std::cout << "ROS Command Adapter: ";
         for (int i = 1; i < datasize + 1; ++i)
@@ -234,9 +275,8 @@ RosCommandAdapter::runROS()
         std::cout << std::endl;
 #endif
 
-
+        clock.sleepNext();
         ros::spinOnce();
-        rate.sleep();     
     }
 
 }
@@ -245,28 +285,17 @@ void
 RosCommandAdapter::runMUSIC()
 {
 
-    Rate rate(1./timestep);
-    struct timeval start;
-    struct timeval end;
-    gettimeofday(&start, NULL);
-    unsigned int ticks_skipped = 0;
+    RTClock clock(timestep);
 
+    runtime = new MUSIC::Runtime (setup, timestep);
+    
     for (int t = 0; runtime->time() < stoptime; t++)
     {
-        rate.sleep();
+        clock.sleepNext();
         runtime->tick();
     }
 
-    gettimeofday(&end, NULL);
-    unsigned int dt_s = end.tv_sec - start.tv_sec;
-    unsigned int dt_us = end.tv_usec - start.tv_usec;
-    if (end.tv_sec > start.tv_sec)
-    {
-        dt_us += 1000000;
-    }
-    std::cout << "command: total simtime: " << dt_s << " " << dt_us << " ticks skipped " << ticks_skipped <<  std::endl;
-
-
+    std::cout << "command: total simtime: " << clock.time () << " s" <<  std::endl;
 }
 
 void RosCommandAdapter::finalize(){
