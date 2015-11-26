@@ -37,6 +37,9 @@ rtfs = np.reshape(rtfs, [len(y), len(x)])
 ax = sbn.heatmap(rtfs)
 ax.set_xticklabels(x)
 ax.set_yticklabels(y)
+ax.set_xlabel("#neurons")
+ax.set_ylabel("MUSIC-timestep [s]")
+plt.title("MUSIC-Timestep vs Scalability")
 plt.show()
 
 
