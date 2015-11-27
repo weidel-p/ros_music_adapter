@@ -22,7 +22,7 @@ stoptime=1000.
   rate_max=200
 [nest]
   binary=./dummy_network.py
-  args=
+  args=-s 0.05 -t 1000
   np=1
 [decoder]
   binary=../../linear_readout_decoder
