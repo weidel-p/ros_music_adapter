@@ -84,6 +84,7 @@ RateEncoder::initMUSIC(int argc, char** argv)
 void 
 RateEncoder::runMUSIC()
 {
+    comm.Barrier();
 
     std::cout << "running rate encoder" << std::endl;
     struct timeval start;

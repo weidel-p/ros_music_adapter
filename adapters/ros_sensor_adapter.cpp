@@ -26,7 +26,7 @@ main(int argc, char** argv)
     else
     {
         pthread_t t;
-	pthread_create (&t, NULL, ros_thread, &ros_adapter);
+	    pthread_create (&t, NULL, ros_thread, &ros_adapter);
 
     	ros_adapter.runMUSIC();
     	pthread_join(t, NULL);
@@ -137,6 +137,7 @@ RosSensorAdapter::initMUSIC(int argc, char** argv)
 void
 RosSensorAdapter::runROSMUSIC()
 {
+    comm.Barrier();
     RTClock clock(1. / sensor_update_rate);
     
     ros::spinOnce();
@@ -165,6 +166,7 @@ RosSensorAdapter::runROSMUSIC()
 void
 RosSensorAdapter::runROS()
 {
+    comm.Barrier();
     RTClock clock(1. / sensor_update_rate);
     ros::Time stop_time = ros::Time::now() + ros::Duration(stoptime);
     std::cout << "running sensor adapter with update rate of " << sensor_update_rate << std::endl;
@@ -180,6 +182,7 @@ RosSensorAdapter::runROS()
 void 
 RosSensorAdapter::runMUSIC()
 {
+    comm.Barrier();
     RTClock clock(timestep);
 
     runtime = new MUSIC::Runtime (setup, timestep);
@@ -197,9 +200,9 @@ RosSensorAdapter::runMUSIC()
 #endif
 
         clock.sleepNext(); 
-	pthread_mutex_lock(&data_mutex);
+    	pthread_mutex_lock(&data_mutex);
         runtime->tick();
-	pthread_mutex_unlock(&data_mutex);
+	    pthread_mutex_unlock(&data_mutex);
     }
 
     std::cout << "sensor: total simtime: " << clock.time () << " s" << std::endl;

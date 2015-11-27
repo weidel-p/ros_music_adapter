@@ -146,6 +146,8 @@ LinearReadoutDecoder::readWeightsFile()
 void 
 LinearReadoutDecoder::runMUSIC()
 {
+    comm.Barrier();
+
     std::cout << "running linear readout decoder" << std::endl;
     
     struct timeval start;

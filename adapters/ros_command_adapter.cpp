@@ -240,6 +240,7 @@ RosCommandAdapter::sendROS ()
 void
 RosCommandAdapter::runROSMUSIC()
 {
+    comm.Barrier();
     RTClock clock(1. / command_rate);
 
     runtime = new MUSIC::Runtime (setup, timestep);
@@ -259,6 +260,7 @@ RosCommandAdapter::runROSMUSIC()
 void
 RosCommandAdapter::runROS()
 {
+    comm.Barrier();
     std::cout << "running command adapter with update rate of " << command_rate << std::endl;
     RTClock clock(1. / command_rate);
     ros::Time stop_time = ros::Time::now() + ros::Duration(stoptime);
@@ -266,9 +268,9 @@ RosCommandAdapter::runROS()
     ros::spinOnce();
     for (ros::Time t = ros::Time::now(); t < stop_time; t = ros::Time::now())
     {
-	pthread_mutex_lock (&data_mutex);
+	    pthread_mutex_lock (&data_mutex);
         sendROS();
-	pthread_mutex_unlock (&data_mutex);
+	    pthread_mutex_unlock (&data_mutex);
 #if DEBUG_OUTPUT
         std::cout << "ROS Command Adapter: ";
         for (int i = 1; i < datasize + 1; ++i)
@@ -287,7 +289,7 @@ RosCommandAdapter::runROS()
 void 
 RosCommandAdapter::runMUSIC()
 {
-
+    comm.Barrier();
     RTClock clock(timestep);
 
     runtime = new MUSIC::Runtime (setup, timestep);
@@ -295,9 +297,9 @@ RosCommandAdapter::runMUSIC()
     for (int t = 0; runtime->time() < stoptime; t++)
     {
         clock.sleepNext();
-	pthread_mutex_lock (&data_mutex);
+	    pthread_mutex_lock (&data_mutex);
         runtime->tick();
-	pthread_mutex_unlock (&data_mutex);
+	    pthread_mutex_unlock (&data_mutex);
     }
 
     std::cout << "command: total simtime: " << clock.time () << " s" <<  std::endl;

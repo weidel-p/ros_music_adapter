@@ -30,7 +30,7 @@ class RosCommandAdapter
         bool ratesMatch (double precision);
         void runMUSIC();
         void runROS();
-	void runROSMUSIC();
+	    void runROSMUSIC();
         void finalize();
 
     private:
@@ -38,12 +38,12 @@ class RosCommandAdapter
         ros::Publisher publisher;
 
         MPI::Intracomm comm;
-	MUSIC::Setup* setup;
+	    MUSIC::Setup* setup;
         MUSIC::Runtime* runtime;
         double stoptime;
         int datasize;
 
-	pthread_mutex_t data_mutex;
+    	pthread_mutex_t data_mutex;
         double* data;
 
         double timestep;
