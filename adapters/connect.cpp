@@ -138,6 +138,7 @@ ConnectAdapter::readWeightsFile()
 void 
 ConnectAdapter::runMUSIC()
 {
+    comm.Barrier();
     std::cout << "running connect adapter" << std::endl;
     
     struct timeval start;

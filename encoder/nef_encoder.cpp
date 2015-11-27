@@ -82,6 +82,7 @@ NefEncoder::initMUSIC(int argc, char** argv)
 void 
 NefEncoder::runMUSIC()
 {
+    comm.Barrier();
     std::cout << "running nef encoder" << std::endl;
 
     struct timeval start;
