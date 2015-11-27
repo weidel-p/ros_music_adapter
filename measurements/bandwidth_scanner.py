@@ -6,7 +6,7 @@ import json
 
 ITERATIONS = 2 
 MIN_FIRING_RATE = 0
-MAX_FIRING_RATE = 101
+MAX_FIRING_RATE = 11
 STEP_SIZE = 10
 
 sim_time = 10 # in sec
@@ -21,13 +21,15 @@ if os.path.exists(data_filename):
 
 data = {"time": [], "type": [], "iteration": [], "firing_rate": []}
 
-for firing_rate in np.arange(MIN_FIRING_RATE, MAX_FIRING_RATE, STEP_SIZE):
-    print "\n\n\n\n\ RUNNING", num_neurons, "NEURONS WITH A FIRING RATE OF", firing_rate, "\n\n\n\n"
+def insert_datapoint(f, t, ty, i):
+    data["firing_rate"].append(f)
+    data['type'].append(ty)
+    data['iteration'].append(i)
+    data["time"].append(t)
 
-    if firing_rate == 0:
-        firing_rate = 1
-
-    music_base_config = \
+def create_music_config(num_neurons, sim_time, firing_rate):
+    music_config = \
+                "stoptime=" + str(sim_time) + "\n"\
                 "[sensor]\n\
                   binary=../ros_sensor_adapter\n\
                   args=\n\
@@ -36,7 +38,7 @@ for firing_rate in np.arange(MIN_FIRING_RATE, MAX_FIRING_RATE, STEP_SIZE):
                   ros_topic=/jubot/laserscan\n\
                   message_type=Laserscan\n\
                   sensor_update_rate=30\n\
-                [diverse]\n\
+                [connect]\n\
                   binary=../connect_adapter\n\
                   args=\n\
                   np=1\n\
@@ -53,74 +55,54 @@ for firing_rate in np.arange(MIN_FIRING_RATE, MAX_FIRING_RATE, STEP_SIZE):
                   args=\n\
                   np=1\n\
                   music_timestep=0.05\n\
-                  music_acceptable_latency=0.05\n\
                   tau=0.03\n\
                 [command]\n\
                   binary=../ros_command_adapter\n\
                   args=\n\
                   np=1\n\
-                  music_timestep=0.05\n\
+                  usic_timestep=0.05\n\
                   ros_topic=/jubot/cmd_vel\n\
-                  message_mapping_filename=float_mapping.dat\n\
+                  message_mapping_filename=twist_mapping.dat\n\
                   command_rate=20\n\
-                sensor.out->diverse.in[100]\n\
-                diverse.out->encoder.in[" + str(num_neurons) + "]\n\
-                encoder.out->decoder.in[" + str(num_neurons) + "]\n\
+                sensor.out->connect.in[100]\n\
+                connect.out->encoder.in[" + str(num_neurons) +"]\n\
+                encoder.out->decoder.in[" + str(num_neurons) +"]\n\
                 decoder.out->command.in[2]"
+    music_config_file = open("config.music", 'w+')
+    music_config_file.writelines(music_config)
+    music_config_file.close()
 
-    music_config_build = "stoptime=" + str(sim_time_build) + "\n"\
-                         + music_base_config
 
-    music_config_build_file = open("config_build.music", 'w+')
-    music_config_build_file.writelines(music_config_build)
-    music_config_build_file.close()
+for firing_rate in np.arange(MIN_FIRING_RATE, MAX_FIRING_RATE, STEP_SIZE):
+    print "\n\n\n\n\ RUNNING", num_neurons, "NEURONS WITH A FIRING RATE OF", firing_rate, "\n\n\n\n"
 
-    music_config_run = "stoptime=" + str(sim_time) + "\n"\
-                       + music_base_config
-
-    music_config_run_file = open("config_run.music", 'w+')
-    music_config_run_file.writelines(music_config_run)
-    music_config_run_file.close()
+    if firing_rate == 0:
+        firing_rate = 1
 
     for it in range(ITERATIONS):
 
+        create_music_config(num_neurons, sim_time_build, firing_rate)
         start = datetime.datetime.now()
-        os.system("mpirun \-np 5 music config_build.music ")
+        os.system("mpirun \-np 5 music config.music ")
         end = datetime.datetime.now()
-
         dt_build = end - start
         build_time = dt_build.seconds + dt_build.microseconds / 1000000.
+        insert_datapoint (firing_rate, build_time, "build-time", it) 
 
-        data["firing_rate"].append(firing_rate)
-        data['type'].append("build-time")
-        data['iteration'].append(it)
-        data["time"].append(build_time)
-
+        create_music_config(num_neurons, sim_time, firing_rate)
         start = datetime.datetime.now()
-        os.system("mpirun \-np 5 music config_run.music ")
+        os.system("mpirun \-np 5 music config.music ")
         end = datetime.datetime.now()
-        
         dt_run = end - start
         run_time = dt_run.seconds + dt_run.microseconds / 1000000.
-
-        data["firing_rate"].append(firing_rate)
-        data['type'].append("total-time")
-        data['iteration'].append(it)
-        data["time"].append(run_time)
+        insert_datapoint (firing_rate, run_time, "total-time", it) 
 
         rtf = sim_time / (run_time - build_time)
+        insert_datapoint (firing_rate, rtf, "real-time factor", it) 
 
-        data["firing_rate"].append(firing_rate)
-        data['type'].append("real-time factor")
-        data['iteration'].append(it)
-        data["time"].append(rtf)
     
-    if os.path.exists("config_run.music"):
-        os.remove("config_run.music")
-    if os.path.exists("config_build.music"):
-        os.remove("config_build.music")
-
-
+    if os.path.exists("config.music"):
+        os.remove("config.music")
 
 data_file = open(data_filename, "w+")
 json.dump(data, data_file)
