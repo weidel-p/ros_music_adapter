@@ -29,7 +29,6 @@ stoptime=1000.
   args=
   np=1
   music_timestep=0.05
-  music_acceptable_latency=0.05
   tau=0.03
   weights_filename=braitenberg3_readout_weights.dat
 [command]

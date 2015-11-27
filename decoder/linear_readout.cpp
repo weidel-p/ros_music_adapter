@@ -16,7 +16,6 @@ LinearReadoutDecoder::init(int argc, char** argv)
 {
     std::cout << "initializing linear readout decoder" << std::endl;
     timestep = DEFAULT_TIMESTEP;
-    acceptable_latency = DEFAULT_ACCEPTABLE_LATENCY;
     weights_filename = DEFAULT_WEIGHTS_FILENAME;
     tau = DEFAULT_TAU;
     num_spikes0 = 0;
@@ -34,9 +33,9 @@ LinearReadoutDecoder::initMUSIC(int argc, char** argv)
     setup->config("stoptime", &stoptime);
     setup->config("music_timestep", &timestep);
     setup->config("weights_filename", &weights_filename);
-    setup->config("music_acceptable_latency", &acceptable_latency);
     setup->config("tau", &tau);
     inv_tau = 1. / tau;
+    acceptable_latency = timestep;
 
     port_in = setup->publishEventInput("in");
     port_out = setup->publishContOutput("out");
