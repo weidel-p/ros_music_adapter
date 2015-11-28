@@ -137,7 +137,8 @@ RosSensorAdapter::initMUSIC(int argc, char** argv)
 void
 RosSensorAdapter::runROSMUSIC()
 {
-    comm.Barrier();
+    std::cout << "running sensor adapter with update rate of " << sensor_update_rate << std::endl;
+    MPI::COMM_WORLD.Barrier();
     RTClock clock(1. / sensor_update_rate);
     
     ros::spinOnce();
@@ -166,10 +167,8 @@ RosSensorAdapter::runROSMUSIC()
 void
 RosSensorAdapter::runROS()
 {
-    comm.Barrier();
     RTClock clock(1. / sensor_update_rate);
     ros::Time stop_time = ros::Time::now() + ros::Duration(stoptime);
-    std::cout << "running sensor adapter with update rate of " << sensor_update_rate << std::endl;
 
     ros::spinOnce();
     for (ros::Time t = ros::Time::now(); t < stop_time; t = ros::Time::now())
@@ -182,7 +181,8 @@ RosSensorAdapter::runROS()
 void 
 RosSensorAdapter::runMUSIC()
 {
-    comm.Barrier();
+    std::cout << "running sensor adapter with update rate of " << sensor_update_rate << std::endl;
+    MPI::COMM_WORLD.Barrier();
     RTClock clock(timestep);
 
     runtime = new MUSIC::Runtime (setup, timestep);
