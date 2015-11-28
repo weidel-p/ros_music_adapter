@@ -21,12 +21,12 @@ main(int argc, char** argv)
     // together.
     if (ros_adapter.ratesMatch (0.001))
     {
-	ros_adapter.runROSMUSIC();
+	    ros_adapter.runROSMUSIC();
     }
     else
     {
         pthread_t t;
-	pthread_create (&t, NULL, ros_thread, &ros_adapter);
+	    pthread_create (&t, NULL, ros_thread, &ros_adapter);
 
     	ros_adapter.runMUSIC();
     	pthread_join(t, NULL);
@@ -240,7 +240,8 @@ RosCommandAdapter::sendROS ()
 void
 RosCommandAdapter::runROSMUSIC()
 {
-    comm.Barrier();
+    std::cout << "running command adapter with update rate of " << command_rate << std::endl;
+    MPI::COMM_WORLD.Barrier();
     RTClock clock(1. / command_rate);
 
     runtime = new MUSIC::Runtime (setup, timestep);
@@ -260,8 +261,6 @@ RosCommandAdapter::runROSMUSIC()
 void
 RosCommandAdapter::runROS()
 {
-    comm.Barrier();
-    std::cout << "running command adapter with update rate of " << command_rate << std::endl;
     RTClock clock(1. / command_rate);
     ros::Time stop_time = ros::Time::now() + ros::Duration(stoptime);
 
@@ -289,7 +288,8 @@ RosCommandAdapter::runROS()
 void 
 RosCommandAdapter::runMUSIC()
 {
-    comm.Barrier();
+    std::cout << "running command adapter with update rate of " << command_rate << std::endl;
+    MPI::COMM_WORLD.Barrier();
     RTClock clock(timestep);
 
     runtime = new MUSIC::Runtime (setup, timestep);
