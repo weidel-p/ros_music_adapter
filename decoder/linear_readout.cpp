@@ -96,6 +96,7 @@ LinearReadoutDecoder::initMUSIC(int argc, char** argv)
     // initialize propagator for exponential decay
     propagator = std::exp(-timestep/tau);
 
+    MPI::COMM_WORLD.Barrier();
     runtime = new MUSIC::Runtime (setup, timestep);
 }
 
@@ -146,9 +147,8 @@ LinearReadoutDecoder::readWeightsFile()
 void 
 LinearReadoutDecoder::runMUSIC()
 {
-    comm.Barrier();
-
     std::cout << "running linear readout decoder" << std::endl;
+
     
     struct timeval start;
     struct timeval end;

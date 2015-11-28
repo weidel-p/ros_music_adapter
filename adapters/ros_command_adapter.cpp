@@ -240,8 +240,8 @@ RosCommandAdapter::sendROS ()
 void
 RosCommandAdapter::runROSMUSIC()
 {
-    std::cout << "running command adapter with update rate of " << command_rate << std::endl;
     MPI::COMM_WORLD.Barrier();
+    std::cout << "running command adapter with update rate of " << command_rate << std::endl;
     RTClock clock(1. / command_rate);
 
     runtime = new MUSIC::Runtime (setup, timestep);
@@ -288,8 +288,8 @@ RosCommandAdapter::runROS()
 void 
 RosCommandAdapter::runMUSIC()
 {
-    std::cout << "running command adapter with update rate of " << command_rate << std::endl;
     MPI::COMM_WORLD.Barrier();
+    std::cout << "running command adapter with update rate of " << command_rate << std::endl;
     RTClock clock(timestep);
 
     runtime = new MUSIC::Runtime (setup, timestep);

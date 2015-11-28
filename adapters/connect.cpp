@@ -88,7 +88,6 @@ ConnectAdapter::initMUSIC(int argc, char** argv)
       		 size_data_out);
     port_out ->map (&dmap_out, 1);
 
-    std::cout << "barrier" << std::endl;
     MPI::COMM_WORLD.Barrier();
     runtime = new MUSIC::Runtime (setup, timestep);
 }
