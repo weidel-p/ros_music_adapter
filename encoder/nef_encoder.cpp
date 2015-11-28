@@ -76,7 +76,6 @@ NefEncoder::initMUSIC(int argc, char** argv)
     MUSIC::LinearIndex l_index_out(0, size_spike_data);
     port_out->map(&l_index_out, MUSIC::Index::GLOBAL, 1);
 
-    std::cout << "barrier" << std::endl;
     MPI::COMM_WORLD.Barrier();
     runtime = new MUSIC::Runtime (setup, timestep);
 }

@@ -3,6 +3,7 @@
 import nest
 import numpy as np
 import sys
+from datetime import datetime
 from optparse import OptionParser
 from mpi4py import MPI
 
@@ -38,13 +39,17 @@ for i in range(NUM_ENC_NEURONS):
     nest.Connect([parrot[i]], proxy_out, 'all_to_all', {'music_channel': i, 'delay': to_ms(options.music_timestep)})
 
 comm.Barrier()
-start = datetime.datetime.now()
+start = datetime.now()
 
 nest.Simulate(to_ms(options.simtime))
 
-end = datetime.datetime.now()
+end = datetime.now()
 dt = end - start
 run_time = dt.seconds + dt.microseconds / 1000000.
 
+print 
+print
 print "RUN TIME:", run_time
+print 
+print
 
