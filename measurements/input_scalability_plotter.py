@@ -24,51 +24,18 @@ data_file_rate.close()
 data_file_poisson.close()
 data_file_nef.close()
 
-
-# split data
-rate_rtf_ind = [i for i in range(len(data_rate["type"])) if data_rate["type"][i] == "real-time factor"]
-rate_ind = [i for i in range(len(data_rate["type"])) if not data_rate["type"][i] == "real-time factor"]
-data_rate_rtf = data_rate.drop(data_rate.index[rate_ind])
-data_rate = data_rate.drop(data_rate.index[rate_rtf_ind])
-
-poisson_rtf_ind = [i for i in range(len(data_poisson["type"])) if data_poisson["type"][i] == "real-time factor"]
-poisson_ind = [i for i in range(len(data_poisson["type"])) if not data_poisson["type"][i] == "real-time factor"]
-data_poisson_rtf = data_poisson.drop(data_poisson.index[poisson_ind])
-data_poisson = data_poisson.drop(data_poisson.index[poisson_rtf_ind])
-
-nef_rtf_ind = [i for i in range(len(data_nef["type"])) if data_nef["type"][i] == "real-time factor"]
-nef_ind = [i for i in range(len(data_nef["type"])) if not data_nef["type"][i] == "real-time factor"]
-data_nef_rtf = data_nef.drop(data_nef.index[nef_ind])
-data_nef = data_nef.drop(data_nef.index[nef_rtf_ind])
-
-#plot data
-ax = plt.subplot(2,3,1)
-ax.set_title("Rate Encoder")
-ax = sbn.tsplot(time="num_neurons", value="time", unit="iteration", condition="type", data=data_rate)
-ax.set_ylabel("time [s]")
-ax.set_xlabel("# neurons")
-ax = plt.subplot(2,3,4)
-ax = sbn.tsplot(time="num_neurons", value="time", unit="iteration", condition="type", data=data_rate_rtf, color=palette[2:])
+x = plt.subplot(1,3,1)
+ax = sbn.tsplot(time="num_neurons", value="time", unit="iteration", condition="type", data=data_rate, color=palette[2:])
 ax.set_ylabel("real-time factor")
 ax.set_xlabel("# neurons")
 
-ax = plt.subplot(2,3,2)
-ax.set_title("Poisson Encoder")
-ax = sbn.tsplot(time="num_neurons", value="time", unit="iteration", condition="type", data=data_poisson)
-ax.set_ylabel("time [s]")
-ax.set_xlabel("# neurons")
-ax = plt.subplot(2,3,5)
-ax = sbn.tsplot(time="num_neurons", value="time", unit="iteration", condition="type", data=data_poisson_rtf, color=palette[2:])
+ax = plt.subplot(1,3,2)
+ax = sbn.tsplot(time="num_neurons", value="time", unit="iteration", condition="type", data=data_poisson, color=palette[2:])
 ax.set_ylabel("real-time factor")
 ax.set_xlabel("# neurons")
 
-ax = plt.subplot(2,3,3)
-ax.set_title("NEF Encoder")
-ax = sbn.tsplot(time="num_neurons", value="time", unit="iteration", condition="type", data=data_nef)
-ax.set_ylabel("time [s]")
-ax.set_xlabel("# neurons")
-ax = plt.subplot(2,3,6)
-ax = sbn.tsplot(time="num_neurons", value="time", unit="iteration", condition="type", data=data_nef_rtf, color=palette[2:])
+ax = plt.subplot(1,3,3)
+ax = sbn.tsplot(time="num_neurons", value="time", unit="iteration", condition="type", data=data_nef, color=palette[2:])
 ax.set_ylabel("real-time factor")
 ax.set_xlabel("# neurons")
 

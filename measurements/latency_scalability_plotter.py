@@ -15,9 +15,6 @@ data_file = open(sys.argv[1], 'r')
 data = pd.DataFrame(json.load(data_file))
 data_file.close()
 
-#drop data about other types then rtf
-data.drop([i for i in range(len(data["type"])) if data["type"][i] == "total-time" or data["type"][i] == "build-time"], inplace=True)
-
 # drop information about the iteration and type
 data.drop("iteration", axis=1, inplace=True)
 data.drop("type", axis=1, inplace=True)

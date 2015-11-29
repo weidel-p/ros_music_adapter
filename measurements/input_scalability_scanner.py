@@ -5,12 +5,11 @@ import datetime
 import json
 
 ITERATIONS = 2 
-MIN_NUM_NEURONS = 0
+MIN_NUM_NEURONS = 0 
 MAX_NUM_NEURONS = 5001
 STEP_SIZE = 5000
 
 sim_time = 10 # in sec
-sim_time_build = 0.001 # in sec
 
 data_filename = sys.argv[1]
 
@@ -42,6 +41,10 @@ def create_music_config(num_neurons, sim_time):
                   args=\n\
                   np=1\n\
                   music_timestep=0.03333\n\
+                [nest]\n\
+                  binary=./pyNEST_measurement.py\n\
+                  args=-s 0.05 -t " + str(sim_time) + " -n " + str(num_neurons) + "\n\
+                  np=1\n\
                 [decoder]\n\
                   binary=../linear_readout_decoder\n\
                   args=\n\
@@ -53,13 +56,15 @@ def create_music_config(num_neurons, sim_time):
                   binary=../ros_command_adapter\n\
                   args=\n\
                   np=1\n\
-                  usic_timestep=0.05\n\
+                  music_timestep=0.05\n\
                   ros_topic=/jubot/cmd_vel\n\
                   message_mapping_filename=twist_mapping.dat\n\
                   command_rate=20\n\
                 sensor.out->encoder.in[100]\n\
-                encoder.out->decoder.in[" + str(num_neurons) +"]\n\
+                encoder.out->nest.in[" + str(num_neurons) +"]\n\
+                nest.out->decoder.in[" + str(num_neurons) +"]\n\
                 decoder.out->command.in[2]"
+
     music_config_file = open("config.music", 'w+')
     music_config_file.writelines(music_config)
     music_config_file.close()
@@ -73,30 +78,27 @@ for num_neurons in np.arange(MIN_NUM_NEURONS, MAX_NUM_NEURONS, STEP_SIZE):
 
     for it in range(ITERATIONS):
 
-        create_music_config(num_neurons, sim_time_build)
-        start = datetime.datetime.now()
-        os.system("mpirun \-np 4 music config.music ")
-        end = datetime.datetime.now()
-        dt_build = end - start
-        build_time = dt_build.seconds + dt_build.microseconds / 1000000.
-        insert_datapoint (num_neurons, build_time, "build-time", it) 
+        if os.path.exists("run_time.dat"):
+            os.remove("run_time.dat")
 
         create_music_config(num_neurons, sim_time)
-        start = datetime.datetime.now()
-        os.system("mpirun \-np 4 music config.music ")
-        end = datetime.datetime.now()
-        dt_run = end - start
-        run_time = dt_run.seconds + dt_run.microseconds / 1000000.
-        insert_datapoint (num_neurons, run_time, "total-time", it) 
+        os.system("mpirun \-np 5 music config.music ")
 
-        rtf = sim_time / (run_time - build_time)
+        with open("run_time.dat", 'r') as f:
+            run_time = float(json.load(f))
+
+        rtf = sim_time / run_time 
+
         insert_datapoint (num_neurons, rtf, "real-time factor", it) 
 
+        print
+        print
+        print rtf 
+        print
+        print
     
     if os.path.exists("config.music"):
         os.remove("config.music")
-
-
 
 data_file = open(data_filename, "w+")
 json.dump(data, data_file)

@@ -3,7 +3,12 @@
 import nest
 import numpy as np
 import sys
+import json
+from datetime import datetime
 from optparse import OptionParser
+from mpi4py import MPI
+
+comm = MPI.COMM_WORLD
 
 to_ms = lambda t: t * 1000.
 
@@ -15,7 +20,7 @@ opt_parser.add_option("-n", "--num_neurons", dest="num_neurons", type="int", hel
 (options, args) = opt_parser.parse_args()
 
 nest.ResetKernel()
-#nest.set_verbosity("M_FATAL")
+nest.set_verbosity("M_FATAL")
 nest.SetKernelStatus({'resolution': 1.0})
 #nest.SetKernelStatus({'print_time': True})
 
@@ -34,6 +39,21 @@ nest.Connect(proxy_in, parrot, 'one_to_one', {'delay': to_ms(options.music_times
 for i in range(NUM_ENC_NEURONS):
     nest.Connect([parrot[i]], proxy_out, 'all_to_all', {'music_channel': i, 'delay': to_ms(options.music_timestep)})
 
+comm.Barrier()
+start = datetime.now()
 
 nest.Simulate(to_ms(options.simtime))
+
+end = datetime.now()
+dt = end - start
+run_time = dt.seconds + dt.microseconds / 1000000.
+
+print 
+print
+print "RUN TIME:", run_time
+print 
+print
+
+with open("run_time.dat", 'w+') as f:
+    json.dump(run_time, f)
 

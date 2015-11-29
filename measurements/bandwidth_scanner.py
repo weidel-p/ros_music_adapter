@@ -50,6 +50,10 @@ def create_music_config(num_neurons, sim_time, firing_rate):
                   music_timestep=0.03333\n\
                   rate_min=" + str(firing_rate) + "\n\
                   rate_max=" + str(firing_rate) + "\n\
+                [nest]\n\
+                  binary=./pyNEST_measurement.py\n\
+                  args=-s 0.05 -t " + str(sim_time) + " -n " + str(num_neurons) + "\n\
+                  np=1\n\
                 [decoder]\n\
                   binary=../linear_readout_decoder\n\
                   args=\n\
@@ -60,13 +64,14 @@ def create_music_config(num_neurons, sim_time, firing_rate):
                   binary=../ros_command_adapter\n\
                   args=\n\
                   np=1\n\
-                  usic_timestep=0.05\n\
+                  music_timestep=0.05\n\
                   ros_topic=/jubot/cmd_vel\n\
                   message_mapping_filename=twist_mapping.dat\n\
                   command_rate=20\n\
                 sensor.out->connect.in[100]\n\
                 connect.out->encoder.in[" + str(num_neurons) +"]\n\
-                encoder.out->decoder.in[" + str(num_neurons) +"]\n\
+                encoder.out->nest.in[" + str(num_neurons) +"]\n\
+                nest.out->decoder.in[" + str(num_neurons) +"]\n\
                 decoder.out->command.in[2]"
     music_config_file = open("config.music", 'w+')
     music_config_file.writelines(music_config)
@@ -81,23 +86,23 @@ for firing_rate in np.arange(MIN_FIRING_RATE, MAX_FIRING_RATE, STEP_SIZE):
 
     for it in range(ITERATIONS):
 
-        create_music_config(num_neurons, sim_time_build, firing_rate)
-        start = datetime.datetime.now()
-        os.system("mpirun \-np 5 music config.music ")
-        end = datetime.datetime.now()
-        dt_build = end - start
-        build_time = dt_build.seconds + dt_build.microseconds / 1000000.
-        insert_datapoint (firing_rate, build_time, "build-time", it) 
+        if os.path.exists("run_time.dat"):
+            os.remove("run_time.dat")
 
         create_music_config(num_neurons, sim_time, firing_rate)
-        start = datetime.datetime.now()
-        os.system("mpirun \-np 5 music config.music ")
-        end = datetime.datetime.now()
-        dt_run = end - start
-        run_time = dt_run.seconds + dt_run.microseconds / 1000000.
-        insert_datapoint (firing_rate, run_time, "total-time", it) 
+        os.system("mpirun \-np 6 music config.music ")
+ 
+        with open("run_time.dat", 'r') as f:
+            run_time = float(json.load(f))
 
-        rtf = sim_time / (run_time - build_time)
+        rtf = sim_time / run_time 
+
+        print
+        print
+        print rtf
+        print
+        print
+
         insert_datapoint (firing_rate, rtf, "real-time factor", it) 
 
     
