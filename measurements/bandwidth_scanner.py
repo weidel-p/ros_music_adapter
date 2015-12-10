@@ -10,7 +10,6 @@ MAX_FIRING_RATE = 11
 STEP_SIZE = 10
 
 sim_time = 10 # in sec
-sim_time_build = 0.001 # in sec
 
 num_neurons = 50000
 

@@ -10,7 +10,6 @@ MAX_NUM_NEURONS = 10001
 STEP_SIZE = 10000
 
 sim_time = 10 # in sec
-sim_time_build = 0.001 # in sec
 
 data_filename = sys.argv[1]
 

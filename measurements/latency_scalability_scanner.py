@@ -17,7 +17,6 @@ TIMESTEP_STEP_SIZE = 0.01
 
 
 sim_time = 10 # in sec
-sim_time_build = 0.001 # in sec
 
 data_filename = sys.argv[1]
 

@@ -37,6 +37,7 @@ ax.set_yticklabels(y)
 ax.set_xlabel("#neurons")
 ax.set_ylabel("MUSIC-timestep [s]")
 plt.title("MUSIC-Timestep vs Scalability")
+plt.savefig("latency_scalability.pdf")
 plt.show()
 
 

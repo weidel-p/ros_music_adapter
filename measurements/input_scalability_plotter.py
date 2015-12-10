@@ -26,16 +26,19 @@ data_file_nef.close()
 
 x = plt.subplot(1,3,1)
 ax = sbn.tsplot(time="num_neurons", value="time", unit="iteration", condition="type", data=data_rate, color=palette[2:])
+ax.set_title("Rate Encoding")
 ax.set_ylabel("real-time factor")
 ax.set_xlabel("# neurons")
 
 ax = plt.subplot(1,3,2)
 ax = sbn.tsplot(time="num_neurons", value="time", unit="iteration", condition="type", data=data_poisson, color=palette[2:])
+ax.set_title("Poisson Encoding")
 ax.set_ylabel("real-time factor")
 ax.set_xlabel("# neurons")
 
 ax = plt.subplot(1,3,3)
 ax = sbn.tsplot(time="num_neurons", value="time", unit="iteration", condition="type", data=data_nef, color=palette[2:])
+ax.set_title("NEF Encoding")
 ax.set_ylabel("real-time factor")
 ax.set_xlabel("# neurons")
 
