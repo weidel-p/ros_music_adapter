@@ -29,7 +29,7 @@ NUM_ENC_NEURONS = options.num_neurons
 
 proxy_in = nest.Create('music_event_in_proxy', NUM_ENC_NEURONS)
 nest.SetStatus(proxy_in, [{'port_name': 'in', 'music_channel': c} for c in range(NUM_ENC_NEURONS)])
-nest.SetAcceptableLatency('in', to_ms(options.music_timestep))
+nest.SetAcceptableLatency('in', to_ms(options.music_timestep) - 0.001)
 
 proxy_out = nest.Create('music_event_out_proxy')
 nest.SetStatus(proxy_out, {'port_name': 'out'})

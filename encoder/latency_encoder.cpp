@@ -67,6 +67,7 @@ LatencyEncoder::initMUSIC(int argc, char** argv)
     MUSIC::LinearIndex l_index_out(0, size_data);
     port_out->map(&l_index_out, MUSIC::Index::GLOBAL, 1);
 
+    MPI::COMM_WORLD.Barrier();
     runtime = new MUSIC::Runtime (setup, timestep);
 }
 
@@ -89,12 +90,12 @@ LatencyEncoder::runMUSIC()
 
         for (int n = 0; n < size_data; ++n)
         {
-#if DEBUG_OUTPUT
-            std::cout << "Latency Encoder: neuron " << n << " spikes at "  << t << std::endl;
-#endif
             num_spikes++;
-            if (data[n] > 0.){
+            if (data[n] > 0.5){
                 port_out->insertEvent(t, MUSIC::GlobalIndex(n));
+#if DEBUG_OUTPUT
+                std::cout << "Latency Encoder: neuron " << n << " spikes at "  << t << " for input " << data[n] << std::endl;
+#endif
             }
         }
     }

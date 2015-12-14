@@ -71,6 +71,7 @@ LatencyDecoder::initMUSIC(int argc, char** argv)
     MUSIC::LinearIndex l_index_in(0, size_spike_data);
     port_in->map(&l_index_in, this, timestep, 1); 
 
+    MPI::COMM_WORLD.Barrier();
     runtime = new MUSIC::Runtime (setup, timestep);
 }
 
@@ -82,7 +83,6 @@ LatencyDecoder::runMUSIC()
     struct timeval end;
     gettimeofday(&start, NULL);
 
-    std::map<double, std::vector<int> >::iterator it, it_now;
     double t = runtime->time();
     while(t < stoptime)
     {
