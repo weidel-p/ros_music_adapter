@@ -6,8 +6,8 @@ import json
 
 ITERATIONS = 2 
 MIN_NUM_NEURONS = 0 
-MAX_NUM_NEURONS = 5001
-STEP_SIZE = 5000
+MAX_NUM_NEURONS = 50001
+STEP_SIZE = 1000
 
 sim_time = 10 # in sec
 

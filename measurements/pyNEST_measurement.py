@@ -9,6 +9,7 @@ from optparse import OptionParser
 from mpi4py import MPI
 
 comm = MPI.COMM_WORLD
+comm_self = MPI.COMM_NULL
 
 to_ms = lambda t: t * 1000.
 
@@ -40,20 +41,22 @@ for i in range(NUM_ENC_NEURONS):
     nest.Connect([parrot[i]], proxy_out, 'all_to_all', {'music_channel': i, 'delay': to_ms(options.music_timestep)})
 
 comm.Barrier()
-start = datetime.now()
+if comm.Get_rank() == 3:
+	start = datetime.now()
 
 nest.Simulate(to_ms(options.simtime))
 
-end = datetime.now()
-dt = end - start
-run_time = dt.seconds + dt.microseconds / 1000000.
+if comm.Get_rank() == 3:
+	end = datetime.now()
+	dt = end - start
+	run_time = dt.seconds + dt.microseconds / 1000000.
 
-print 
-print
-print "RUN TIME:", run_time
-print 
-print
+	print 
+	print
+	print "RUN TIME:", run_time
+	print 
+	print
 
-with open("run_time.dat", 'w+') as f:
-    json.dump(run_time, f)
+	with open("run_time.dat", 'w+') as f:
+	    json.dump(run_time, f)
 

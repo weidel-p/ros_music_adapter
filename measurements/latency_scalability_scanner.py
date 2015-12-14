@@ -6,14 +6,14 @@ import json
 
 
 
-ITERATIONS = 2 
+ITERATIONS = 5 
 MIN_NUM_NEURONS = 0
-MAX_NUM_NEURONS = 2001
-STEP_SIZE = 1000
+MAX_NUM_NEURONS = 200001
+STEP_SIZE = 5000
 
 MIN_TIMESTEP = 0.000
-MAX_TIMESTEP = 0.011
-TIMESTEP_STEP_SIZE = 0.01
+MAX_TIMESTEP = 0.051
+TIMESTEP_STEP_SIZE = 0.005
 
 
 sim_time = 10 # in sec
@@ -22,7 +22,6 @@ data_filename = sys.argv[1]
 
 if os.path.exists(data_filename):
     os.remove(data_filename)
-
 
 data = {"num_neurons": [], "time": [], "type": [], "iteration": [], "timestep": []}
 
@@ -59,7 +58,7 @@ def create_music_config(num_neurons, sim_time, timestep):
                 [nest]\n\
                   binary=./pyNEST_measurement.py\n\
                   args=-s " + str(timestep) + " -t " + str(sim_time) + " -n " + str(num_neurons) + "\n\
-                  np=1\n\
+                  np=7\n\
                 [decoder]\n\
                   binary=../linear_readout_decoder\n\
                   args=\n\
@@ -105,7 +104,7 @@ for timestep in np.arange(MIN_TIMESTEP, MAX_TIMESTEP, TIMESTEP_STEP_SIZE):
                 continue
 
             create_music_config(num_neurons, sim_time, timestep)
-            os.system("mpirun \-np 6 music config.music ")
+            os.system("mpirun \-np 12 music config.music ")
              
             with open("run_time.dat", 'r') as f:
                 run_time = float(json.load(f))
