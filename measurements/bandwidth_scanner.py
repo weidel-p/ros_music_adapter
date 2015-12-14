@@ -6,13 +6,13 @@ import json
 
 ITERATIONS = 2 
 MIN_FIRING_RATE = 0
-MAX_FIRING_RATE = 11
+MAX_FIRING_RATE = 101
 STEP_SIZE = 10
 
 sim_time = 10 # in sec
 sim_time_build = 0.001 # in sec
 
-num_neurons = 50000
+num_neurons = 10000
 
 data_filename = sys.argv[1] 
 
@@ -53,7 +53,7 @@ def create_music_config(num_neurons, sim_time, firing_rate):
                 [nest]\n\
                   binary=./pyNEST_measurement.py\n\
                   args=-s 0.05 -t " + str(sim_time) + " -n " + str(num_neurons) + "\n\
-                  np=1\n\
+                  np=7\n\
                 [decoder]\n\
                   binary=../linear_readout_decoder\n\
                   args=\n\
@@ -90,7 +90,7 @@ for firing_rate in np.arange(MIN_FIRING_RATE, MAX_FIRING_RATE, STEP_SIZE):
             os.remove("run_time.dat")
 
         create_music_config(num_neurons, sim_time, firing_rate)
-        os.system("mpirun \-np 6 music config.music ")
+        os.system("mpirun \-np 12 music config.music ")
  
         with open("run_time.dat", 'r') as f:
             run_time = float(json.load(f))

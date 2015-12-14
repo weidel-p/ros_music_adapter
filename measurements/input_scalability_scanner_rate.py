@@ -5,9 +5,9 @@ import datetime
 import json
 
 ITERATIONS = 2 
-MIN_NUM_NEURONS = 9000
-MAX_NUM_NEURONS = 10001
-STEP_SIZE = 1000
+MIN_NUM_NEURONS = 0
+MAX_NUM_NEURONS = 200001
+STEP_SIZE = 10000
 
 sim_time = 10 # in sec
 sim_time_build = 0.001 # in sec
@@ -52,7 +52,7 @@ def create_music_config(num_neurons, sim_time):
                 [nest]\n\
                   binary=./pyNEST_measurement.py\n\
                   args=-s 0.05 -t " + str(sim_time) + " -n " + str(num_neurons) + "\n\
-                  np=1\n\
+                  np=7\n\
                 [decoder]\n\
                   binary=../linear_readout_decoder\n\
                   args=\n\
@@ -90,7 +90,7 @@ for num_neurons in np.arange(MIN_NUM_NEURONS, MAX_NUM_NEURONS, STEP_SIZE):
             os.remove("run_time.dat")
 
         create_music_config(num_neurons, sim_time)
-        os.system("mpirun \-np 6 music config.music ")
+        os.system("mpirun \-np 12 music config.music ")
         
         with open("run_time.dat", 'r') as f:
             run_time = float(json.load(f))
