@@ -3,6 +3,8 @@ import json
 import pandas as pd
 import numpy as np
 import sys
+import colormaps as cmaps
+
 
 import seaborn as sbn
 sbn.set_palette("deep", desat=.6)
@@ -31,8 +33,13 @@ x = np.unique(data["num_neurons"])
 y = np.unique(data["timestep"])[::-1]
 rtfs = np.reshape(rtfs, [len(y), len(x)])
 
-ax = sbn.heatmap(rtfs)
+cmap = plt.get_cmap("copper")
+
+ax = sbn.heatmap(rtfs, linewidth=0., cmap=cmap)
+#ax.set_xticks(np.linspace(0, 20000, 10))
 ax.set_xticklabels(x)
+for label in ax.get_xticklabels()[::2]:
+    label.set_visible(False)
 ax.set_yticklabels(y)
 ax.set_xlabel("#neurons")
 ax.set_ylabel("MUSIC-timestep [s]")

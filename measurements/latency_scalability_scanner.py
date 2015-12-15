@@ -4,8 +4,6 @@ import numpy as np
 import datetime
 import json
 
-
-
 ITERATIONS = 5 
 MIN_NUM_NEURONS = 0
 MAX_NUM_NEURONS = 200001
@@ -32,7 +30,53 @@ def insert_datapoint(n, t, ty, i, ts):
     data["time"].append(t)
     data["timestep"].append(ts)
 
-def create_music_config(num_neurons, sim_time, timestep):
+def create_music_config_no_simulator(num_neurons, sim_time, timestep):
+    music_config = \
+                "stoptime=" + str(sim_time) + "\n"\
+                "[sensor]\n\
+                  binary=../ros_sensor_adapter\n\
+                  args=\n\
+                  np=1\n\
+                  music_timestep="+ str(timestep) +"\n\
+                  ros_topic=/jubot/laserscan\n\
+                  message_type=Laserscan\n\
+                  sensor_update_rate=30\n\
+                [connect]\n\
+                  binary=../connect_adapter\n\
+                  args=\n\
+                  np=1\n\
+                  music_timestep="+ str(timestep) +"\n\
+                [encoder]\n\
+                  binary=../rate_encoder\n\
+                  args=\n\
+                  np=1\n\
+                  music_timestep="+ str(timestep) +"\n\
+                  rate_min=1\n\
+                  rate_max=2\n\
+                [decoder]\n\
+                  binary=../linear_readout_decoder\n\
+                  args=\n\
+                  np=1\n\
+                  music_timestep="+ str(timestep) +"\n\
+                  tau=0.03\n\
+                [command]\n\
+                  binary=../ros_command_adapter\n\
+                  args=\n\
+                  np=1\n\
+                  music_timestep="+ str(timestep) +"\n\
+                  ros_topic=/jubot/cmd_vel\n\
+                  message_mapping_filename=twist_mapping.dat\n\
+                  command_rate=20\n\
+                sensor.out->connect.in[100]\n\
+                connect.out->encoder.in[" + str(num_neurons) +"]\n\
+                encoder.out->decoder.in[" + str(num_neurons) +"]\n\
+                decoder.out->command.in[2]"
+
+    music_config_file = open("config.music", 'w+')
+    music_config_file.writelines(music_config)
+    music_config_file.close()
+
+def create_music_config_nest(num_neurons, sim_time, timestep):
     music_config = \
                 "stoptime=" + str(sim_time) + "\n"\
                 "[sensor]\n\
@@ -84,7 +128,6 @@ def create_music_config(num_neurons, sim_time, timestep):
     music_config_file.close()
 
 
-
 for timestep in np.arange(MIN_TIMESTEP, MAX_TIMESTEP, TIMESTEP_STEP_SIZE):
     last_rtf = 1
     for num_neurons in np.arange(MIN_NUM_NEURONS, MAX_NUM_NEURONS, STEP_SIZE):
@@ -100,13 +143,13 @@ for timestep in np.arange(MIN_TIMESTEP, MAX_TIMESTEP, TIMESTEP_STEP_SIZE):
     
             if last_rtf < 0.2:
                 # fill data up with zeros if computation takes too long
-                insert_datapoint (num_neurons, 0, "real-time factor", it, timestep) 
+                insert_datapoint (num_neurons, 0, "no neural simulator", it, timestep) 
                 continue
 
-            create_music_config(num_neurons, sim_time, timestep)
-            os.system("mpirun \-np 12 music config.music ")
+            create_music_config_no_simulator(num_neurons, sim_time, timestep)
+            os.system("mpirun \-np 5 music config.music ")
              
-            with open("run_time.dat", 'r') as f:
+            with open("runtime.dat", 'r') as f:
                 run_time = float(json.load(f))
 
             rtf = sim_time / run_time 
@@ -117,7 +160,7 @@ for timestep in np.arange(MIN_TIMESTEP, MAX_TIMESTEP, TIMESTEP_STEP_SIZE):
             print
             print
     
-            insert_datapoint (num_neurons, rtf, "real-time factor", it, timestep) 
+            insert_datapoint (num_neurons, rtf, "no neural simulator", it, timestep) 
 
             last_rtf = min(rtf, last_rtf)
         
@@ -125,10 +168,56 @@ for timestep in np.arange(MIN_TIMESTEP, MAX_TIMESTEP, TIMESTEP_STEP_SIZE):
                 os.remove("config.music")
 
 
-
 data_file = open(data_filename, "w+")
 json.dump(data, data_file)
 data_file.close()
+
+
+
+#for timestep in np.arange(MIN_TIMESTEP, MAX_TIMESTEP, TIMESTEP_STEP_SIZE):
+#    last_rtf = 1
+#    for num_neurons in np.arange(MIN_NUM_NEURONS, MAX_NUM_NEURONS, STEP_SIZE):
+#
+#        if timestep == 0:
+#            timestep = 0.001
+#        if num_neurons == 0:
+#            num_neurons = 1
+#
+#        print "\n\n\n\n\ RUNNING", num_neurons, "NEURONS WITH TIMESTEP", timestep, "\n\n\n\n"
+#
+#        for it in range(ITERATIONS):
+#    
+#            if last_rtf < 0.2:
+#                # fill data up with zeros if computation takes too long
+#                insert_datapoint (num_neurons, 0, "with NEST", it, timestep) 
+#                continue
+#
+#            create_music_config_nest(num_neurons, sim_time, timestep)
+#            os.system("mpirun \-np 12 music config.music ")
+#             
+#            with open("runtime.dat", 'r') as f:
+#                run_time = float(json.load(f))
+#
+#            rtf = sim_time / run_time 
+#
+#            print
+#            print
+#            print rtf
+#            print
+#            print
+#    
+#            insert_datapoint (num_neurons, rtf, "with NEST", it, timestep) 
+#
+#            last_rtf = min(rtf, last_rtf)
+#        
+#            if os.path.exists("config.music"):
+#                os.remove("config.music")
+#
+#
+#
+#data_file = open(data_filename, "w+")
+#json.dump(data, data_file)
+#data_file.close()
 
 
     

@@ -255,6 +255,10 @@ RosCommandAdapter::runROSMUSIC()
 	ros::spinOnce();
     }
 
+#if MEASUREMENT_OUTPUT
+    saveRuntime(clock.time ());
+#endif
+
     std::cout << "command: total simtime: " << clock.time () << " s" <<  std::endl;
 }
 
@@ -264,7 +268,7 @@ RosCommandAdapter::runROS()
     RTClock clock(1. / command_rate);
     ros::Time stop_time = ros::Time::now() + ros::Duration(stoptime);
 
-    ros::spinOnce();
+    ros::spinOnce() ;
     for (ros::Time t = ros::Time::now(); t < stop_time; t = ros::Time::now())
     {
 	    pthread_mutex_lock (&data_mutex);
@@ -302,14 +306,28 @@ RosCommandAdapter::runMUSIC()
 	    pthread_mutex_unlock (&data_mutex);
     }
 
+#if MEASUREMENT_OUTPUT
+    saveRuntime(clock.time ());
+#endif
+
     std::cout << "command: total simtime: " << clock.time () << " s" <<  std::endl;
 }
 
-void RosCommandAdapter::finalize(){
+void RosCommandAdapter::finalize()
+{
 
     runtime->finalize();
     delete runtime;
 }
 
+#if MEASUREMENT_OUTPUT
+void RosCommandAdapter::saveRuntime(double rt)
+{
+    std::ofstream data_file;
+    data_file.open("runtime.dat", std::ios::out);
+    data_file << rt;
+    data_file.close();
+}
+#endif
 
 

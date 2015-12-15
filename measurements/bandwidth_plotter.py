@@ -19,7 +19,7 @@ data_file.close()
 
 #plot data
 plt.title("Bandwidth")
-ax = sbn.tsplot(time="firing_rate", value="time", unit="iteration", condition="type", data=data)
+ax = sbn.tsplot(time="firing_rate", value="time", unit="iteration", condition="type", data=data, color=palette[2:])
 ax.set_ylabel("real-time factor")
 ax.set_xlabel("firing-rate")
 

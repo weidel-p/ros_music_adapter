@@ -17,8 +17,9 @@ data = pd.DataFrame(json.load(data_file))
 data_file.close()
 
 
-sbn.boxplot(x="timestep", y="latency", data=data)
-sbn.axlabel("timestep", "latency [s]")
+sbn.tsplot(time="timestep", value="latency", unit="iteration", condition="type", data=data, color=palette)
+#sbn.boxplot(x="timestep", y="latency", data=data)
+sbn.axlabel("MUSIC timestep [s]", "latency [s]")
 #sbn.tsplot(time="times", value="cmds", data=data)
 plt.savefig("latency.pdf", dpi=500)
 plt.show()
