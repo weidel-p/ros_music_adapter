@@ -3,11 +3,12 @@ import os
 import numpy as np
 import datetime
 import json
+import time
 
 ITERATIONS = 5 
 MIN_NUM_NEURONS = 0 
-MAX_NUM_NEURONS = 50001
-STEP_SIZE = 5000
+MAX_NUM_NEURONS = 26001
+STEP_SIZE = 2000
 
 sim_time = 10 # in sec
 
@@ -107,6 +108,13 @@ def create_music_config_nest(num_neurons, sim_time):
     music_config_file = open("config.music", 'w+')
     music_config_file.writelines(music_config)
     music_config_file.close()
+def start_ros():
+    os.system("roslaunch jubot empty.launch &")
+    time.sleep(5.)
+
+def kill_ros():
+    os.system("kill $(pgrep ros)")
+
 
 for num_neurons in np.arange(MIN_NUM_NEURONS, MAX_NUM_NEURONS, STEP_SIZE):
     print "\n\n\n\n\ RUNNING", num_neurons, "NEURONS \n\n\n\n"
@@ -120,7 +128,12 @@ for num_neurons in np.arange(MIN_NUM_NEURONS, MAX_NUM_NEURONS, STEP_SIZE):
             os.remove("run_time.dat")
 
         create_music_config_no_simulator(num_neurons, sim_time)
+
+        start_ros()
+
         os.system("mpirun \-np 4 music config.music ")
+
+        kill_ros()
 
         with open("runtime.dat", 'r') as f:
             run_time = float(json.load(f))
@@ -153,7 +166,12 @@ for num_neurons in np.arange(MIN_NUM_NEURONS, MAX_NUM_NEURONS, STEP_SIZE):
             os.remove("run_time.dat")
 
         create_music_config_nest(num_neurons, sim_time)
+
+        start_ros()
+
         os.system("mpirun \-np 5 music config.music ")
+
+        kill_ros()
 
         with open("runtime.dat", 'r') as f:
             run_time = float(json.load(f))
