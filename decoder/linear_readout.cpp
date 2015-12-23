@@ -149,6 +149,7 @@ LinearReadoutDecoder::runMUSIC()
 {
     std::cout << "running linear readout decoder" << std::endl;
 
+    int num_spikes_decoded = 0;
     
     struct timeval start;
     struct timeval end;
@@ -166,6 +167,7 @@ LinearReadoutDecoder::runMUSIC()
             activity_traces[id] += (std::exp ((t_spike - t) * inv_tau) * inv_tau);
             
             spikes.pop (); // remove spike from queue
+            ++num_spikes_decoded;
         }
 
         for (int j = 0; j < size_spike_data; ++j)
@@ -201,7 +203,7 @@ LinearReadoutDecoder::runMUSIC()
     {
         dt_us += 1000000;
     }
-    std::cout << "decoder: total simtime: " << dt_s << " " << dt_us << " received spikes " << num_spikes0  << std::endl;
+    std::cout << "decoder: total simtime: " << dt_s << " " << dt_us << " received spikes " << num_spikes0 << " spikes decoded " << num_spikes_decoded << std::endl;
     
 }
 

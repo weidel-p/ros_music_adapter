@@ -18,7 +18,7 @@ if os.path.exists(data_filename):
     os.remove(data_filename)
 
 
-data ={"num_neurons": [], "time": [], "type": [], "iteration": []}
+data = {"num_neurons": [], "time": [], "type": [], "iteration": []}
 
 def insert_datapoint(n, t, ty, i):
     data["num_neurons"].append(n)
@@ -47,7 +47,6 @@ def create_music_config_no_simulator(num_neurons, sim_time):
                   args=\n\
                   np=1\n\
                   music_timestep=0.05\n\
-                  music_acceptable_latency=0.05\n\
                   tau=0.03\n\
                 [command]\n\
                   binary=../ros_command_adapter\n\
@@ -60,6 +59,9 @@ def create_music_config_no_simulator(num_neurons, sim_time):
                 sensor.out->encoder.in[100]\n\
                 encoder.out->decoder.in[" + str(num_neurons) +"]\n\
                 decoder.out->command.in[2]"
+
+    if os.path.exists("config.music"):
+        os.remove("config.music")
 
     music_config_file = open("config.music", 'w+')
     music_config_file.writelines(music_config)
@@ -90,7 +92,6 @@ def create_music_config_nest(num_neurons, sim_time):
                   args=\n\
                   np=1\n\
                   music_timestep=0.05\n\
-                  music_acceptable_latency=0.05\n\
                   tau=0.03\n\
                 [command]\n\
                   binary=../ros_command_adapter\n\
@@ -105,12 +106,16 @@ def create_music_config_nest(num_neurons, sim_time):
                 nest.out->decoder.in[" + str(num_neurons) +"]\n\
                 decoder.out->command.in[2]"
 
+    if os.path.exists("config.music"):
+        os.remove("config.music")
+
     music_config_file = open("config.music", 'w+')
     music_config_file.writelines(music_config)
     music_config_file.close()
+
 def start_ros():
     os.system("roslaunch jubot empty.launch &")
-    time.sleep(5.)
+    time.sleep(10.)
 
 def kill_ros():
     os.system("kill $(pgrep ros)")
@@ -124,8 +129,8 @@ for num_neurons in np.arange(MIN_NUM_NEURONS, MAX_NUM_NEURONS, STEP_SIZE):
 
     for it in range(ITERATIONS):
 
-        if os.path.exists("run_time.dat"):
-            os.remove("run_time.dat")
+        if os.path.exists("runtime.dat"):
+            os.remove("runtime.dat")
 
         create_music_config_no_simulator(num_neurons, sim_time)
 
@@ -162,8 +167,8 @@ for num_neurons in np.arange(MIN_NUM_NEURONS, MAX_NUM_NEURONS, STEP_SIZE):
 
     for it in range(ITERATIONS):
 
-        if os.path.exists("run_time.dat"):
-            os.remove("run_time.dat")
+        if os.path.exists("runtime.dat"):
+            os.remove("runtime.dat")
 
         create_music_config_nest(num_neurons, sim_time)
 
@@ -189,9 +194,6 @@ for num_neurons in np.arange(MIN_NUM_NEURONS, MAX_NUM_NEURONS, STEP_SIZE):
         print rtf 
         print
         print
-    
-    if os.path.exists("config.music"):
-        os.remove("config.music")
 
 
 
