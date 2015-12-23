@@ -77,7 +77,7 @@ def create_music_config_nest(num_neurons, sim_time):
                   music_timestep=0.05\n\
                   ros_topic=/jubot/laserscan\n\
                   message_type=Laserscan\n\
-                  sensor_update_rate=30\n\
+                  sensor_update_rate=20\n\
                 [encoder]\n\
                   binary=../nef_encoder\n\
                   args=\n\

@@ -41,7 +41,7 @@ def create_music_config_no_simulator(num_neurons, sim_time, timestep):
                   music_timestep="+ str(timestep) +"\n\
                   ros_topic=/jubot/laserscan\n\
                   message_type=Laserscan\n\
-                  sensor_update_rate=30\n\
+                  sensor_update_rate=20\n\
                 [connect]\n\
                   binary=../connect_adapter\n\
                   args=\n\
@@ -90,7 +90,7 @@ def create_music_config_nest(num_neurons, sim_time, timestep):
                   music_timestep="+ str(timestep) +"\n\
                   ros_topic=/jubot/laserscan\n\
                   message_type=Laserscan\n\
-                  sensor_update_rate=30\n\
+                  sensor_update_rate=20\n\
                 [connect]\n\
                   binary=../connect_adapter\n\
                   args=\n\
