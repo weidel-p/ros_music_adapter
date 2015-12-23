@@ -5,9 +5,9 @@ import datetime
 import json
 import time
 
-ITERATIONS = 5 
-MIN_NUM_NEURONS = 0 
-MAX_NUM_NEURONS = 26001
+ITERATIONS = 1 
+MIN_NUM_NEURONS = 20000 
+MAX_NUM_NEURONS = 20001
 STEP_SIZE = 2000
 
 sim_time = 10 # in sec
@@ -115,7 +115,7 @@ def create_music_config_nest(num_neurons, sim_time):
 
 def start_ros():
     os.system("roslaunch jubot empty.launch &")
-    time.sleep(10.)
+    time.sleep(3.)
 
 def kill_ros():
     os.system("kill $(pgrep ros)")
@@ -143,21 +143,15 @@ for num_neurons in np.arange(MIN_NUM_NEURONS, MAX_NUM_NEURONS, STEP_SIZE):
         with open("runtime.dat", 'r') as f:
             run_time = float(json.load(f))
 
-        if os.path.exists("runtime.dat"):
-            os.remove("runtime.dat")
-
         rtf = sim_time / run_time 
 
         insert_datapoint (num_neurons, rtf, "without neural simulator", it) 
 
         print
         print
-        print rtf 
+        print num_neurons, rtf 
         print
         print
-    
-    if os.path.exists("config.music"):
-        os.remove("config.music")
 
 for num_neurons in np.arange(MIN_NUM_NEURONS, MAX_NUM_NEURONS, STEP_SIZE):
     print "\n\n\n\n\ RUNNING", num_neurons, "NEURONS \n\n\n\n"
@@ -180,10 +174,6 @@ for num_neurons in np.arange(MIN_NUM_NEURONS, MAX_NUM_NEURONS, STEP_SIZE):
 
         with open("runtime.dat", 'r') as f:
             run_time = float(json.load(f))
-        
-        if os.path.exists("runtime.dat"):
-            os.remove("runtime.dat")
-
 
         rtf = sim_time / run_time 
 
@@ -191,7 +181,7 @@ for num_neurons in np.arange(MIN_NUM_NEURONS, MAX_NUM_NEURONS, STEP_SIZE):
 
         print
         print
-        print rtf 
+        print num_neurons, rtf 
         print
         print
 
