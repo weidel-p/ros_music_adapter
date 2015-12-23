@@ -3,6 +3,7 @@ import os
 import numpy as np
 import datetime
 import json
+import time
 
 ITERATIONS = 5 
 MIN_NUM_NEURONS = 0
@@ -72,6 +73,9 @@ def create_music_config_no_simulator(num_neurons, sim_time, timestep):
                 encoder.out->decoder.in[" + str(num_neurons) +"]\n\
                 decoder.out->command.in[2]"
 
+    if os.path.exists("config.music"):
+        os.remove("config.music")
+
     music_config_file = open("config.music", 'w+')
     music_config_file.writelines(music_config)
     music_config_file.close()
@@ -123,9 +127,19 @@ def create_music_config_nest(num_neurons, sim_time, timestep):
                 nest.out->decoder.in[" + str(num_neurons) +"]\n\
                 decoder.out->command.in[2]"
 
+    if os.path.exists("config.music"):
+        os.remove("config.music")
+
     music_config_file = open("config.music", 'w+')
     music_config_file.writelines(music_config)
     music_config_file.close()
+
+def start_ros():
+    os.system("roslaunch jubot empty.launch &")
+    time.sleep(5.)
+
+def kill_ros():
+    os.system("kill $(pgrep ros)")
 
 
 for timestep in np.arange(MIN_TIMESTEP, MAX_TIMESTEP, TIMESTEP_STEP_SIZE):
@@ -147,7 +161,12 @@ for timestep in np.arange(MIN_TIMESTEP, MAX_TIMESTEP, TIMESTEP_STEP_SIZE):
                 continue
 
             create_music_config_no_simulator(num_neurons, sim_time, timestep)
+
+            start_ros()
+
             os.system("mpirun \-np 5 music config.music ")
+
+            kill_ros()
              
             with open("runtime.dat", 'r') as f:
                 run_time = float(json.load(f))
@@ -164,9 +183,6 @@ for timestep in np.arange(MIN_TIMESTEP, MAX_TIMESTEP, TIMESTEP_STEP_SIZE):
 
             last_rtf = min(rtf, last_rtf)
         
-            if os.path.exists("config.music"):
-                os.remove("config.music")
-
 
 data_file = open(data_filename, "w+")
 json.dump(data, data_file)

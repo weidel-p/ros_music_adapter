@@ -3,6 +3,7 @@ import os
 import numpy as np
 import datetime
 import json
+import time
 
 ITERATIONS = 5 
 MIN_FIRING_RATE = 0
@@ -33,7 +34,7 @@ def create_music_config_no_simulator(num_neurons, sim_time, firing_rate):
                   binary=../ros_sensor_adapter\n\
                   args=\n\
                   np=1\n\
-                  music_timestep=0.03333\n\
+                  music_timestep=0.05\n\
                   ros_topic=/jubot/laserscan\n\
                   message_type=Laserscan\n\
                   sensor_update_rate=30\n\
@@ -41,12 +42,12 @@ def create_music_config_no_simulator(num_neurons, sim_time, firing_rate):
                   binary=../connect_adapter\n\
                   args=\n\
                   np=1\n\
-                  music_timestep=0.03333\n\
+                  music_timestep=0.05\n\
                 [encoder]\n\
                   binary=../rate_encoder\n\
                   args=\n\
                   np=1\n\
-                  music_timestep=0.03333\n\
+                  music_timestep=0.05\n\
                   rate_min=" + str(firing_rate) + "\n\
                   rate_max=" + str(firing_rate) + "\n\
                 [decoder]\n\
@@ -67,6 +68,10 @@ def create_music_config_no_simulator(num_neurons, sim_time, firing_rate):
                 connect.out->encoder.in[" + str(num_neurons) +"]\n\
                 encoder.out->decoder.in[" + str(num_neurons) +"]\n\
                 decoder.out->command.in[2]"
+
+    if os.path.exists("config.music"):
+        os.remove("config.music")
+
     music_config_file = open("config.music", 'w+')
     music_config_file.writelines(music_config)
     music_config_file.close()
@@ -78,7 +83,7 @@ def create_music_config_nest(num_neurons, sim_time, firing_rate):
                   binary=../ros_sensor_adapter\n\
                   args=\n\
                   np=1\n\
-                  music_timestep=0.03333\n\
+                  music_timestep=0.05\n\
                   ros_topic=/jubot/laserscan\n\
                   message_type=Laserscan\n\
                   sensor_update_rate=30\n\
@@ -86,12 +91,12 @@ def create_music_config_nest(num_neurons, sim_time, firing_rate):
                   binary=../connect_adapter\n\
                   args=\n\
                   np=1\n\
-                  music_timestep=0.03333\n\
+                  music_timestep=0.05\n\
                 [encoder]\n\
                   binary=../rate_encoder\n\
                   args=\n\
                   np=1\n\
-                  music_timestep=0.03333\n\
+                  music_timestep=0.05\n\
                   rate_min=" + str(firing_rate) + "\n\
                   rate_max=" + str(firing_rate) + "\n\
                 [nest]\n\
@@ -117,9 +122,21 @@ def create_music_config_nest(num_neurons, sim_time, firing_rate):
                 encoder.out->nest.in[" + str(num_neurons) +"]\n\
                 nest.out->decoder.in[" + str(num_neurons) +"]\n\
                 decoder.out->command.in[2]"
+
+    if os.path.exists("config.music"):
+        os.remove("config.music")
+
     music_config_file = open("config.music", 'w+')
     music_config_file.writelines(music_config)
     music_config_file.close()
+
+def start_ros():
+    os.system("roslaunch jubot empty.launch &")
+    time.sleep(5.)
+
+def kill_ros():
+    os.system("kill $(pgrep ros)")
+
 
 
 for firing_rate in np.arange(MIN_FIRING_RATE, MAX_FIRING_RATE, STEP_SIZE):
@@ -134,7 +151,12 @@ for firing_rate in np.arange(MIN_FIRING_RATE, MAX_FIRING_RATE, STEP_SIZE):
             os.remove("runtime.dat")
 
         create_music_config_no_simulator(num_neurons, sim_time, firing_rate)
+
+        start_ros()
+
         os.system("mpirun \-np 5 music config.music ")
+
+        kill_ros()
  
         with open("runtime.dat", 'r') as f:
             run_time = float(json.load(f))
@@ -150,8 +172,6 @@ for firing_rate in np.arange(MIN_FIRING_RATE, MAX_FIRING_RATE, STEP_SIZE):
         insert_datapoint (firing_rate, rtf, "without neural simulator", it) 
 
     
-    if os.path.exists("config.music"):
-        os.remove("config.music")
 
 for firing_rate in np.arange(MIN_FIRING_RATE, MAX_FIRING_RATE, STEP_SIZE):
     print "\n\n\n\n\ RUNNING", num_neurons, "NEURONS WITH A FIRING RATE OF", firing_rate, "\n\n\n\n"
@@ -165,7 +185,12 @@ for firing_rate in np.arange(MIN_FIRING_RATE, MAX_FIRING_RATE, STEP_SIZE):
             os.remove("runtime.dat")
 
         create_music_config_nest(num_neurons, sim_time, firing_rate)
+
+        start_ros()
+
         os.system("mpirun \-np 12 music config.music ")
+
+        kill_ros()
  
         with open("runtime.dat", 'r') as f:
             run_time = float(json.load(f))
@@ -180,9 +205,6 @@ for firing_rate in np.arange(MIN_FIRING_RATE, MAX_FIRING_RATE, STEP_SIZE):
 
         insert_datapoint (firing_rate, rtf, "with NEST", it) 
 
-    
-    if os.path.exists("config.music"):
-        os.remove("config.music")
 
 data_file = open(data_filename, "w+")
 json.dump(data, data_file)

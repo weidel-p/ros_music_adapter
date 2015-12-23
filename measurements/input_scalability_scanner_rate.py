@@ -33,7 +33,7 @@ def create_music_config_no_simulator(num_neurons, sim_time):
                   binary=../ros_sensor_adapter\n\
                   args=\n\
                   np=1\n\
-                  music_timestep=0.03333\n\
+                  music_timestep=0.05\n\
                   ros_topic=/jubot/laserscan\n\
                   message_type=Laserscan\n\
                   sensor_update_rate=30\n\
@@ -41,12 +41,12 @@ def create_music_config_no_simulator(num_neurons, sim_time):
                   binary=../connect_adapter\n\
                   args=\n\
                   np=1\n\
-                  music_timestep=0.03333\n\
+                  music_timestep=0.05\n\
                 [encoder]\n\
                   binary=../rate_encoder\n\
                   args=\n\
                   np=1\n\
-                  music_timestep=0.03333\n\
+                  music_timestep=0.05\n\
                   rate_min=1\n\
                   rate_max=2\n\
                 [decoder]\n\
@@ -68,6 +68,10 @@ def create_music_config_no_simulator(num_neurons, sim_time):
                 connect.out->encoder.in[" + str(num_neurons) +"]\n\
                 encoder.out->decoder.in[" + str(num_neurons) +"]\n\
                 decoder.out->command.in[2]"
+
+    if os.path.exists("config.music"):
+        os.remove("config.music")
+
     music_config_file = open("config.music", 'w+')
     music_config_file.writelines(music_config)
     music_config_file.close()
@@ -79,7 +83,7 @@ def create_music_config_nest(num_neurons, sim_time):
                   binary=../ros_sensor_adapter\n\
                   args=\n\
                   np=1\n\
-                  music_timestep=0.03333\n\
+                  music_timestep=0.05\n\
                   ros_topic=/jubot/laserscan\n\
                   message_type=Laserscan\n\
                   sensor_update_rate=30\n\
@@ -87,12 +91,12 @@ def create_music_config_nest(num_neurons, sim_time):
                   binary=../connect_adapter\n\
                   args=\n\
                   np=1\n\
-                  music_timestep=0.03333\n\
+                  music_timestep=0.05\n\
                 [encoder]\n\
                   binary=../rate_encoder\n\
                   args=\n\
                   np=1\n\
-                  music_timestep=0.03333\n\
+                  music_timestep=0.05\n\
                   rate_min=1\n\
                   rate_max=2\n\
                 [nest]\n\
@@ -119,6 +123,10 @@ def create_music_config_nest(num_neurons, sim_time):
                 encoder.out->nest.in[" + str(num_neurons) +"]\n\
                 nest.out->decoder.in[" + str(num_neurons) +"]\n\
                 decoder.out->command.in[2]"
+
+    if os.path.exists("config.music"):
+        os.remove("config.music")
+
     music_config_file = open("config.music", 'w+')
     music_config_file.writelines(music_config)
     music_config_file.close()
@@ -163,9 +171,6 @@ for num_neurons in np.arange(MIN_NUM_NEURONS, MAX_NUM_NEURONS, STEP_SIZE):
 
         insert_datapoint (num_neurons, rtf, "without neural simulator", it) 
     
-    if os.path.exists("config.music"):
-        os.remove("config.music")
-
 
 for num_neurons in np.arange(MIN_NUM_NEURONS, MAX_NUM_NEURONS, STEP_SIZE):
     print "\n\n\n\n\ RUNNING", num_neurons, "NEURONS \n\n\n\n"
@@ -199,10 +204,6 @@ for num_neurons in np.arange(MIN_NUM_NEURONS, MAX_NUM_NEURONS, STEP_SIZE):
 
         insert_datapoint (num_neurons, rtf, "with NEST", it) 
     
-    if os.path.exists("config.music"):
-        os.remove("config.music")
-
-
 
 data_file = open(data_filename, "w+")
 json.dump(data, data_file)

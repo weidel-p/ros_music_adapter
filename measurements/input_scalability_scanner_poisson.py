@@ -33,7 +33,7 @@ def create_music_config_no_simulator(num_neurons, sim_time):
                   binary=../ros_sensor_adapter\n\
                   args=\n\
                   np=1\n\
-                  music_timestep=0.03333\n\
+                  music_timestep=0.05\n\
                   ros_topic=/jubot/laserscan\n\
                   message_type=Laserscan\n\
                   sensor_update_rate=30\n\
@@ -41,12 +41,12 @@ def create_music_config_no_simulator(num_neurons, sim_time):
                   binary=../connect_adapter\n\
                   args=\n\
                   np=1\n\
-                  music_timestep=0.03333\n\
+                  music_timestep=0.05\n\
                 [encoder]\n\
                   binary=../poisson_encoder\n\
                   args=\n\
                   np=1\n\
-                  music_timestep=0.03333\n\
+                  music_timestep=0.05\n\
                   rate_min=1\n\
                   rate_max=2\n\
                 [decoder]\n\
@@ -81,7 +81,7 @@ def create_music_config_nest(num_neurons, sim_time):
                   binary=../ros_sensor_adapter\n\
                   args=\n\
                   np=1\n\
-                  music_timestep=0.03333\n\
+                  music_timestep=0.05\n\
                   ros_topic=/jubot/laserscan\n\
                   message_type=Laserscan\n\
                   sensor_update_rate=30\n\
@@ -89,12 +89,12 @@ def create_music_config_nest(num_neurons, sim_time):
                   binary=../connect_adapter\n\
                   args=\n\
                   np=1\n\
-                  music_timestep=0.03333\n\
+                  music_timestep=0.05\n\
                 [encoder]\n\
                   binary=../poisson_encoder\n\
                   args=\n\
                   np=1\n\
-                  music_timestep=0.03333\n\
+                  music_timestep=0.05\n\
                   rate_min=1\n\
                   rate_max=2\n\
                 [nest]\n\
