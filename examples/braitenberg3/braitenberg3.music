@@ -1,28 +1,28 @@
-stoptime=10.
+stoptime=1000.
 [sensor]
   binary=../../ros_sensor_adapter
   args=
   np=1
-  music_timestep=0.03333
+  music_timestep=0.05
   ros_topic=/jubot/laserscan
   message_type=Laserscan
-  sensor_update_rate=30
+  sensor_update_rate=20
 [converge]
   binary=../../connect_adapter
   args=
   np=1
-  music_timestep=0.03333
+  music_timestep=0.05
   weights_filename=braitenberg3_converge_weights.dat
 [encoder]
   binary=../../rate_encoder
   args=
   np=1
-  music_timestep=0.03333
+  music_timestep=0.05
   rate_min=1
   rate_max=200
 [nest]
   binary=./dummy_network.py
-  args=-s 0.05 -t 10 -n 2
+  args=-s 0.05 -t 1000 -n 2
   np=1
 [decoder]
   binary=../../linear_readout_decoder
