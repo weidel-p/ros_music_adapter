@@ -5,10 +5,8 @@ import datetime
 import json
 import time
 
-ITERATIONS = 1 
+ITERATIONS = 2 
 MIN_NUM_NEURONS = 50
-MAX_NUM_NEURONS = 20001 
-STEP_SIZE = 10
 
 sim_time = 10 # in sec
 
@@ -266,18 +264,21 @@ def kill_ros():
 #        insert_datapoint (num_neurons, rtf, "with NEST", it) 
     
 
-for num_neurons in np.arange(MIN_NUM_NEURONS, MAX_NUM_NEURONS, STEP_SIZE):
-    print "\n\n\n\n\ RUNNING", num_neurons, "NEURONS \n\n\n\n"
+lower_limit = 0 
+upper_limit = 2
+end_loop = False
 
-    if num_neurons == 0:
-        num_neurons = 1
+while True:
+
+    mean_rtf = 0
 
     for it in range(ITERATIONS):
+        print "\n\n\n\n\ RUNNING", upper_limit, "NEURONS \n\n\n\n"
 
         if os.path.exists("runtime.dat"):
             os.remove("runtime.dat")
 
-        create_music_config_neuron(num_neurons, sim_time)
+        create_music_config_neuron(upper_limit, sim_time)
         
         start_ros()
 
@@ -292,11 +293,59 @@ for num_neurons in np.arange(MIN_NUM_NEURONS, MAX_NUM_NEURONS, STEP_SIZE):
 
         print
         print
-        print rtf
+        print lower_limit, upper_limit, rtf
         print
         print
 
-        insert_datapoint (num_neurons, rtf, "with NEURON", it) 
+        insert_datapoint (upper_limit, rtf, "with NEURON", it) 
+
+        mean_rtf += rtf / ITERATIONS
+
+    if end_loop:
+        break
+
+    if mean_rtf > 0.95:
+        tmp = upper_limit
+        upper_limit += (upper_limit - lower_limit) * 2
+        lower_limit = tmp 
+
+    if mean_rtf < 0.95:
+        upper_limit -= (upper_limit - lower_limit) / 2
+        
+    if lower_limit == upper_limit - 1:
+        end_loop = True    
+
+#for num_neurons in np.arange(MIN_NUM_NEURONS, MAX_NUM_NEURONS, STEP_SIZE):
+#    print "\n\n\n\n\ RUNNING", num_neurons, "NEURONS \n\n\n\n"
+#
+#    if num_neurons == 0:
+#        num_neurons = 1
+#
+#    for it in range(ITERATIONS):
+#
+#        if os.path.exists("runtime.dat"):
+#            os.remove("runtime.dat")
+#
+#        create_music_config_neuron(num_neurons, sim_time)
+#        
+#        start_ros()
+#
+#        os.system("mpirun \-np 7 music config.music ")
+#
+#        kill_ros()
+#        
+#        with open("runtime.dat", 'r') as f:
+#            run_time = float(json.load(f))
+#
+#        rtf = sim_time / run_time 
+#
+#        print
+#        print
+#        print rtf
+#        print
+#        print
+#
+#        insert_datapoint (num_neurons, rtf, "with NEURON", it) 
     
 
 data_file = open(data_filename, "w+")
