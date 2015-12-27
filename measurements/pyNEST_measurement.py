@@ -40,6 +40,7 @@ nest.Connect(proxy_in, parrot, 'one_to_one', {'delay': to_ms(options.music_times
 for i in range(NUM_ENC_NEURONS):
     nest.Connect([parrot[i]], proxy_out, 'all_to_all', {'music_channel': i, 'delay': to_ms(options.music_timestep)})
 
+
 comm.Barrier()
 nest.Simulate(to_ms(options.simtime))
 
