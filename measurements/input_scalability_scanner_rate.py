@@ -6,7 +6,6 @@ import json
 import time
 
 ITERATIONS = 2 
-MIN_NUM_NEURONS = 50
 
 sim_time = 10 # in sec
 
@@ -265,8 +264,8 @@ def kill_ros():
     
 
 lower_limit = 0 
-upper_limit = 2
-end_loop = False
+upper_limit = 2  
+known_upper_limit = sys.maxint
 
 while True:
 
@@ -301,52 +300,21 @@ while True:
 
         mean_rtf += rtf / ITERATIONS
 
-    if end_loop:
-        break
-
-    if mean_rtf > 0.95:
+    if mean_rtf > 0.99:
         tmp = upper_limit
         upper_limit += (upper_limit - lower_limit) * 2
         lower_limit = tmp 
 
-    if mean_rtf < 0.95:
-        upper_limit -= (upper_limit - lower_limit) / 2
-        
-    if lower_limit == upper_limit - 1:
-        end_loop = True    
+        if upper_limit > known_upper_limit:
+            upper_limit = lower_limit + (known_upper_limit - lower_limit) / 2
 
-#for num_neurons in np.arange(MIN_NUM_NEURONS, MAX_NUM_NEURONS, STEP_SIZE):
-#    print "\n\n\n\n\ RUNNING", num_neurons, "NEURONS \n\n\n\n"
-#
-#    if num_neurons == 0:
-#        num_neurons = 1
-#
-#    for it in range(ITERATIONS):
-#
-#        if os.path.exists("runtime.dat"):
-#            os.remove("runtime.dat")
-#
-#        create_music_config_neuron(num_neurons, sim_time)
-#        
-#        start_ros()
-#
-#        os.system("mpirun \-np 7 music config.music ")
-#
-#        kill_ros()
-#        
-#        with open("runtime.dat", 'r') as f:
-#            run_time = float(json.load(f))
-#
-#        rtf = sim_time / run_time 
-#
-#        print
-#        print
-#        print rtf
-#        print
-#        print
-#
-#        insert_datapoint (num_neurons, rtf, "with NEURON", it) 
-    
+    else:
+        known_upper_limit = upper_limit
+        upper_limit -= int(np.ceil( (upper_limit - lower_limit) / 2.))
+        
+    if lower_limit == upper_limit:
+        break
+
 
 data_file = open(data_filename, "w+")
 json.dump(data, data_file)

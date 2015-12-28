@@ -7,7 +7,6 @@ import numpy as np
 with open("NEURON_measurement_params.dat", "r+") as f:
     params = json.load(f)
 
-print params
 to_ms = lambda t: t * 1000.
 
 comm = MPI.COMM_WORLD
@@ -70,7 +69,6 @@ pc = h.ParallelContext()
 for i in range(params["n"]):
     if not i % params["s"] == pc.id():
         continue
-    print pc.id(), i 
     _ind = i + 1
     cells.append(Cell())
     pc.set_gid2node(_ind, pc.id())
@@ -93,10 +91,8 @@ for i in range(params["n"]):
 
 
 pc.set_maxstep(to_ms(params["ts"]))
-print "calling init"
 comm.Barrier()
 h.stdinit()
-print "running NEURON"
 pc.psolve(to_ms(params["t"]))
 
 #from matplotlib import pyplot
