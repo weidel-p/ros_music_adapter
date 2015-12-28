@@ -154,7 +154,7 @@ def create_music_config_neuron(num_neurons, sim_time):
                   rate_max=2\n\
                 [neuron]\n\
                   binary=nrniv\n\
-                  np=2\n\
+                  np=40\n\
                   args=-nobanner -music -python \"NEURON_measurement.py\"\n\
                 [decoder]\n\
                   binary=../linear_readout_decoder\n\
@@ -188,7 +188,7 @@ def create_music_config_neuron(num_neurons, sim_time):
         os.remove("NEURON_measurement_params.dat")
     
     with open("NEURON_measurement_params.dat", "w") as f:
-        json.dump({"t": 10., "n": num_neurons, "ts": 0.05, "s": 2}, f)
+        json.dump({"t": 10., "n": num_neurons, "ts": 0.05, "s": 40}, f)
 
 def start_ros():
     os.system("roslaunch jubot empty.launch &")
@@ -197,74 +197,116 @@ def start_ros():
 def kill_ros():
     os.system("kill $(pgrep ros)")
 
+lower_limit = 0 
+upper_limit = 1  
+known_upper_limit = sys.maxint
 
-#for num_neurons in np.arange(MIN_NUM_NEURONS, MAX_NUM_NEURONS, STEP_SIZE):
-#    print "\n\n\n\n\ RUNNING", num_neurons, "NEURONS \n\n\n\n"
-#
-#    if num_neurons == 0:
-#        num_neurons = 1
-#
-#    for it in range(ITERATIONS):
-#
-#        if os.path.exists("runtime.dat"):
-#            os.remove("runtime.dat")
-#
-#        create_music_config_no_simulator(num_neurons, sim_time)
-#
-#        start_ros()
-#
-#        os.system("mpirun \-np 5 music config.music ")
-#
-#        kill_ros()
-#        
-#        with open("runtime.dat", 'r') as f:
-#            run_time = float(json.load(f))
-#
-#        rtf = sim_time / run_time 
-#
-#        print
-#        print
-#        print rtf
-#        print
-#        print
-#
-#        insert_datapoint (num_neurons, rtf, "without neural simulator", it) 
-# 
-#for num_neurons in np.arange(MIN_NUM_NEURONS, MAX_NUM_NEURONS, STEP_SIZE):
-#    print "\n\n\n\n\ RUNNING", num_neurons, "NEURONS \n\n\n\n"
-#
-#    if num_neurons == 0:
-#        num_neurons = 1
-#
-#    for it in range(ITERATIONS):
-#
-#        if os.path.exists("runtime.dat"):
-#            os.remove("runtime.dat")
-#
-#        create_music_config_nest(num_neurons, sim_time)
-#        
-#        start_ros()
-#
-#        os.system("mpirun \-np 12 music config.music ")
-#
-#        kill_ros()
-#        
-#        with open("runtime.dat", 'r') as f:
-#            run_time = float(json.load(f))
-#
-#        rtf = sim_time / run_time 
-#
-#        print
-#        print
-#        print rtf
-#        print
-#        print
-#
-#        insert_datapoint (num_neurons, rtf, "with NEST", it) 
-    
+while True:
+
+    mean_rtf = 0
+
+    for it in range(ITERATIONS):
+        print "\n\n\n\n\ RUNNING", upper_limit, "NEURONS \n\n\n\n"
+
+        if os.path.exists("runtime.dat"):
+            os.remove("runtime.dat")
+
+        create_music_config_no_simulator(upper_limit, sim_time)
+        
+        start_ros()
+
+        os.system("mpirun \-np 5 music config.music ")
+
+        kill_ros()
+        
+        with open("runtime.dat", 'r') as f:
+            run_time = float(json.load(f))
+
+        rtf = sim_time / run_time 
+
+        print
+        print
+        print lower_limit, upper_limit, rtf
+        print
+        print
+
+        insert_datapoint (upper_limit, rtf, "without neural simulator", it) 
+
+        mean_rtf += rtf / ITERATIONS
+
+    if mean_rtf > 0.99:
+        tmp = upper_limit
+        upper_limit += (upper_limit - lower_limit) * 2
+        lower_limit = tmp 
+
+        if upper_limit > known_upper_limit:
+            upper_limit = lower_limit + (known_upper_limit - lower_limit) / 2
+
+    else:
+        known_upper_limit = upper_limit
+        upper_limit -= int(np.ceil( (upper_limit - lower_limit) / 2.))
+        
+    if lower_limit == upper_limit:
+        break
+
+
+ 
+lower_limit = 0 
+upper_limit = 1  
+known_upper_limit = sys.maxint
+
+while True:
+
+    mean_rtf = 0
+
+    for it in range(ITERATIONS):
+        print "\n\n\n\n\ RUNNING", upper_limit, "NEURONS \n\n\n\n"
+
+        if os.path.exists("runtime.dat"):
+            os.remove("runtime.dat")
+
+        create_music_config_nest(upper_limit, sim_time)
+        
+        start_ros()
+
+        os.system("mpirun \-np 12 music config.music ")
+
+        kill_ros()
+        
+        with open("runtime.dat", 'r') as f:
+            run_time = float(json.load(f))
+
+        rtf = sim_time / run_time 
+
+        print
+        print
+        print lower_limit, upper_limit, rtf
+        print
+        print
+
+        insert_datapoint (upper_limit, rtf, "with NEST", it) 
+
+        mean_rtf += rtf / ITERATIONS
+
+    if mean_rtf > 0.99:
+        tmp = upper_limit
+        upper_limit += (upper_limit - lower_limit) * 2
+        lower_limit = tmp 
+
+        if upper_limit > known_upper_limit:
+            upper_limit = lower_limit + (known_upper_limit - lower_limit) / 2
+
+    else:
+        known_upper_limit = upper_limit
+        upper_limit -= int(np.ceil( (upper_limit - lower_limit) / 2.))
+        
+    if lower_limit == upper_limit:
+        break
+
+   
 
 lower_limit = 0 
-upper_limit = 2  
+upper_limit = 40
 known_upper_limit = sys.maxint
 
 while True:
@@ -281,7 +323,7 @@ while True:
         
         start_ros()
 
-        os.system("mpirun \-np 7 music config.music ")
+        os.system("mpirun \-np 48 music config.music ")
 
         kill_ros()
         
