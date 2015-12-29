@@ -5,7 +5,7 @@ import datetime
 import json
 import time
 
-ITERATIONS = 1 
+ITERATIONS = 5 
 
 rtf_threshold = 0.95
 num_processes_NEURON = 40
