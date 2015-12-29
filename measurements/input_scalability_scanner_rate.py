@@ -5,8 +5,9 @@ import datetime
 import json
 import time
 
-ITERATIONS = 5 
+ITERATIONS = 1 
 rtf_threshold = 0.95
+num_processes_NEURON = 40
 
 sim_time = 10 # in sec
 
@@ -155,7 +156,7 @@ def create_music_config_neuron(num_neurons, sim_time):
                   rate_max=2\n\
                 [neuron]\n\
                   binary=nrniv\n\
-                  np=40\n\
+                  np=" + str(num_processes_NEURON) + "\n\
                   args=-nobanner -music -python \"NEURON_measurement.py\"\n\
                 [decoder]\n\
                   binary=../linear_readout_decoder\n\
@@ -189,7 +190,7 @@ def create_music_config_neuron(num_neurons, sim_time):
         os.remove("NEURON_measurement_params.dat")
     
     with open("NEURON_measurement_params.dat", "w") as f:
-        json.dump({"t": 10., "n": num_neurons, "ts": 0.05, "s": 40}, f)
+        json.dump({"t": 10., "n": num_neurons, "ts": 0.05, "s": num_processes_NEURON}, f)
 
 def start_ros():
     os.system("roslaunch jubot empty.launch &")
@@ -198,9 +199,32 @@ def start_ros():
 def kill_ros():
     os.system("kill $(pgrep ros)")
 
+
+global lower_limit, upper_limit, known_upper_limit
 lower_limit = 0 
-upper_limit = 1  
+upper_limit = num_processes_NEURON #minimum is one neuron per process in NEURON  
 known_upper_limit = sys.maxint
+
+def bin_search(rtf):
+    global lower_limit, upper_limit, known_upper_limit
+    accuracy = 100
+    if rtf > rtf_threshold:
+        tmp = upper_limit
+        upper_limit += (upper_limit - lower_limit) * 2
+        lower_limit = tmp 
+
+        if upper_limit >= known_upper_limit:
+            upper_limit = lower_limit + (known_upper_limit - lower_limit) / 2
+
+    else:
+        known_upper_limit = upper_limit
+        upper_limit -= int(np.ceil( (upper_limit - lower_limit) / 2.))
+        
+    if lower_limit in range(upper_limit - accuracy, upper_limit + accuracy) and known_upper_limit < sys.maxint: # upper limit found and accuarcy reached
+        return True
+
+    return False
+
 
 while True:
 
@@ -235,25 +259,13 @@ while True:
 
         mean_rtf += rtf / ITERATIONS
 
-    if mean_rtf > rtf_threshold:
-        tmp = upper_limit
-        upper_limit += (upper_limit - lower_limit) * 2
-        lower_limit = tmp 
-
-        if upper_limit > known_upper_limit:
-            upper_limit = lower_limit + (known_upper_limit - lower_limit) / 2
-
-    else:
-        known_upper_limit = upper_limit
-        upper_limit -= int(np.ceil( (upper_limit - lower_limit) / 2.))
-        
-    if lower_limit == upper_limit:
+    if bin_search(mean_rtf):
         break
 
 
  
 lower_limit = 0 
-upper_limit = 1  
+upper_limit = num_processes_NEURON 
 known_upper_limit = sys.maxint
 
 while True:
@@ -289,25 +301,12 @@ while True:
 
         mean_rtf += rtf / ITERATIONS
 
-    if mean_rtf > rtf_threshold:
-        tmp = upper_limit
-        upper_limit += (upper_limit - lower_limit) * 2
-        lower_limit = tmp 
-
-        if upper_limit > known_upper_limit:
-            upper_limit = lower_limit + (known_upper_limit - lower_limit) / 2
-
-    else:
-        known_upper_limit = upper_limit
-        upper_limit -= int(np.ceil( (upper_limit - lower_limit) / 2.))
-        
-    if lower_limit == upper_limit:
+    if bin_search(mean_rtf):
         break
-
-   
+       
 
 lower_limit = 0 
-upper_limit = 40
+upper_limit = num_processes_NEURON 
 known_upper_limit = sys.maxint
 
 while True:
@@ -324,7 +323,7 @@ while True:
         
         start_ros()
 
-        os.system("mpirun \-np 45 music config.music ")
+        os.system("mpirun \-np " + str(num_processes_NEURON + 5) + " music config.music ")
 
         kill_ros()
         
@@ -343,22 +342,10 @@ while True:
 
         mean_rtf += rtf / ITERATIONS
 
-    if mean_rtf > rtf_threshold:
-        tmp = upper_limit
-        upper_limit += (upper_limit - lower_limit) * 2
-        lower_limit = tmp 
-
-        if upper_limit > known_upper_limit:
-            upper_limit = lower_limit + (known_upper_limit - lower_limit) / 2
-
-    else:
-        known_upper_limit = upper_limit
-        upper_limit -= int(np.ceil( (upper_limit - lower_limit) / 2.))
-        
-    if lower_limit == upper_limit:
+    if bin_search(mean_rtf):
         break
-
-
+       
+    
 data_file = open(data_filename, "w+")
 json.dump(data, data_file)
 data_file.close()
