@@ -5,7 +5,8 @@ import datetime
 import json
 import time
 
-ITERATIONS = 2 
+ITERATIONS = 5 
+rtf_threshold = 0.95
 
 sim_time = 10 # in sec
 
@@ -234,7 +235,7 @@ while True:
 
         mean_rtf += rtf / ITERATIONS
 
-    if mean_rtf > 0.99:
+    if mean_rtf > rtf_threshold:
         tmp = upper_limit
         upper_limit += (upper_limit - lower_limit) * 2
         lower_limit = tmp 
@@ -288,7 +289,7 @@ while True:
 
         mean_rtf += rtf / ITERATIONS
 
-    if mean_rtf > 0.99:
+    if mean_rtf > rtf_threshold:
         tmp = upper_limit
         upper_limit += (upper_limit - lower_limit) * 2
         lower_limit = tmp 
@@ -323,7 +324,7 @@ while True:
         
         start_ros()
 
-        os.system("mpirun \-np 48 music config.music ")
+        os.system("mpirun \-np 45 music config.music ")
 
         kill_ros()
         
@@ -342,7 +343,7 @@ while True:
 
         mean_rtf += rtf / ITERATIONS
 
-    if mean_rtf > 0.99:
+    if mean_rtf > rtf_threshold:
         tmp = upper_limit
         upper_limit += (upper_limit - lower_limit) * 2
         lower_limit = tmp 
