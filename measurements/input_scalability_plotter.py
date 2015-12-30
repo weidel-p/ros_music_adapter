@@ -7,7 +7,7 @@ import sys
 import seaborn as sbn
 sbn.set_palette("deep", desat=.6)
 sbn.set_context(rc={"figure.figsize": (16, 8)})
-sbn.set_style("whitegrid")
+sbn.set_style("white")
 sbn.despine()
 palette = sbn.color_palette()
 
@@ -29,18 +29,27 @@ ax = sbn.tsplot(time="num_neurons", value="time", unit="iteration", condition="t
 ax.set_title("Rate Encoding")
 ax.set_ylabel("real-time factor")
 ax.set_xlabel("# neurons")
+ax.set_xscale('log')
+ax.set_xlim([100, 3000000])
+ax.set_ylim([0.6, 1.1])
 
 ax = plt.subplot(1,3,2)
 ax = sbn.tsplot(time="num_neurons", value="time", unit="iteration", condition="type", data=data_poisson, color=palette[2:])
 ax.set_title("Poisson Encoding")
 ax.set_ylabel("real-time factor")
 ax.set_xlabel("# neurons")
+ax.set_xscale('log')
+ax.set_xlim([100, 3000000])
+ax.set_ylim([0.6, 1.1])
 
 ax = plt.subplot(1,3,3)
 ax = sbn.tsplot(time="num_neurons", value="time", unit="iteration", condition="type", data=data_nef, color=palette[2:])
 ax.set_title("NEF Encoding")
 ax.set_ylabel("real-time factor")
 ax.set_xlabel("# neurons")
+ax.set_xscale('log')
+ax.set_xlim([100, 3000000])
+ax.set_ylim([0.6, 1.1])
 
 
 plt.savefig("input_scalability.pdf")
