@@ -41,7 +41,7 @@ class DynamicUpdate():
         self.ax1.set_ylim(self.ax_min, self.ax_max)
         self.ax1.set_ylim(self.ax_min, self.ax_max)
         try:
-            self.ax1.scatter(pca[:,0], pca[:,1], pca[:,2])
+            self.ax1.plot(pca[:,0], pca[:,1], pca[:,2])
         except:
             pass
         #Need both of these in order to rescale
