@@ -19,7 +19,7 @@ class DynamicUpdate():
         #self.figure, self.ax = plt.subplots()
 
         self.figure = plt.figure()
-        self.ax0 = self.figure.add_subplot(111)
+        self.ax0 = self.figure.add_subplot(121)
         self.ax1 = self.figure.add_subplot(122, projection = '3d')
 
         self.lines, = self.ax0.plot([],[], 'o')
