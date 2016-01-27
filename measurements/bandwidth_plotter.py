@@ -6,10 +6,11 @@ import sys
 
 import seaborn as sbn
 sbn.set_palette("deep", desat=.6)
-sbn.set_context(rc={"figure.figsize": (16, 8)})
-sbn.set_style("whitegrid")
+sbn.set_context("talk", font_scale = 4., rc={"figure.figsize": (32, 16), "lines.linewidth": 8.})
+sbn.set_style("white")
 sbn.despine()
 palette = sbn.color_palette()
+
 
 data_file = open(sys.argv[1], 'r')
 
@@ -18,10 +19,13 @@ data_file.close()
 
 
 #plot data
-plt.title("Bandwidth")
 ax = sbn.tsplot(time="firing_rate", value="time", unit="iteration", condition="type", data=data, color=palette[2:])
 ax.set_ylabel("real-time factor")
-ax.set_xlabel("firing-rate")
+ax.set_xlabel("firing-rate (spikes/sec)")
+ax.get_legend().set_title("")
+ax.set_ylim([0.6, 1.05])
+ax.get_legend().set_title("")
+ax.legend([])
 
 plt.savefig("bandwidth.pdf")
 plt.show()

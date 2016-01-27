@@ -6,8 +6,8 @@ import sys
 
 import seaborn as sbn
 sbn.set_palette("deep", desat=.6)
-sbn.set_context(rc={"figure.figsize": (16, 8)})
-sbn.set_style("whitegrid")
+sbn.set_context("talk", font_scale = 4., rc={"figure.figsize": (32, 16), "lines.linewidth": 8.})
+sbn.set_style("white")
 sbn.despine()
 palette = sbn.color_palette()
 
@@ -17,9 +17,13 @@ data = pd.DataFrame(json.load(data_file))
 data_file.close()
 
 
-sbn.tsplot(time="timestep", value="latency", unit="iteration", condition="type", data=data, color=palette)
+ax = sbn.tsplot(time="timestep", value="latency", unit="iteration", condition="type", data=data, color=palette)
 #sbn.boxplot(x="timestep", y="latency", data=data)
-sbn.axlabel("MUSIC timestep [s]", "latency [s]")
+sbn.axlabel("MUSIC timestep (s)", "latency (s)")
 #sbn.tsplot(time="times", value="cmds", data=data)
+
+ax.get_legend().set_title("")
+ax.legend([])
 plt.savefig("latency.pdf", dpi=500)
+
 plt.show()
