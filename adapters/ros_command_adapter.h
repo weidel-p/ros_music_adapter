@@ -11,11 +11,11 @@
 #include "sys/time.h"
 
 #include "jsoncpp/json/json.h"
-#include <iostream>
 #include <fstream>
 #include <pthread.h>
 
 #define DEBUG_OUTPUT false 
+#define MEASUREMENT_OUTPUT true 
 
 enum msg_types {Float64MultiArray, Twist};
 
@@ -56,8 +56,11 @@ class RosCommandAdapter
 
         void initROS(int argc, char** argv);
         void initMUSIC(int argc, char** argv);
-	void sendROS();
+	    void sendROS();
 
         void readMappingFile();
 
+#if MEASUREMENT_OUTPUT
+        void saveRuntime(double rt);
+#endif
 };

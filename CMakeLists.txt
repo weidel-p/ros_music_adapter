@@ -21,7 +21,6 @@ find_package(MPI REQUIRED)
 include_directories(${MPI_INCLUDE_PATH})
 set(CMAKE_CXX_COMPILE_FLAGS ${CMAKE_CXX_COMPILE_FLAGS} ${MPI_COMPILE_FLAGS})
 set(CMAKE_CXX_LINK_FLAGS ${CMAKE_CXX_LINK_FLAGS} ${MPI_LINK_FLAGS})
-set(CMAKE_MODULE_PATH /home/weidel/cmake/)
 
 
 find_library(ROS_CPP roscpp /opt/ros/jade/lib)
@@ -46,4 +45,7 @@ target_link_libraries(rate_encoder ${MUSIC} ${MPI_LIBRARIES})
 target_link_libraries(poisson_encoder ${MUSIC} ${MPI_LIBRARIES})
 target_link_libraries(connect_adapter ${MUSIC} ${MPI_LIBRARIES} ${JSON} ${GSL} ${BLAS})
 
+
+# COPY PYTHON FILES TO ROOT DIRECTORY
+file(COPY "adapters/pca.py" DESTINATION "./")
 

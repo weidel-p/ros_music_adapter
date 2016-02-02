@@ -3,6 +3,7 @@
 
 #include <ros/ros.h>
 #include "sensor_msgs/LaserScan.h"
+#include "geometry_msgs/Twist.h"
 
 #include <music.hh>
 #include <mpi.h>
@@ -13,8 +14,9 @@
 
 const double DEFAULT_TIMESTEP = 1e-3;
 const double DEFAULT_SENSOR_UPDATE_RATE = 30;
+const std::string DEFAULT_ROS_NODE_NAME = "ros_sensor_node";
 
-enum msg_types {Laserscan}; 
+enum msg_types {Laserscan, Twist}; 
 
 class RosSensorAdapter
 {
@@ -29,6 +31,7 @@ class RosSensorAdapter
     private:
         std::string ros_topic;
         ros::Subscriber subscriber;
+        std::string ros_node_name;
 
         MPI::Intracomm comm;
 	    MUSIC::Setup* setup;
@@ -47,5 +50,6 @@ class RosSensorAdapter
         void initMUSIC(int argc, char** argv);
 
         void laserscanCallback(const sensor_msgs::LaserScanConstPtr& msg);
+        void twistCallback(const geometry_msgs::Twist msg);
 
 };
