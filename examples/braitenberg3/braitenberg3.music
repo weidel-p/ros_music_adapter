@@ -6,7 +6,7 @@ stoptime=10000.
   music_timestep=0.05
   ros_topic=/jubot/laserscan
   message_type=Laserscan
-  sensor_update_rate=30
+  sensor_update_rate=20
 [converge]
   binary=../../connect_adapter
   args=

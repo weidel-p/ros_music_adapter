@@ -51,6 +51,7 @@ RosSensorAdapter::init(int argc, char** argv)
 
     timestep = DEFAULT_TIMESTEP;
     sensor_update_rate = DEFAULT_SENSOR_UPDATE_RATE;
+    ros_node_name = DEFAULT_ROS_NODE_NAME;
 
     pthread_mutex_init(&data_mutex, NULL);
 
@@ -63,7 +64,7 @@ RosSensorAdapter::init(int argc, char** argv)
 void
 RosSensorAdapter::initROS(int argc, char** argv)
 {
-    ros::init(argc, argv, "ros_sensor_node");
+    ros::init(argc, argv, ros_node_name);
     ros::start();
 
     ros::NodeHandle n;
@@ -71,6 +72,9 @@ RosSensorAdapter::initROS(int argc, char** argv)
     {
         case Laserscan:
             subscriber = n.subscribe(ros_topic, 1000, &RosSensorAdapter::laserscanCallback, this);
+            break;
+        case Twist:
+            subscriber = n.subscribe(ros_topic, 1000, &RosSensorAdapter::twistCallback, this);
             break;
     }
 }
@@ -83,13 +87,16 @@ RosSensorAdapter::initMUSIC(int argc, char** argv)
     setup->config("ros_topic", &ros_topic);
     setup->config("stoptime", &stoptime);
     setup->config("sensor_update_rate", &sensor_update_rate);
-    setup->config("music_timestep", &timestep);
+    setup->config("ros_node_name", &ros_node_name);
 
     std::string _msg_type;
     setup->config("message_type", &_msg_type);
 
     if (_msg_type.compare("Laserscan") == 0){
         msg_type = Laserscan;
+    }
+    else if (_msg_type.compare("Twist") == 0){
+        msg_type = Twist;
     }
     else
     {
@@ -218,6 +225,25 @@ RosSensorAdapter::laserscanCallback(const sensor_msgs::LaserScanConstPtr& msg)
         // TODO: catch exception if ranges.size not width of port
         data[i] = ((msg->ranges.at(i) - msg->range_min) / (msg->range_max - msg->range_min) ) * 2 - 1;
     }
+    pthread_mutex_unlock(&data_mutex);    
+}
+
+void
+RosSensorAdapter::twistCallback(const geometry_msgs::Twist msg)
+{
+    pthread_mutex_lock(&data_mutex);
+
+    data[0] = msg.linear.x;
+    data[1] = msg.angular.z;
+    for (unsigned int i = 0; i < 2; ++i) // Twist msg has 2 dimensions
+    {
+        // limit data between -1 and 1
+        if (data[i] > 1)
+            data[i] = 1;
+        else if (data[i] < -1)
+            data[i] = -1;
+    }
+
     pthread_mutex_unlock(&data_mutex);    
 }
 

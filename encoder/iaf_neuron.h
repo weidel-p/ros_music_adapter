@@ -16,7 +16,7 @@ class IAFNeuron{
 
     public:
     double  bias, V_m, scaling;
-       IAFNeuron(){
+       IAFNeuron(int dimensions){
         
             //V_m = 0.0;
             V_m = std::rand() % 10;
@@ -34,7 +34,7 @@ class IAFNeuron{
             resolution = 0.0;
 
             // nef
-            is_nef_initialized = false;
+            init_nef(dimensions);
 
        } 
 
@@ -44,17 +44,11 @@ class IAFNeuron{
        }
 
        void encode(std::vector<double> data){
-            if (!is_nef_initialized){
-                init_nef(data.size());
-            }
             I_e = std::inner_product(alpha.begin(), alpha.end(), data.begin(), bias);
 
        }
 
        bool propagate(){
-            if (!is_nef_initialized){
-                init_nef(1);
-            }
 
            if (propagator == 0){
                std::cerr << "Resolution not set. Call setResolution() first" << std::endl;
@@ -99,7 +93,6 @@ class IAFNeuron{
             }
 
             bias = std::rand() % 200; 
-            is_nef_initialized = true;
        }
 
         
