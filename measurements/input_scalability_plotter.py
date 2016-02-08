@@ -24,7 +24,7 @@ data_file_rate.close()
 data_file_poisson.close()
 data_file_nef.close()
 
-x = plt.subplot(1,3,1)
+ax = plt.subplot(1,3,1)
 ax = sbn.tsplot(time="num_neurons", value="time", unit="iteration", condition="type", data=data_rate, color=palette[2:])
 ax.set_ylabel("real-time factor")
 ax.set_xlabel("# neurons")
