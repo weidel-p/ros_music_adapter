@@ -52,6 +52,7 @@ RosCommandAdapter::init(int argc, char** argv)
     timestep = DEFAULT_TIMESTEP;
     command_rate = DEFAULT_COMMAND_RATE;
     msg_type = DEFAULT_MESSAGE_TYPE;
+    rtf = DEFAULT_RTF;
 
     pthread_mutex_init(&data_mutex, NULL);
 
@@ -92,6 +93,7 @@ RosCommandAdapter::initMUSIC(int argc, char** argv)
     setup->config("stoptime", &stoptime);
     setup->config("command_rate", &command_rate);
     setup->config("music_timestep", &timestep);
+    setup->config("rtf", &rtf);
     
     setup->config("message_mapping_filename", &mapping_filename);
     readMappingFile();
@@ -242,7 +244,7 @@ RosCommandAdapter::runROSMUSIC()
 {
     MPI::COMM_WORLD.Barrier();
     std::cout << "running command adapter with update rate of " << command_rate << std::endl;
-    RTClock clock(1. / command_rate);
+    RTClock clock( 1. / (command_rate * rtf));
 
     runtime = new MUSIC::Runtime (setup, timestep);
     ros::spinOnce();
@@ -252,7 +254,7 @@ RosCommandAdapter::runROSMUSIC()
         sendROS();
         clock.sleepNext();
         runtime->tick();
-	ros::spinOnce();
+	    ros::spinOnce();
     }
 
 #if MEASUREMENT_OUTPUT
@@ -265,7 +267,14 @@ RosCommandAdapter::runROSMUSIC()
 void
 RosCommandAdapter::runROS()
 {
-    RTClock clock(1. / command_rate);
+    RTClock clock(1. / (command_rate * rtf));
+
+    // wait until first sensor update arrives
+    while (ros::Time::now().toSec() == 0.)
+    {
+        clock.sleepNext();
+    }
+
     ros::Time stop_time = ros::Time::now() + ros::Duration(stoptime);
 
     ros::spinOnce() ;
@@ -294,7 +303,7 @@ RosCommandAdapter::runMUSIC()
 {
     MPI::COMM_WORLD.Barrier();
     std::cout << "running command adapter with update rate of " << command_rate << std::endl;
-    RTClock clock(timestep);
+    RTClock clock(timestep / rtf);
 
     runtime = new MUSIC::Runtime (setup, timestep);
     

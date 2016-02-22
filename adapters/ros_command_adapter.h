@@ -15,12 +15,13 @@
 #include <pthread.h>
 
 #define DEBUG_OUTPUT false 
-#define MEASUREMENT_OUTPUT true 
+#define MEASUREMENT_OUTPUT false 
 
 enum msg_types {Float64MultiArray, Twist};
 
 const double DEFAULT_TIMESTEP = 1e-3;
 const double DEFAULT_COMMAND_RATE = 10;
+const double DEFAULT_RTF = 1.0;
 const msg_types DEFAULT_MESSAGE_TYPE = Float64MultiArray;
 
 class RosCommandAdapter
@@ -48,6 +49,7 @@ class RosCommandAdapter
 
         double timestep;
         double command_rate;
+        double rtf;
 
         string mapping_filename;
         Json::Value json_mapping; 
