@@ -9,8 +9,8 @@ import seaborn as sbn
 sbn.set_palette("Blues", desat=0.)
 sbn.set_context("talk", font_scale = 4., rc={"figure.figsize": (32, 16), "lines.linewidth": 8.})
 sbn.set_style("ticks", {'axes.linewidth': 6.0, 'xtick.major.size': 16.0, 'ytick.major.size': 16.0,'xtick.minor.size': 12.0, 'ytick.minor.size': 12.0})
-palette = np.array(sbn.color_palette())[[5,3,2]]
-palette = [(0.0, 0.0, 0.0), (0.66, 0.66, 0.66), (0.33, 0.33, 0.33)]
+#palette = np.array(sbn.color_palette())[[5,3,2]]
+#palette = [(0.0, 0.0, 0.0), (0.66, 0.66, 0.66), (0.33, 0.33, 0.33)]
 #palette = [(0.0, 0.0, 0.0), (200./255., 20./255., 20./255.), (70./255., 70./255., 232./255.)]
 
 
@@ -34,7 +34,7 @@ y = y.astype(int)
 
 rtfs = np.reshape(rtfs, [len(y), len(x)])
 
-cmap = plt.get_cmap("gray_r")
+cmap = plt.get_cmap("copper")
 
 plt.imshow(rtfs, cmap=cmap, aspect='auto')
 ax = plt.axes()
