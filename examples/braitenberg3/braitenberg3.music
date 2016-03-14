@@ -4,7 +4,7 @@ stoptime=10000.
   args=
   np=1
   music_timestep=0.05
-  ros_topic=/jubot/laserscan
+  ros_topic=/Pioneer3AT/laserscan
   message_type=Laserscan
   sensor_update_rate=20
 [converge]
@@ -21,8 +21,8 @@ stoptime=10000.
   rate_min=1
   rate_max=200
 [nest]
-  binary=./dummy_network.py
-  args=-s 0.05 -t 10000 -n 2
+  binary=./braitenberg3_pyNEST.py
+  args=-s 0.05 -t 1000 -n 2
   np=1
 [decoder]
   binary=../../linear_readout_decoder
@@ -36,7 +36,7 @@ stoptime=10000.
   args=
   np=1
   music_timestep=0.05
-  ros_topic=/jubot/cmd_vel
+  ros_topic=/Pioneer3AT/cmd_vel
   message_mapping_filename=braitenberg3_twist_mapping.dat
   command_rate=20
 sensor.out->converge.in[100]

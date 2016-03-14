@@ -14,6 +14,7 @@
 
 const double DEFAULT_TIMESTEP = 1e-3;
 const double DEFAULT_SENSOR_UPDATE_RATE = 30;
+const double DEFAULT_RTF = 1.0;
 const std::string DEFAULT_ROS_NODE_NAME = "ros_sensor_node";
 
 enum msg_types {Laserscan, Twist}; 
@@ -32,6 +33,7 @@ class RosSensorAdapter
         std::string ros_topic;
         ros::Subscriber subscriber;
         std::string ros_node_name;
+        double rtf;
 
         MPI::Intracomm comm;
 	    MUSIC::Setup* setup;

@@ -1,23 +1,6 @@
 stoptime=1000.
+rtf=1.0
 music_timestep=0.01
-[sensor_twist]
-  binary=../../ros_sensor_adapter
-  args=
-  np=1
-  ros_topic=/Pioneer3AT/cmd_vel
-  message_type=Twist
-  sensor_update_rate=20
-  ros_node_name=ros_sonsor_twist
-[encoder_twist]
-  binary=../../nef_encoder
-  args=
-  np=1
-  rate_min=1
-  rate_max=30
-[pca_twist]
-  binary=../../pca.py
-  args=
-  np=1
 [sensor_laser]
   binary=../../ros_sensor_adapter
   args=
@@ -36,7 +19,5 @@ music_timestep=0.01
   binary=../../pca.py
   args=
   np=1
-sensor_twist.out->encoder_twist.in[2]
-encoder_twist.out->pca_twist.in[50]
 sensor_laser.out->encoder_laser.in[100]
 encoder_laser.out->pca_laser.in[60]

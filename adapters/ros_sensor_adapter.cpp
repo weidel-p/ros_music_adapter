@@ -52,6 +52,7 @@ RosSensorAdapter::init(int argc, char** argv)
     timestep = DEFAULT_TIMESTEP;
     sensor_update_rate = DEFAULT_SENSOR_UPDATE_RATE;
     ros_node_name = DEFAULT_ROS_NODE_NAME;
+    rtf = DEFAULT_RTF;
 
     pthread_mutex_init(&data_mutex, NULL);
 
@@ -88,6 +89,7 @@ RosSensorAdapter::initMUSIC(int argc, char** argv)
     setup->config("stoptime", &stoptime);
     setup->config("sensor_update_rate", &sensor_update_rate);
     setup->config("ros_node_name", &ros_node_name);
+    setup->config("rtf", &rtf);
 
     std::string _msg_type;
     setup->config("message_type", &_msg_type);
@@ -146,7 +148,7 @@ RosSensorAdapter::runROSMUSIC()
 {
     MPI::COMM_WORLD.Barrier();
     std::cout << "running sensor adapter with update rate of " << sensor_update_rate << std::endl;
-    RTClock clock(1. / sensor_update_rate);
+    RTClock clock( 1. / (sensor_update_rate * rtf) );
     
     ros::spinOnce();
     runtime = new MUSIC::Runtime (setup, timestep);
@@ -174,12 +176,28 @@ RosSensorAdapter::runROSMUSIC()
 void
 RosSensorAdapter::runROS()
 {
-    RTClock clock(1. / sensor_update_rate);
+    RTClock clock( 1. / (sensor_update_rate * rtf) );
+
+    // wait until first sensor update arrives
+    while (ros::Time::now().toSec() == 0.)
+    {
+        clock.sleepNext();
+    }
+
     ros::Time stop_time = ros::Time::now() + ros::Duration(stoptime);
 
     ros::spinOnce();
     for (ros::Time t = ros::Time::now(); t < stop_time; t = ros::Time::now())
     {
+#if DEBUG_OUTPUT
+        std::cout << "ROS Sensor Adapter: ";
+        for (int i = 0; i < datasize; ++i)
+        {
+            std::cout << data[i] << " ";
+        }
+        std::cout << std::endl;
+#endif
+
         clock.sleepNext();
         ros::spinOnce();
    }
@@ -190,22 +208,12 @@ RosSensorAdapter::runMUSIC()
 {
     MPI::COMM_WORLD.Barrier();
     std::cout << "running sensor adapter with update rate of " << sensor_update_rate << std::endl;
-    RTClock clock(timestep);
+    RTClock clock(timestep / rtf);
 
     runtime = new MUSIC::Runtime (setup, timestep);
     
     for (int t = 0; runtime->time() < stoptime; t++)
     {
-
-#if DEBUG_OUTPUT
-        std::cout << "ROS Sensor Adapter: ";
-        for (int i = 0; i < datasize; ++i)
-        {
-            std::cout << data[i] << " ";
-        }
-        std::cout << std::endl;
-#endif
-
         clock.sleepNext(); 
     	pthread_mutex_lock(&data_mutex);
         runtime->tick();
