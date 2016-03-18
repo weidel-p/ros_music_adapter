@@ -24,6 +24,11 @@ stoptime=1000.
   binary=./braitenberg3_pyNEST.py
   args=-s 0.05 -t 1000 -n 2
   np=1
+[activity]
+  binary=../../activity.py
+  music_timestep=0.05
+  args=
+  np=1
 [decoder]
   binary=../../linear_readout_decoder
   args=
@@ -42,5 +47,6 @@ stoptime=1000.
 sensor.out->converge.in[100]
 converge.out->encoder.in[2]
 encoder.out->nest.in[2]
-nest.out->decoder.in[2]
+nest.out->activity.in[2]
+activity.out->decoder.in[2]
 decoder.out->command.in[2]
