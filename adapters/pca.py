@@ -18,7 +18,7 @@ class DynamicUpdate():
         #Set up plot
         #self.figure, self.ax = plt.subplots()
 
-        self.figure = plt.figure()
+        self.figure = plt.figure("Network activity")
         self.ax0 = self.figure.add_subplot(121)
         self.ax1 = self.figure.add_subplot(122, projection = '3d')
 
@@ -27,6 +27,8 @@ class DynamicUpdate():
 #        self.ax.set_autoscaley_on(True)
         #Other stuff
         self.ax0.grid()
+        self.ax0.set_xlabel("time [s]")
+        self.ax0.set_ylabel("neuron id")
 
     def on_running(self, xdata, ydata, pca):
         self.ax0.set_xlim(min(xdata), max(xdata))
@@ -36,6 +38,9 @@ class DynamicUpdate():
         self.lines.set_ydata(ydata)
 
         self.ax1.clear()
+        self.ax1.set_xlabel("PC 1")
+        self.ax1.set_ylabel("PC 2")
+        self.ax1.set_zlabel("PC 3")
 
         self.ax1.set_xlim(self.ax_min, self.ax_max)
         self.ax1.set_ylim(self.ax_min, self.ax_max)
