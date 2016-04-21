@@ -1,0 +1,9 @@
+<launch>
+
+    <!-- Configure this launch file for your hardware setup  -->
+	  <include file="$(find pioneer3at)/launch/demo_hardware.launch" />
+	
+</launch>
+
+
+

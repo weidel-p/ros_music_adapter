@@ -1,0 +1,11 @@
+<launch>
+
+	<node pkg="pioneer3at" type="bashim" name="gazebo_server" 
+	      args="gzserver $(find pioneer3at)/config/gazebo/demo_world.sdf"/>
+    
+	<node pkg="pioneer3at" type="gazebo_bridge" name="Pioneer3AT_Gazebo" >	
+	  <param name="gz_cmd_vel_topic"  type="str" value="~/Pioneer3AT/vel_cmd" />
+
+      <remap from="cmd_vel" to="/Pioneer3AT/cmd_vel" />
+    </node>
+</launch>

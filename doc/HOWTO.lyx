@@ -1,0 +1,1645 @@
+#LyX 2.0 created this file. For more info see http://www.lyx.org/
+\lyxformat 413
+\begin_document
+\begin_header
+\textclass article
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_amsmath 1
+\use_esint 1
+\use_mhchem 1
+\use_mathdots 1
+\cite_engine basic
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\use_refstyle 1
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+How To Use: 
+\begin_inset Newline linebreak
+\end_inset
+
+ROS - MUSIC Toolchain
+\end_layout
+
+\begin_layout Standard
+This tutorial shows how to use the ROS - MUSIC Toolchain by drawing an example
+ of a Braitenberg Vehicle.
+ I describe the robotic setup and display the commands necessary to run
+ ROS, MUSIC and the Toolchain, but will not go into detail about the ROS
+ or MUSIC background.
+ If you are interested in learning more about ROS or MUSIC, I suggest to
+ read the ROS tutorial
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+http://wiki.ros.org/ROS/Tutorials
+\end_layout
+
+\end_inset
+
+ or the MUSIC manual
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+https://www.incf.org/documents/program-documents/Music-UsersManual.pdf
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+For the example of the Braitenberg Vehicle, I use Gazebo for the robotic
+ simulation, ROS and MUSIC for communication and NEST for neural simulations.
+ In this tutorial, I start to describe the nature of a Braitenberg Vehicle,
+ continue with the robotic setup and the MUSIC specifications and will end
+ with a summary.
+ 
+\end_layout
+
+\begin_layout Section
+On the Braitenberg Vehicle
+\end_layout
+
+\begin_layout Standard
+A Braitenberg Vehicle is a cybernetic creature described by Braitenberg
+ in his book 
+\begin_inset Quotes eld
+\end_inset
+
+Vehicles: Experiments in synthetic psychology
+\begin_inset Quotes erd
+\end_inset
+
+
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+Braitenberg, Valentino.
+ Vehicles: Experiments in synthetic psychology.
+ MIT press, 1986.
+\end_layout
+
+\end_inset
+
+.
+ Here, I implement the Vehicle 3
+\series bold
+b
+\series default
+ called 
+\begin_inset Quotes eld
+\end_inset
+
+explorer
+\begin_inset Quotes erd
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+The vehicle has two sensors, attached in the front of the vehicle, and two
+ motors, attached to its rear moving the vehicle according to their speed
+ (see 
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "fig:Braitenberg-Vehicle-3"
+
+\end_inset
+
+).
+ The sensors are connected to the motors in a crossed and inhibitory way,
+ meaning, the left sensor is (negatively) connected to the right motor and
+ vice versa.
+ Initially, the motors run with a constant positive speed moving the vehicle
+ straight forward.
+ If the left sensor is activated by sensing a source (for example by sensing
+ light), the right motor is slowed down resulting in a right turn of the
+ robot.
+ Activating the right sensor results in a left turn.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename images/vehicle3.pdf
+	lyxscale 30
+	width 50col%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Braitenberg-Vehicle-3"
+
+\end_inset
+
+Braitenberg Vehicle 3 
+\begin_inset Quotes eld
+\end_inset
+
+Explorer
+\begin_inset Quotes erd
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Braitenberg describes the behavior of this vehicle as following:
+\end_layout
+
+\begin_layout Standard
+‘You will have no difficulty giving names to this sort of behavior.
+ These vehicles LIKE the source, you will say, but in different ways.
+ Vehicle 3a LOVES it in a permanent way, staying close by in quiet admiration
+ from the time it spots the source to all future time.
+ Vehicle 3b, on the other hand, is an EXPLORER.
+ It likes the nearby source all right, but keeps an eye open for other,
+ perhaps stronger sources, which it will sail to, given a chance, in order
+ to find a more permanent and gratifying appeasement.’ (p.
+ 12)
+\end_layout
+
+\begin_layout Section
+On the Robotic Setup
+\end_layout
+
+\begin_layout Standard
+I implemented the vehicle as Pioneer 3AT robot simulated in Gazebo.
+ The Pioneer has four wheels and has an attached laser scanner, publishing
+ on the ROS topic 
+\begin_inset Quotes eld
+\end_inset
+
+/Pioneer3AT/laserscan
+\begin_inset Quotes erd
+\end_inset
+
+, and having its field of view in front of the robot (see 
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "fig:Robotic-realization-of"
+
+\end_inset
+
+).
+ The laser scanner implements the two sensors of the Braitenberg Vehicle.
+ The activity of left sensor of the 
+\begin_inset Quotes eld
+\end_inset
+
+explorer
+\begin_inset Quotes erd
+\end_inset
+
+ is realized as the average distance measured on the left hemisphere of
+ the laser scanner; the right sensor is implemented accordingly.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename images/pioneer.png
+	lyxscale 30
+	width 100col%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Robotic-realization-of"
+
+\end_inset
+
+Robotic realization of the Braitenberg Vehicle 3 
+\begin_inset Quotes eld
+\end_inset
+
+Explorer
+\begin_inset Quotes erd
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In the description of the 
+\begin_inset Quotes eld
+\end_inset
+
+explorer
+\begin_inset Quotes erd
+\end_inset
+
+, two motors are used, which don't have an exact equivalent in the robotic
+ hardware.
+ Instead of controlling the motors of the Pioneer3AT directly, it is steered
+ in a simpler way by using a ROS::Twist command
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+http://wiki.ros.org/geometry_msgs
+\end_layout
+
+\end_inset
+
+, which consists of a linear and an angular part.
+ The linear part determines the speed of the robot, the angular is turning
+ the robot, both can have positive or negative values (meaning forward or
+ backward speed, or left/right turns).
+ The Pioneer3AT is listening for commands at the ROS topic called 
+\begin_inset Quotes eld
+\end_inset
+
+/Pioneer3AT/cmd_vel
+\begin_inset Quotes erd
+\end_inset
+
+.
+ The Pioneer3AT setup is specified in an 
+\begin_inset Quotes eld
+\end_inset
+
+.sdf
+\begin_inset Quotes erd
+\end_inset
+
+ file and can be found in the repository
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+https://github.com/weidel-p/ros_music_adapter
+\end_layout
+
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Section
+On the MUSIC Configuration File
+\end_layout
+
+\begin_layout Standard
+In this section, we map the functionality of the Braitenberg Vehicle to
+ the Pioneer3AT hardware.
+ Although this could be done in an easier way, I'm using all the parts of
+ the ROS - MUSIC Toolchain to demonstrate its capability to perform closed-loop
+ simulations.
+\end_layout
+
+\begin_layout Subsection
+Common Adapter Properties
+\end_layout
+
+\begin_layout Standard
+All adapters in the toolchain have some parameters in common.
+\end_layout
+
+\begin_layout Itemize
+music_timestep: Specifies the interval between MUSIC ticks in seconds.
+ Default: 0.001
+\end_layout
+
+\begin_layout Itemize
+stoptime: Specifies the duration of the simulation in seconds.
+\end_layout
+
+\begin_layout Itemize
+rtf: The realtime factor of the simulation.
+ Default: 1.
+\end_layout
+
+\begin_layout Standard
+Also, there are the common MUSIC properties 
+\begin_inset Quotes eld
+\end_inset
+
+binary
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+args
+\begin_inset Quotes erd
+\end_inset
+
+ and 
+\begin_inset Quotes eld
+\end_inset
+
+np
+\begin_inset Quotes erd
+\end_inset
+
+, which I won't explain here, but can be read up in the MUSIC documentation
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+https://www.incf.org/documents/program-documents/Music-UsersManual.pdf
+\end_layout
+
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+The common behavior of all adapters in the toolchain is to specify an input
+ and an output port which reflect the properties of the neural and robotic
+ simulation.
+ For example, the laserscanner of the Pioneer3AT measures the distance to
+ object by projecting 100 beams into its environment.
+ This results in a 100 dimensional data array which have to be communicated
+ by MUSIC.
+\end_layout
+
+\begin_layout Standard
+In the following sections, I will describe the setup of the adapters used
+ in this example.
+\end_layout
+
+\begin_layout Subsection
+The ROS Sensory Adapter
+\end_layout
+
+\begin_layout Standard
+The purpose of this adapter is to listen to a specified ROS topic and convert
+ the arriving ROS message into a C++ array which can be communicated via
+ MUSIC.
+ In the MUSIC configuration file we set the ROS topic to 
+\begin_inset Quotes eld
+\end_inset
+
+/Pioneer3AT/laserscan
+\begin_inset Quotes erd
+\end_inset
+
+, the message type to 
+\begin_inset Quotes eld
+\end_inset
+
+Laserscan
+\begin_inset Quotes erd
+\end_inset
+
+ and the sensory update rate to 20 Hz (this is found in the specifications
+ of the laserscanner in the robotic setup).
+ The data array has 100 dimensions, one for each beam of the laserscanner.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float algorithm
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+[sensor]
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+binary=ros_sensor_adapter
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+args=
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+np=1
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+music_timestep=0.05
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+ros_topic=/Pioneer3AT/laserscan
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+message_type=Laserscan
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+sensor_update_rate=20
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+The Connect Adapter
+\end_layout
+
+\begin_layout Standard
+The connect adapter performs a linear transformation on the incoming array.
+ For this example, the connect adapter is used to reduce the dimensionality
+ of the laserscanner data 
+\begin_inset Formula $d$
+\end_inset
+
+ from 100 dimensions to two.
+ The new, two dimensional, data array 
+\begin_inset Formula $s$
+\end_inset
+
+ represents the left and the right sensor in the vehicle: 
+\begin_inset Formula 
+\[
+s_{0}=sensor_{left}=\frac{\sum_{i=0}^{49}d_{i}}{50}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+s_{1}=sensor_{right}=\frac{\sum_{i=50}^{99}d_{i}}{50}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This transformation is specified in a file containing connectivity weight
+ between all the dimensions of incoming and outgoing data in JSON format.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float algorithm
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+[converge] 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+binary=connect_adapter 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+args= 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+np=1 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+music_timestep=0.05 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+weights_filename=braitenberg3_converge_weights.dat
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+The Rate Encoder
+\end_layout
+
+\begin_layout Standard
+The rate encoder is translating the incoming data array containing continuous
+ data to spiking activity.
+ More information about the en- and decoding as well as performance measurements
+ can be found in the publication about this toolchain
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+https://arxiv.org/abs/1604.04764
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float algorithm
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+[encoder] 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+binary=rate_encoder 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+args= 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+np=1 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+music_timestep=0.05 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+rate_min=1 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+rate_max=200
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+The NEST Simulation
+\end_layout
+
+\begin_layout Standard
+In the description of the Braitenberg Vehicle, the connections are crossed
+ between the sensors and the motor.
+ This is achieved in a NEST simulation, by connecting a MUSICEventInProxy
+ to a MUSICEventOutProxy via two parrot neurons.
+ The NEST script can be found in the repository.
+\end_layout
+
+\begin_layout Standard
+In the MUSIC configuration file, it is possible to pass arguments (like
+ simulation time, timestep, etc) to NEST by using the 
+\begin_inset Quotes eld
+\end_inset
+
+args
+\begin_inset Quotes erd
+\end_inset
+
+ field in the MUSIC configuration file.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float algorithm
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+[nest] 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+binary=./braitenberg3_pyNEST.py 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+args=-s 0.05 -t 1000 -n 2 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+np=1 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+The Linear Decoder
+\end_layout
+
+\begin_layout Standard
+The linear decoder is translating spiking activity to a continuous data
+ array by applying a low-pass filter on the incoming spikes with an exponential
+ kernel (with an time-constant 
+\begin_inset Quotes eld
+\end_inset
+
+tau
+\begin_inset Quotes erd
+\end_inset
+
+) and weighting the filtered spike traces with a multiplicative factor which
+ is specified in an extra file using the JSON format.
+ In this example, the linear decoder is used to decode the spiking activity
+ received from NEST to continuous data which can be transformed to ROS messages
+ in the ROS Command Adapter.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float algorithm
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+[decoder] 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+binary=../../linear_readout_decoder 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+args= 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+np=1 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+music_timestep=0.05 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+tau=0.03 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+weights_filename=braitenberg3_readout_weights.dat 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+The ROS Command Adapter
+\end_layout
+
+\begin_layout Standard
+The ROS Command Adapter transforms a C++ array to a ROS Message which is
+ then sent to the (simulated) robot via a ROS Publisher.
+ The mapping from array to message type can be done similar as has been
+ shown in the Sensor Adapter, but can also specified in a dedicated file.
+ Here, a ROS::Twist message is created from the filtered activity of the
+ NEST simulation.
+ 
+\end_layout
+
+\begin_layout Standard
+The activity of the two neurons is interpreted as the speed of the two motors
+ described in the 
+\begin_inset Quotes eld
+\end_inset
+
+explorer
+\begin_inset Quotes erd
+\end_inset
+
+.
+ In order to map the speed of the two motors 
+\begin_inset Formula $m_{0}$
+\end_inset
+
+ and 
+\begin_inset Formula $m_{1}$
+\end_inset
+
+ to a ROS::Twist message, the following transformation is used
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+linear.x=\frac{m_{0}+m_{1}}{2}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+for the translations (or speed) of the robot, and
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+angular.z=m_{0}-m_{1}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+for the rotation.
+ This mapping is specified in the config file 
+\begin_inset Quotes eld
+\end_inset
+
+braitenberg3_twist_mapping.dat
+\begin_inset Quotes erd
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float algorithm
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+[command] 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+binary=../../ros_command_adapter 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+args= 
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+np=1 
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+music_timestep=0.05 
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+ros_topic=/Pioneer3AT/cmd_vel 
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+message_mapping_filename=braitenberg3_twist_mapping.dat 
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+command_rate=20 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Connecting the binaries
+\end_layout
+
+\begin_layout Standard
+After specifying all the binaries in the toolchain they still have to be
+ connected.
+ The dimensionality of the data are specified here in the brackets after
+ each connection.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float algorithm
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+sensor.out->converge.in[100] 
+\end_layout
+
+\begin_layout Plain Layout
+converge.out->encoder.in[2] 
+\end_layout
+
+\begin_layout Plain Layout
+encoder.out->nest.in[2] 
+\end_layout
+
+\begin_layout Plain Layout
+nest.out->decoder.in[2] 
+\begin_inset Newline newline
+\end_inset
+
+decoder.out->command.in[2]
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Summary
+\end_layout
+
+\begin_layout Standard
+In this example of a Braitenberg Vehicle 
+\begin_inset Quotes eld
+\end_inset
+
+explorer
+\begin_inset Quotes erd
+\end_inset
+
+, the laserscanner of a Pioneer3AT robot is projecting 100 beams in the
+ environment, resulting in a 100 dimensional sensory data.
+ This sensory data is transformed to a C++ array by the ROS Sensor Adapter
+ and converged to a two dimensional array (implementing the two sensors
+ specified in the 
+\begin_inset Quotes eld
+\end_inset
+
+explorer
+\begin_inset Quotes erd
+\end_inset
+
+ description) by the Connect Adapter.
+ This compact sensory data is then encoded into spiking activity by a Regular
+ Rate Encoder and sent to NEST.
+ In the NEST simulation, the connections are crossed and sent to the Linear
+ Decoder which reconstructs a continuous signal from the spiking activity.
+ The ROS Command Adapter maps this continuous signal to a ROS::Twist message
+ and sends this command to the Pioneer3AT robot.
+ 
+\end_layout
+
+\begin_layout Section
+On the Execution of the Simulation
+\end_layout
+
+\begin_layout Standard
+After installing ROS, MUSIC and the Pioneer3AT robot (can be found in the
+ repository), this example can be executed by running following commands:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float algorithm
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+roslaunch pioneer3at demo.launch
+\end_layout
+
+\begin_layout Plain Layout
+gzclient
+\end_layout
+
+\begin_layout Plain Layout
+mpirun -np 6 music braitenberg3.music
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document
