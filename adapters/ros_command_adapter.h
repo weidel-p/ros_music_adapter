@@ -15,7 +15,7 @@
 #include <pthread.h>
 
 #define DEBUG_OUTPUT false 
-#define MEASUREMENT_OUTPUT false 
+#define MEASUREMENT_OUTPUT true 
 
 enum msg_types {Float64MultiArray, Twist};
 
