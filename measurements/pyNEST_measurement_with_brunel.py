@@ -81,7 +81,7 @@ neuron_params = {"C_m": 1.0,
                  "V_m": 0.0,
                  "V_th": theta}
 J = 0.1  # postsynaptic amplitude in mV
-J_ex = J  * 0.0 # amplitude of excitatory postsynaptic potential
+J_ex = J  * 0.001 # amplitude of excitatory postsynaptic potential
 J_in = -g * J_ex# amplitude of inhibitory postsynaptic potential
 
 

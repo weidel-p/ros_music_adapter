@@ -110,11 +110,11 @@ for n in np.arange(100, 1100, 300):
 
         print
         print
-        print n, rtf
+        print n*5, rtf
         print
         print
 
-        insert_datapoint (n, rtf, "with ROS-MUSIC Toolchain", it) 
+        insert_datapoint (n*5, rtf, "with ROS-MUSIC Toolchain", it) 
 
         mean_rtf += rtf / ITERATIONS
 
@@ -133,11 +133,12 @@ for n in np.arange(100, 2100, 300):
 
         print
         print
-        print n, rtf
+        print n*5, rtf
         print
         print
 
-        insert_datapoint (n, rtf, "NEST alone", it) 
+        # n * 5 as the brunel network uses that many neurons
+        insert_datapoint (n*5, rtf, "NEST alone", it) 
 
  
 data_file = open(data_filename, "w+")
