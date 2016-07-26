@@ -77,6 +77,9 @@ RosSensorAdapter::initROS(int argc, char** argv)
         case Twist:
             subscriber = n.subscribe(ros_topic, 1000, &RosSensorAdapter::twistCallback, this);
             break;
+        case Float64MultiArray:
+            subscriber = n.subscribe(ros_topic, 1000, &RosSensorAdapter::float64MultiArrayCallback, this);
+            break;
     }
 }
 
@@ -99,6 +102,9 @@ RosSensorAdapter::initMUSIC(int argc, char** argv)
     }
     else if (_msg_type.compare("Twist") == 0){
         msg_type = Twist;
+    }
+    else if (_msg_type.compare("FloatArray") == 0){
+        msg_type = Float64MultiArray;
     }
     else
     {
@@ -226,6 +232,7 @@ RosSensorAdapter::runMUSIC()
 void
 RosSensorAdapter::laserscanCallback(const sensor_msgs::LaserScanConstPtr& msg)
 {
+    std::cout << "GOT LASER SENSOR MESSAGE" << std::endl;
     pthread_mutex_lock(&data_mutex);
     for (unsigned int i = 0; i < msg->ranges.size(); ++i)
     {
@@ -239,6 +246,7 @@ RosSensorAdapter::laserscanCallback(const sensor_msgs::LaserScanConstPtr& msg)
 void
 RosSensorAdapter::twistCallback(const geometry_msgs::Twist msg)
 {
+    std::cout << "GOT TWIST SENSOR MESSAGE" << std::endl;
     pthread_mutex_lock(&data_mutex);
 
     data[0] = msg.linear.x;
@@ -250,6 +258,21 @@ RosSensorAdapter::twistCallback(const geometry_msgs::Twist msg)
             data[i] = 1;
         else if (data[i] < -1)
             data[i] = -1;
+
+    }
+
+    pthread_mutex_unlock(&data_mutex);    
+}
+
+void
+RosSensorAdapter::float64MultiArrayCallback(const std_msgs::Float64MultiArray msg)
+{
+    std::cout << "GOT FLOAT SENSOR MESSAGE" << std::endl;
+    pthread_mutex_lock(&data_mutex);
+
+    for (unsigned int i = 0; i < datasize; ++i)
+    {
+        data[i] = msg.data[i];
     }
 
     pthread_mutex_unlock(&data_mutex);    
