@@ -16,6 +16,7 @@ main(int argc, char** argv)
     RosCommandAdapter ros_adapter;
     ros_adapter.init(argc, argv);
 
+    MPI::COMM_WORLD.Barrier();
     // If sensor_update_rate and timestep match to a relative
     // precision of 0.1%, lump the ROS and MUSIC event loops
     // together.
@@ -242,7 +243,6 @@ RosCommandAdapter::sendROS ()
 void
 RosCommandAdapter::runROSMUSIC()
 {
-    MPI::COMM_WORLD.Barrier();
     std::cout << "running command adapter with update rate of " << command_rate << std::endl;
     RTClock clock( 1. / (command_rate * rtf));
 
@@ -275,7 +275,7 @@ RosCommandAdapter::runROS()
         clock.sleepNext();
     }
 
-    ros::Time stop_time = ros::Time::now() + ros::Duration(stoptime);
+    ros::Time stop_time = ros::Time::now() + ros::Duration(stoptime/rtf);
 
     ros::spinOnce() ;
     for (ros::Time t = ros::Time::now(); t < stop_time; t = ros::Time::now())
@@ -301,7 +301,6 @@ RosCommandAdapter::runROS()
 void 
 RosCommandAdapter::runMUSIC()
 {
-    MPI::COMM_WORLD.Barrier();
     std::cout << "running command adapter with update rate of " << command_rate << std::endl;
     RTClock clock(timestep / rtf);
 

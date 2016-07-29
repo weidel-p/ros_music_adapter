@@ -16,6 +16,7 @@ main(int argc, char** argv)
     RosSensorAdapter ros_adapter;
     ros_adapter.init(argc, argv);
 
+    MPI::COMM_WORLD.Barrier();
     // If sensor_update_rate and timestep match to a relative
     // precision of 0.1%, lump the ROS and MUSIC event loops
     // together.
@@ -152,7 +153,6 @@ RosSensorAdapter::initMUSIC(int argc, char** argv)
 void
 RosSensorAdapter::runROSMUSIC()
 {
-    MPI::COMM_WORLD.Barrier();
     std::cout << "running sensor adapter with update rate of " << sensor_update_rate << std::endl;
     RTClock clock( 1. / (sensor_update_rate * rtf) );
     
@@ -190,7 +190,7 @@ RosSensorAdapter::runROS()
         clock.sleepNext();
     }
 
-    ros::Time stop_time = ros::Time::now() + ros::Duration(stoptime);
+    ros::Time stop_time = ros::Time::now() + ros::Duration(stoptime/rtf);
 
     ros::spinOnce();
     for (ros::Time t = ros::Time::now(); t < stop_time; t = ros::Time::now())
@@ -212,7 +212,6 @@ RosSensorAdapter::runROS()
 void 
 RosSensorAdapter::runMUSIC()
 {
-    MPI::COMM_WORLD.Barrier();
     std::cout << "running sensor adapter with update rate of " << sensor_update_rate << std::endl;
     RTClock clock(timestep / rtf);
 
@@ -232,7 +231,6 @@ RosSensorAdapter::runMUSIC()
 void
 RosSensorAdapter::laserscanCallback(const sensor_msgs::LaserScanConstPtr& msg)
 {
-    std::cout << "GOT LASER SENSOR MESSAGE" << std::endl;
     pthread_mutex_lock(&data_mutex);
     for (unsigned int i = 0; i < msg->ranges.size(); ++i)
     {
@@ -246,7 +244,6 @@ RosSensorAdapter::laserscanCallback(const sensor_msgs::LaserScanConstPtr& msg)
 void
 RosSensorAdapter::twistCallback(const geometry_msgs::Twist msg)
 {
-    std::cout << "GOT TWIST SENSOR MESSAGE" << std::endl;
     pthread_mutex_lock(&data_mutex);
 
     data[0] = msg.linear.x;
@@ -267,7 +264,6 @@ RosSensorAdapter::twistCallback(const geometry_msgs::Twist msg)
 void
 RosSensorAdapter::float64MultiArrayCallback(const std_msgs::Float64MultiArray msg)
 {
-    std::cout << "GOT FLOAT SENSOR MESSAGE" << std::endl;
     pthread_mutex_lock(&data_mutex);
 
     for (unsigned int i = 0; i < datasize; ++i)
