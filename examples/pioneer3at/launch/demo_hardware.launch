@@ -2,8 +2,6 @@
 
 <include file="$(find pioneer3at)/launch/core/gazebo_demo.launch" /> 
 
-<include file="$(find pioneer3at)/launch/lidar/gazebo_hokuyo.launch" /> 
-
 </launch>
 
 
