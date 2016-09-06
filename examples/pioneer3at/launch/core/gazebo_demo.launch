@@ -1,6 +1,9 @@
 <launch>
 
-	<node pkg="pioneer3at" type="bashim" name="gazebo_server" 
-	      args="gzserver $(find pioneer3at)/config/gazebo/demo_world.sdf"/>
-    
+    <node name="gazebo" pkg="gazebo_ros" type="gzserver" args="$(find pioneer3at)/config/gazebo/demo_world.sdf use_sim_time:=true" respawn="false" output="screen"> 
+
+     <param name="use_sim_time" type="bool" value="true" />
+    </node>
+
+
 </launch>

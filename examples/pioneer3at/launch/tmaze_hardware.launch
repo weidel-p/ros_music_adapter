@@ -1,0 +1,8 @@
+<launch>
+
+<include file="$(find pioneer3at)/launch/core/gazebo_tmaze.launch" /> 
+
+
+</launch>
+
+
