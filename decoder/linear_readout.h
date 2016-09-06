@@ -13,6 +13,8 @@
 #include <gsl/gsl_vector_double.h>
 #include <gsl/gsl_blas.h>
 
+#include <iostream>
+
 #define DEBUG_OUTPUT false 
 
 const double DEFAULT_TIMESTEP = 1e-3;

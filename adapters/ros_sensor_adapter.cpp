@@ -16,6 +16,7 @@ main(int argc, char** argv)
     RosSensorAdapter ros_adapter;
     ros_adapter.init(argc, argv);
 
+    MPI::COMM_WORLD.Barrier();
     // If sensor_update_rate and timestep match to a relative
     // precision of 0.1%, lump the ROS and MUSIC event loops
     // together.
@@ -77,6 +78,9 @@ RosSensorAdapter::initROS(int argc, char** argv)
         case Twist:
             subscriber = n.subscribe(ros_topic, 1000, &RosSensorAdapter::twistCallback, this);
             break;
+        case Float64MultiArray:
+            subscriber = n.subscribe(ros_topic, 1000, &RosSensorAdapter::float64MultiArrayCallback, this);
+            break;
     }
 }
 
@@ -99,6 +103,9 @@ RosSensorAdapter::initMUSIC(int argc, char** argv)
     }
     else if (_msg_type.compare("Twist") == 0){
         msg_type = Twist;
+    }
+    else if (_msg_type.compare("FloatArray") == 0){
+        msg_type = Float64MultiArray;
     }
     else
     {
@@ -146,7 +153,6 @@ RosSensorAdapter::initMUSIC(int argc, char** argv)
 void
 RosSensorAdapter::runROSMUSIC()
 {
-    MPI::COMM_WORLD.Barrier();
     std::cout << "running sensor adapter with update rate of " << sensor_update_rate << std::endl;
     RTClock clock( 1. / (sensor_update_rate * rtf) );
     
@@ -184,7 +190,7 @@ RosSensorAdapter::runROS()
         clock.sleepNext();
     }
 
-    ros::Time stop_time = ros::Time::now() + ros::Duration(stoptime);
+    ros::Time stop_time = ros::Time::now() + ros::Duration(stoptime/rtf);
 
     ros::spinOnce();
     for (ros::Time t = ros::Time::now(); t < stop_time; t = ros::Time::now())
@@ -206,7 +212,6 @@ RosSensorAdapter::runROS()
 void 
 RosSensorAdapter::runMUSIC()
 {
-    MPI::COMM_WORLD.Barrier();
     std::cout << "running sensor adapter with update rate of " << sensor_update_rate << std::endl;
     RTClock clock(timestep / rtf);
 
@@ -255,6 +260,20 @@ RosSensorAdapter::twistCallback(const geometry_msgs::Twist msg)
             data[i] = 1;
         else if (data[i] < -1)
             data[i] = -1;
+
+    }
+
+    pthread_mutex_unlock(&data_mutex);    
+}
+
+void
+RosSensorAdapter::float64MultiArrayCallback(const std_msgs::Float64MultiArray msg)
+{
+    pthread_mutex_lock(&data_mutex);
+
+    for (unsigned int i = 0; i < datasize; ++i)
+    {
+        data[i] = msg.data[i];
     }
 
     pthread_mutex_unlock(&data_mutex);    
