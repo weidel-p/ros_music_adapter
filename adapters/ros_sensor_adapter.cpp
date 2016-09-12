@@ -237,7 +237,7 @@ RosSensorAdapter::laserscanCallback(const sensor_msgs::LaserScanConstPtr& msg)
         // scale data between -1 and 1
         // TODO: catch exception if ranges.size not width of port
         if (isinf(msg->ranges.at(i))){
-            data[i] = msg->range_max;
+            data[i] = 1.;
         }
         else{
             data[i] = ((msg->ranges.at(i) - msg->range_min) / (msg->range_max - msg->range_min) ) * 2 - 1;

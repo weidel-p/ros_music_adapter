@@ -12,11 +12,13 @@ class IAFNeuron{
 
     // NEF parameters
     std::vector<double> alpha;
+    std::vector<double> input_bias;
     bool is_nef_initialized;
 
     public:
-    double  bias, V_m, scaling;
-       IAFNeuron(int dimensions){
+        double  bias, V_m, scaling;
+
+        IAFNeuron(int dimensions){
         
             //V_m = 0.0;
             V_m = std::rand() % 10;
@@ -44,6 +46,14 @@ class IAFNeuron{
        }
 
        void encode(std::vector<double> data){
+            for (unsigned int i = 0; i < data.size(); ++i){
+                data.at(i) += input_bias.at(i);
+                if (data.at(i) > 1.)
+                    data.at(i) = 1.;
+                else if (data.at(i) < -1.)
+                    data.at(i) = -1.;
+
+            }
             I_e = std::inner_product(alpha.begin(), alpha.end(), data.begin(), bias);
 
        }
@@ -77,13 +87,18 @@ class IAFNeuron{
 
     private:
        void init_nef(int dimensions){
-           std::vector<double> pref_direction;
+            std::vector<double> pref_direction;
             double ssum = 0;
             scaling = 0. + std::rand() % 300;
             for (int i = 0; i < dimensions; ++i){
                 double rand = std::rand() % 1000 / 1000. - 0.5;
                 ssum += rand * rand;
                 pref_direction.push_back(rand);
+
+                rand = std::rand() % 2000 / 1000. - 1.0;
+                input_bias.push_back(rand);
+
+
             }
             ssum = std::sqrt(ssum);
 

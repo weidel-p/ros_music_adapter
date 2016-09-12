@@ -1,6 +1,6 @@
 stoptime=1000.
 rtf=1.0
-music_timestep=0.01
+music_timestep=0.001
 [sensor_laser]
   binary=../../ros_sensor_adapter
   args=
