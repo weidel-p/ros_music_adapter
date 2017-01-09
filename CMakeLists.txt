@@ -23,12 +23,12 @@ set(CMAKE_CXX_COMPILE_FLAGS ${CMAKE_CXX_COMPILE_FLAGS} ${MPI_COMPILE_FLAGS})
 set(CMAKE_CXX_LINK_FLAGS ${CMAKE_CXX_LINK_FLAGS} ${MPI_LINK_FLAGS})
 set(CMAKE_CXX_FLAGS "-O3")        ## Optimize
 
-find_library(ROS_CPP roscpp /opt/ros/jade/lib)
-find_library(ROS_CPP_SER roscpp_serialization /opt/ros/jade/lib)
-find_library(ROSCONSOLE rosconsole /opt/ros/jade/lib)
-find_library(ROSTIME rostime /opt/ros/jade/lib)
+find_library(ROS_CPP roscpp /opt/ros/kinetic/lib)
+find_library(ROS_CPP_SER roscpp_serialization /opt/ros/kinetic/lib)
+find_library(ROSCONSOLE rosconsole /opt/ros/kinetic/lib)
+find_library(ROSTIME rostime /opt/ros/kinetic/lib)
 
-include_directories(/opt/ros/jade/include/)
+include_directories(/opt/ros/kinetic/include/)
 
 find_library(GSL gsl REQUIRED)
 find_library(BLAS gslcblas REQUIRED)
