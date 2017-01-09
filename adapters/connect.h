@@ -5,7 +5,7 @@
 #include <cmath>
 #include <unistd.h>
 #include "sys/time.h"
-#include "jsoncpp/json/json.h"
+#include <json/json.h>
 #include <iostream>
 #include <fstream>
 
