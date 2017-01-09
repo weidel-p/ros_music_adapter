@@ -49,3 +49,13 @@ target_link_libraries(connect_adapter ${MUSIC} ${MPI_LIBRARIES} ${JSON} ${GSL} $
 # COPY PYTHON FILES TO ROOT DIRECTORY
 file(COPY "adapters/pca.py" DESTINATION "./")
 
+install(TARGETS
+    ros_command_adapter
+    ros_sensor_adapter
+    linear_readout_decoder
+    nef_encoder
+    rate_encoder
+    poisson_encoder
+    connect_adapter
+    RUNTIME DESTINATION bin
+)
