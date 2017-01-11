@@ -30,7 +30,7 @@ class RosSensorAdapter
         bool ratesMatch (double precision);
         void runMUSIC();
         void runROS();
-	    void runROSMUSIC();
+        void runROSMUSIC();
         void finalize();
 
     private:
@@ -40,14 +40,14 @@ class RosSensorAdapter
         double rtf;
 
         MPI::Intracomm comm;
-	    MUSIC::Setup* setup;
+        MUSIC::Setup* setup;
         MUSIC::Runtime* runtime;
         double stoptime;
         int datasize;
         double sensor_update_rate;
         double timestep;
 
-	    pthread_mutex_t data_mutex;
+        pthread_mutex_t data_mutex;
         double* data;
 
         msg_types msg_type;
