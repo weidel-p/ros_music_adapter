@@ -6,7 +6,7 @@
 
 find_package(PkgConfig)
 
-find_path(MUSIC_INCLUDE_DIR music.hh)
+find_path(MUSIC_INCLUDE_DIR NAMES music.hh)
 
 find_library(MUSIC_LIBRARY NAMES libmusic.so)
 
