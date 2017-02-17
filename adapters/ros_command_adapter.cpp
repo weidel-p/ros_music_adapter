@@ -168,33 +168,20 @@ RosCommandAdapter::readMappingFile()
         }
         else if (_msg_type.compare("Twist") == 0)
         {
-            msg_type = Twist;
+            const char *components[] = {
+                "linear.x", "linear.y", "linear.z",
+                "angular.x", "angular.y", "angular.z"
+            };
+            const size_t n_components = sizeof(components) / sizeof(components[0]);
             
-            msg_map = new int[6];
-            int index = -1;
+            msg_type = Twist;
+            msg_map = new int[n_components];
 
-            index = json_mapping["mapping"]["linear.x"].asInt();
-            msg_map[0] = index + 1;
-
-            index = -1;
-            index = json_mapping["mapping"]["linear.y"].asInt();
-            msg_map[1] = index + 1;
-
-            index = -1;
-            index = json_mapping["mapping"]["linear.z"].asInt();
-            msg_map[2] = index + 1;
-
-            index = -1;
-            index = json_mapping["mapping"]["angular.x"].asInt();
-            msg_map[3] = index + 1;
-
-            index = -1;
-            index = json_mapping["mapping"]["angular.y"].asInt();
-            msg_map[4] = index + 1;
-
-            index = -1;
-            index = json_mapping["mapping"]["angular.z"].asInt();
-            msg_map[5] = index + 1;
+            size_t index;
+            for (index = 0; index < n_components; index++)
+            {
+                msg_map[index] = json_mapping["mapping"].get(components[index], -1).asInt() + 1;
+            }
         }
         else
         {
