@@ -122,8 +122,11 @@ RosCommandAdapter::initMUSIC(int argc, char** argv)
     }
     
     datasize = width;
-    data = new double[datasize+1]; //+1 for the leading zero needed for unspecified fiels in the message 
-    data[0] = 0.;
+    data = new double[datasize+1]; // +1 for the leading zero needed for unspecified fields in the message
+    for (size_t i = 0; i < datasize + 1; ++i)
+    {
+        data[i] = 0.;
+    }
          
     // Declare where in memory to put data
     MUSIC::ArrayData dmap (&data[1],
