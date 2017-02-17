@@ -180,8 +180,7 @@ RosCommandAdapter::readMappingFile()
             msg_type = Twist;
             msg_map = new int[n_components];
 
-            size_t index;
-            for (index = 0; index < n_components; index++)
+            for (size_t index = 0; index < n_components; index++)
             {
                 msg_map[index] = json_mapping["mapping"].get(components[index], -1).asInt() + 1;
             }
