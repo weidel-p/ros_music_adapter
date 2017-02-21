@@ -1,1 +1,1 @@
-{"message_type": "Twist", "mapping": {"angular.z": 1, "linear.x": 0}}
+{"message_type": "Twist", "mapping": {"angular.z": 1, "linear.x": 0}, "max": 1, "min": -1}

@@ -184,6 +184,16 @@ RosCommandAdapter::readMappingFile()
             {
                 msg_map[index] = json_mapping["mapping"].get(components[index], -1).asInt() + 1;
             }
+
+            min_msg = 0;
+            max_msg = 0;
+            min_msg = json_mapping["min"].asDouble();
+            max_msg = json_mapping["max"].asDouble();
+            
+            if (max_msg == 0 && min_msg == 0)
+            {
+                std::cout << "WARNING: min and max of Twist msg is 0" << std::endl;
+            }
         }
         else
         {
@@ -213,6 +223,18 @@ RosCommandAdapter::sendROS ()
 
       case Twist: 
       {
+          for (int i = 1; i < datasize+1; ++i)
+          {
+              if (data[i] > max_msg)
+              {
+                  data[i] = max_msg;
+              }
+              else if (data[i] < min_msg)
+              {
+                  data[i] = min_msg;
+              }
+          }
+
           geometry_msgs::Twist msg;
           
           msg.linear.x = data[msg_map[0]];
@@ -269,9 +291,7 @@ RosCommandAdapter::runROS()
     ros::spinOnce() ;
     for (ros::Time t = ros::Time::now(); t < stop_time; t = ros::Time::now())
     {
-	    pthread_mutex_lock (&data_mutex);
         sendROS();
-	    pthread_mutex_unlock (&data_mutex);
 #if DEBUG_OUTPUT
         std::cout << "ROS Command Adapter: ";
         for (int i = 1; i < datasize + 1; ++i)

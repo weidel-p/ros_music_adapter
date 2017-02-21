@@ -14,7 +14,7 @@
 #include <fstream>
 #include <pthread.h>
 
-#define DEBUG_OUTPUT false 
+#define DEBUG_OUTPUT false
 #define MEASUREMENT_OUTPUT false 
 
 enum msg_types {Float64MultiArray, Twist};
@@ -55,6 +55,8 @@ class RosCommandAdapter
         Json::Value json_mapping; 
         msg_types msg_type;
         int* msg_map;
+	    double min_msg;
+  	    double max_msg;
 
         void initROS(int argc, char** argv);
         void initMUSIC(int argc, char** argv);

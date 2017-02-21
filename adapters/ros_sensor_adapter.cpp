@@ -89,11 +89,12 @@ RosSensorAdapter::initMUSIC(int argc, char** argv)
 {
     setup = new MUSIC::Setup (argc, argv);
 
-    setup->config("ros_topic", &ros_topic);
-    setup->config("stoptime", &stoptime);
-    setup->config("sensor_update_rate", &sensor_update_rate);
-    setup->config("ros_node_name", &ros_node_name);
-    setup->config("rtf", &rtf);
+  setup->config("ros_topic", &ros_topic);
+  setup->config("stoptime", &stoptime);
+  setup->config("music_timestep", &timestep);
+  setup->config("sensor_update_rate", &sensor_update_rate);
+  setup->config("ros_node_name", &ros_node_name);
+  setup->config("rtf", &rtf);
 
     std::string _msg_type;
     setup->config("message_type", &_msg_type);
@@ -234,14 +235,14 @@ RosSensorAdapter::laserscanCallback(const sensor_msgs::LaserScanConstPtr& msg)
     pthread_mutex_lock(&data_mutex);
     for (unsigned int i = 0; i < msg->ranges.size(); ++i)
     {
-        // scale data between -1 and 1
-        // TODO: catch exception if ranges.size not width of port
-        if (isinf(msg->ranges.at(i))){
-            data[i] = msg->range_max;
-        }
-        else{
-            data[i] = ((msg->ranges.at(i) - msg->range_min) / (msg->range_max - msg->range_min) ) * 2 - 1;
-        }
+      // scale data between -1 and 1
+      // TODO: catch exception if ranges.size not width of port
+      if (isinf(msg->ranges.at(i))){
+	data[i] = 1.;
+      }
+      else{
+	data[i] = ((msg->ranges.at(i) - msg->range_min) / (msg->range_max - msg->range_min) ) * 2 - 1;
+      }
     }
     pthread_mutex_unlock(&data_mutex);    
 }

@@ -12,7 +12,7 @@ const double DEFAULT_TIMESTEP = 1e-3;
 const double DEFAULT_RATE_MIN = 0.;
 const double DEFAULT_RATE_MAX = 100.;
 
-class RateEncoder{
+class PoissonEncoder{
     public:
         void init(int argc, char** argv);
         void runMUSIC();
