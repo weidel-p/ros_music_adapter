@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<package>
+  <name>ros_music_adapter</name>
+  <version>0.0.0</version>
+  <description>The ros_music_adapter package</description>
+
+  <maintainer email="mail@michael-hoff.net">Michael Hoff</maintainer>
+  <license>GPL</license>
+
+  <author email="p.weidel@fz-juelich.de">Philipp Weidel</author>
+  <author email="mail@michael-hoff.net">Michael Hoff</author>
+
+  <build_depend>dvs_msgs</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>roscpp_serialization</build_depend>
+  <build_depend>rosconsole</build_depend>
+  <build_depend>rostime</build_depend>
+
+  <run_depend>dvs_msgs</run_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>roscpp_serialization</run_depend>
+  <run_depend>rosconsole</run_depend>
+  <run_depend>rostime</run_depend>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <export>
+  </export>
+</package>
