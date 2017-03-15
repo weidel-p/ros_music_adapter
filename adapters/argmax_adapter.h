@@ -28,7 +28,7 @@
 #include <fstream>
 #include "float.h"
 
-#define DEBUG_OUTPUT true 
+#define DEBUG_OUTPUT false 
 
 const double DEFAULT_TIMESTEP = 1e-3;
 

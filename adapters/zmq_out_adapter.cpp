@@ -123,7 +123,6 @@ ZmqOutAdapter::sendZMQ (zmq::socket_t &pub)
         }
 	    pthread_mutex_unlock (&data_mutex);
     }
-    std::cout << writer.write(json_data) << std::endl;
     s_send (pub, writer.write(json_data));
 }
 

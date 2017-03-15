@@ -14,7 +14,7 @@
 #include "rtclock.h"
 #include "jsoncpp/json/json.h"
 
-#define DEBUG_OUTPUT true 
+#define DEBUG_OUTPUT false 
 
 enum msg_types {FloatArray, GymCommand};
 
