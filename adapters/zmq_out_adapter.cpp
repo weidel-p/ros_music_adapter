@@ -115,10 +115,15 @@ ZmqOutAdapter::sendZMQ (zmq::socket_t &pub)
     }
     else if (msg_type == GymCommand){
 
+        struct timeval now_;
+        gettimeofday(&now_, NULL);
+        double ts_now = now_.tv_sec + now_.tv_usec/1000000.;
+        
         pthread_mutex_lock (&data_mutex);
         for (unsigned int i = 0; i < datasize; ++i){
             Json::Value val;
             val["value"] = data[i];
+            val["ts"] = ts_now;
             json_data.append(val);
         }
 	    pthread_mutex_unlock (&data_mutex);
