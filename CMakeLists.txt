@@ -60,6 +60,7 @@ add_executable(ros_event_sensor_adapter adapters/ros_event_sensor_adapter.cpp)
 add_executable(linear_readout_decoder decoder/linear_readout.cpp)
 add_executable(nef_encoder encoder/nef_encoder.cpp)
 add_executable(connect_adapter adapters/connect.cpp)
+add_executable(discretize_adapter adapters/discretize.cpp)
 add_executable(argmax_adapter adapters/argmax_adapter.cpp)
 add_executable(rate_encoder encoder/rate_encoder.cpp)
 add_executable(poisson_encoder encoder/poisson_encoder.cpp)
@@ -75,6 +76,7 @@ target_link_libraries(rate_encoder ${MUSIC_LIBRARIES} ${MPI_LIBRARIES})
 target_link_libraries(poisson_encoder ${MUSIC_LIBRARIES} ${MPI_LIBRARIES})
 target_link_libraries(argmax_adapter ${MUSIC_LIBRARIES} ${MPI_LIBRARIES})
 target_link_libraries(connect_adapter ${MUSIC_LIBRARIES} ${MPI_LIBRARIES} ${JSONCPP_LIBRARY} ${GSL} ${BLAS})
+target_link_libraries(discretize_adapter ${MUSIC_LIBRARIES} ${MPI_LIBRARIES})
 
 # COPY PYTHON FILES TO ROOT DIRECTORY
 # TODO what for?
@@ -91,6 +93,7 @@ install(TARGETS
     rate_encoder
     poisson_encoder
     connect_adapter
+    discretize_adapter
     argmax_adapter
     RUNTIME DESTINATION bin
 )
