@@ -76,7 +76,7 @@ target_link_libraries(rate_encoder ${MUSIC_LIBRARIES} ${MPI_LIBRARIES})
 target_link_libraries(poisson_encoder ${MUSIC_LIBRARIES} ${MPI_LIBRARIES})
 target_link_libraries(argmax_adapter ${MUSIC_LIBRARIES} ${MPI_LIBRARIES})
 target_link_libraries(connect_adapter ${MUSIC_LIBRARIES} ${MPI_LIBRARIES} ${JSONCPP_LIBRARY} ${GSL} ${BLAS})
-target_link_libraries(discretize_adapter ${MUSIC_LIBRARIES} ${MPI_LIBRARIES})
+target_link_libraries(discretize_adapter ${MUSIC_LIBRARIES} ${MPI_LIBRARIES} ${JSONCPP_LIBRARY})
 
 # COPY PYTHON FILES TO ROOT DIRECTORY
 # TODO what for?

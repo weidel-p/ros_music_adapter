@@ -55,6 +55,8 @@ RosCommandAdapter::init(int argc, char** argv)
     msg_type = DEFAULT_MESSAGE_TYPE;
     rtf = DEFAULT_RTF;
 
+    runtime = 0;
+
     pthread_mutex_init(&data_mutex, NULL);
 
     // MUSIC before ROS to read the config first!
@@ -244,7 +246,7 @@ RosCommandAdapter::sendROS ()
           msg.angular.x = data[msg_map[3]];
           msg.angular.y = data[msg_map[4]];
           msg.angular.z = data[msg_map[5]];
-      
+     
           publisher.publish(msg);
           break;
       }
@@ -281,7 +283,7 @@ RosCommandAdapter::runROS()
     RTClock clock(1. / (command_rate * rtf));
 
     // wait until first sensor update arrives
-    while (ros::Time::now().toSec() == 0.)
+    while (ros::Time::now().toSec() == 0. or runtime == 0)
     {
         clock.sleepNext();
     }
@@ -289,7 +291,8 @@ RosCommandAdapter::runROS()
     ros::Time stop_time = ros::Time::now() + ros::Duration(stoptime/rtf);
 
     ros::spinOnce() ;
-    for (ros::Time t = ros::Time::now(); t < stop_time; t = ros::Time::now())
+    //for (ros::Time t = ros::Time::now(); t < stop_time; t = ros::Time::now())
+    for (int t = 0; runtime->time() < stoptime; t++)
     {
         sendROS();
 #if DEBUG_OUTPUT

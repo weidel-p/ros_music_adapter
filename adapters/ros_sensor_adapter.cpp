@@ -54,13 +54,18 @@ RosSensorAdapter::init(int argc, char** argv)
     sensor_update_rate = DEFAULT_SENSOR_UPDATE_RATE;
     ros_node_name = DEFAULT_ROS_NODE_NAME;
     rtf = DEFAULT_RTF;
+    
+
+    runtime = 0;
 
     pthread_mutex_init(&data_mutex, NULL);
 
     // MUSIC before ROS to read the config first!
     initMUSIC(argc, argv);
     initROS(argc, argv);
+    
 }
+
 
 
 void
@@ -80,6 +85,9 @@ RosSensorAdapter::initROS(int argc, char** argv)
             break;
         case Float64MultiArray:
             subscriber = n.subscribe(ros_topic, 1000, &RosSensorAdapter::float64MultiArrayCallback, this);
+            break;
+        case Odom:
+            subscriber = n.subscribe(ros_topic, 1000, &RosSensorAdapter::odomCallback, this);
             break;
     }
 }
@@ -107,6 +115,9 @@ RosSensorAdapter::initMUSIC(int argc, char** argv)
     }
     else if (_msg_type.compare("FloatArray") == 0){
         msg_type = Float64MultiArray;
+    }
+    else if (_msg_type.compare("Odom") == 0){
+        msg_type = Odom;
     }
     else
     {
@@ -186,7 +197,7 @@ RosSensorAdapter::runROS()
     RTClock clock( 1. / (sensor_update_rate * rtf) );
 
     // wait until first sensor update arrives
-    while (ros::Time::now().toSec() == 0.)
+    while (ros::Time::now().toSec() == 0. or runtime == 0)
     {
         clock.sleepNext();
     }
@@ -194,7 +205,8 @@ RosSensorAdapter::runROS()
     ros::Time stop_time = ros::Time::now() + ros::Duration(stoptime/rtf);
 
     ros::spinOnce();
-    for (ros::Time t = ros::Time::now(); t < stop_time; t = ros::Time::now())
+    //for (ros::Time t = ros::Time::now(); t < stop_time; t = ros::Time::now())
+    for (int t = 0; runtime->time() < stoptime; t++)
     {
 #if DEBUG_OUTPUT
         std::cout << "ROS Sensor Adapter: ";
@@ -208,6 +220,8 @@ RosSensorAdapter::runROS()
         clock.sleepNext();
         ros::spinOnce();
    }
+   
+   std::cout << "ROS FINISHED" << std::endl;
 }
 
 void 
@@ -278,6 +292,14 @@ RosSensorAdapter::float64MultiArrayCallback(const std_msgs::Float64MultiArray ms
     }
 
     pthread_mutex_unlock(&data_mutex);    
+}
+
+void 
+RosSensorAdapter::odomCallback(const nav_msgs::Odometry::ConstPtr& msg)
+{
+    
+    data[0] = msg->pose.pose.position.x;
+    data[1] = msg->pose.pose.position.y;
 }
 
 void RosSensorAdapter::finalize(){

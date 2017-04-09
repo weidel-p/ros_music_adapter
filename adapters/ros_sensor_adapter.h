@@ -6,9 +6,13 @@
 #include "sensor_msgs/LaserScan.h"
 #include "geometry_msgs/Twist.h"
 #include "std_msgs/Float64MultiArray.h"
+#include "nav_msgs/Odometry.h"
 
 #include <music.hh>
 #include <mpi.h>
+#include <json/json.h>
+#include <iostream>
+#include <fstream>
 
 #include "sys/time.h"
 
@@ -21,7 +25,7 @@ const double DEFAULT_SENSOR_UPDATE_RATE = 30;
 const double DEFAULT_RTF = 1.0;
 const std::string DEFAULT_ROS_NODE_NAME = "ros_sensor_node";
 
-enum msg_types {Laserscan, Twist, Float64MultiArray}; 
+enum msg_types {Laserscan, Twist, Float64MultiArray, Odom}; 
 
 class RosSensorAdapter
 {
@@ -47,6 +51,7 @@ class RosSensorAdapter
         double sensor_update_rate;
         double timestep;
 
+
         pthread_mutex_t data_mutex;
         double* data;
 
@@ -55,8 +60,10 @@ class RosSensorAdapter
         void initROS(int argc, char** argv);
         void initMUSIC(int argc, char** argv);
 
+
         void laserscanCallback(const sensor_msgs::LaserScanConstPtr& msg);
         void twistCallback(const geometry_msgs::Twist msg);
         void float64MultiArrayCallback(const std_msgs::Float64MultiArray msg);
+        void odomCallback(const nav_msgs::Odometry::ConstPtr& msg);
 
 };

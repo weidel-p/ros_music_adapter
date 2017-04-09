@@ -15,6 +15,7 @@
 
 const double DEFAULT_TIMESTEP = 1e-3;
 const double DEFAULT_SIGMA = 0.1;
+const string DEFAULT_GRID_POSITIONS_FILENAME = "grid_positions.dat";
 
 class DiscretizeAdapter{
     public:
@@ -28,19 +29,22 @@ class DiscretizeAdapter{
         double stoptime;
         double timestep;
         double sigma;
-        double spacing;
-        int num_place_cells_per_dim;
-        double* tmp_place_cell_pos;
 
         int size_data_in;
         int size_data_out;
         double* data_in;
         double* data_out;
 
+        string grid_positions_filename;
+        Json::Value json_grid_positions; 
+        std::map<int, double*> grid_positions;
+
         MUSIC::ContInputPort* port_in;
         MUSIC::ContOutputPort* port_out;
 
         void initMUSIC(int argc, char** argv);
+
+        void readGridPositionFile();
 };
 
 
