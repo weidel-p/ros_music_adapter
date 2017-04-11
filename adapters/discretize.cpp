@@ -162,7 +162,7 @@ DiscretizeAdapter::runMUSIC()
             // calculate activation in respect to gaussion kernel
             data_out[i] = -1. + 2. * std::exp(
                    -std::inner_product(tmp_dist, &tmp_dist[size_data_in], tmp_dist, 0.0)
-                   / std::pow(sigma, 2) );
+                   / (2 * std::pow(sigma, 2)) );
         }
    
        
