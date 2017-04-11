@@ -106,7 +106,7 @@ DiscretizeAdapter::readGridPositionFile()
     if ( !json_reader.parse(json_grid_positions_, json_grid_positions))
     {
       // report to the user the failure and their locations in the document.
-      std::cout   << "WARNING: ros sensord adapter: Failed to parse file \"" << grid_positions_filename << "\"\n" 
+      std::cout   << "WARNING: ros discretize adapter: Failed to parse file \"" << grid_positions_filename << "\"\n" 
 		  << json_grid_positions_ << " It has to be in JSON format.\n "
 		  << json_reader.getFormattedErrorMessages();
         

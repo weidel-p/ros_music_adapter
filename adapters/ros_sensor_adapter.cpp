@@ -54,6 +54,7 @@ RosSensorAdapter::init(int argc, char** argv)
     sensor_update_rate = DEFAULT_SENSOR_UPDATE_RATE;
     ros_node_name = DEFAULT_ROS_NODE_NAME;
     rtf = DEFAULT_RTF;
+    environment_limits_filename = DEFAULT_ENVIRONMENT_LIMITS_FILENAME;
     
 
     runtime = 0;
@@ -97,34 +98,13 @@ RosSensorAdapter::initMUSIC(int argc, char** argv)
 {
     setup = new MUSIC::Setup (argc, argv);
 
-  setup->config("ros_topic", &ros_topic);
-  setup->config("stoptime", &stoptime);
-  setup->config("music_timestep", &timestep);
-  setup->config("sensor_update_rate", &sensor_update_rate);
-  setup->config("ros_node_name", &ros_node_name);
-  setup->config("rtf", &rtf);
-
-    std::string _msg_type;
-    setup->config("message_type", &_msg_type);
-
-    if (_msg_type.compare("Laserscan") == 0){
-        msg_type = Laserscan;
-    }
-    else if (_msg_type.compare("Twist") == 0){
-        msg_type = Twist;
-    }
-    else if (_msg_type.compare("FloatArray") == 0){
-        msg_type = Float64MultiArray;
-    }
-    else if (_msg_type.compare("Odom") == 0){
-        msg_type = Odom;
-    }
-    else
-    {
-        std::cout << "ERROR: msg type unknown" << std::endl;
-        finalize();
-    }
-
+    setup->config("ros_topic", &ros_topic);
+    setup->config("stoptime", &stoptime);
+    setup->config("music_timestep", &timestep);
+    setup->config("sensor_update_rate", &sensor_update_rate);
+    setup->config("ros_node_name", &ros_node_name);
+    setup->config("rtf", &rtf);
+    setup->config("environment_limits_filename", &environment_limits_filename);
 
     MUSIC::ContOutputPort* port_out = setup->publishContOutput ("out");
 
@@ -160,7 +140,74 @@ RosSensorAdapter::initMUSIC(int argc, char** argv)
       		 0,
       		 datasize);
     port_out->map (&dmap, 1);
+
+    std::string _msg_type;
+    setup->config("message_type", &_msg_type);
+
+    if (_msg_type.compare("Laserscan") == 0){
+        msg_type = Laserscan;
+    }
+    else if (_msg_type.compare("Twist") == 0){
+        msg_type = Twist;
+    }
+    else if (_msg_type.compare("FloatArray") == 0){
+        msg_type = Float64MultiArray;
+    }
+    else if (_msg_type.compare("Odom") == 0){
+        msg_type = Odom;
+        readEnvironmentLimitsFile();
+    }
+    else
+    {
+        std::cout << "ERROR: msg type unknown" << std::endl;
+        finalize();
+    }
+
+
 }
+
+void 
+RosSensorAdapter::readEnvironmentLimitsFile()
+{
+    Json::Reader json_reader;
+
+    std::ifstream environment_limits_file;
+    environment_limits_file.open(environment_limits_filename.c_str(), std::ios::in);
+    string json_environment_limits_= "";
+    string line;
+
+    while (std::getline(environment_limits_file, line))
+    {
+        json_environment_limits_ += line;
+    }
+    environment_limits_file.close();
+    
+    if ( !json_reader.parse(json_environment_limits_, json_environment_limits))
+    {
+      // report to the user the failure and their locations in the document.
+      std::cout   << "WARNING: ros sensor adapter: Failed to parse file \"" << environment_limits_filename << "\"\n" 
+		  << json_environment_limits_ << " It has to be in JSON format.\n "
+		  << json_reader.getFormattedErrorMessages();
+        
+        return;
+    }
+    else
+    {
+
+        for (int i = 0; i < datasize; ++i)
+        {
+            double* limits_ = new double[2];
+            limits_[0] = json_environment_limits[i]["min"].asDouble();
+            limits_[1] = json_environment_limits[i]["max"].asDouble();
+            environment_limits.insert(std::pair<int, double*>(i, limits_));
+        }
+
+
+    }
+
+}
+
+
 
 void
 RosSensorAdapter::runROSMUSIC()
@@ -298,8 +345,16 @@ void
 RosSensorAdapter::odomCallback(const nav_msgs::Odometry::ConstPtr& msg)
 {
     
-    data[0] = msg->pose.pose.position.x;
-    data[1] = msg->pose.pose.position.y;
+    data[0] = (msg->pose.pose.position.x - environment_limits[0][0]) / (environment_limits[0][0] - environment_limits[0][1]);
+    if (datasize > 1)
+    {
+        data[1] = (msg->pose.pose.position.y - environment_limits[1][0]) / (environment_limits[1][0] - environment_limits[1][1]);
+    }
+    if (datasize > 2)
+    {
+        data[2] = (msg->pose.pose.position.z - environment_limits[2][0]) / (environment_limits[2][0] - environment_limits[2][1]);
+    }
+
 }
 
 void RosSensorAdapter::finalize(){

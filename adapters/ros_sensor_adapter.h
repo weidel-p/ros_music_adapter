@@ -23,6 +23,7 @@
 const double DEFAULT_TIMESTEP = 1e-3;
 const double DEFAULT_SENSOR_UPDATE_RATE = 30;
 const double DEFAULT_RTF = 1.0;
+const string DEFAULT_ENVIRONMENT_LIMITS_FILENAME = "grid_positions.dat";
 const std::string DEFAULT_ROS_NODE_NAME = "ros_sensor_node";
 
 enum msg_types {Laserscan, Twist, Float64MultiArray, Odom}; 
@@ -51,6 +52,9 @@ class RosSensorAdapter
         double sensor_update_rate;
         double timestep;
 
+        string environment_limits_filename;
+        Json::Value json_environment_limits; 
+        std::map<int, double*> environment_limits;
 
         pthread_mutex_t data_mutex;
         double* data;
@@ -60,6 +64,7 @@ class RosSensorAdapter
         void initROS(int argc, char** argv);
         void initMUSIC(int argc, char** argv);
 
+        void readEnvironmentLimitsFile();
 
         void laserscanCallback(const sensor_msgs::LaserScanConstPtr& msg);
         void twistCallback(const geometry_msgs::Twist msg);
