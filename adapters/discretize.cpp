@@ -16,7 +16,6 @@ DiscretizeAdapter::init(int argc, char** argv)
 {
     std::cout << "initializing discretize adapter" << std::endl;
     timestep = DEFAULT_TIMESTEP;
-    sigma = DEFAULT_SIGMA;
     grid_positions_filename = DEFAULT_GRID_POSITIONS_FILENAME;
     initMUSIC(argc, argv);
 }
@@ -28,7 +27,6 @@ DiscretizeAdapter::initMUSIC(int argc, char** argv)
 
     setup->config("stoptime", &stoptime);
     setup->config("music_timestep", &timestep);
-    setup->config("sigma", &sigma);
     setup->config("grid_positions_filename", &grid_positions_filename);
 
     port_in = setup->publishContInput("in");
@@ -118,17 +116,24 @@ DiscretizeAdapter::readGridPositionFile()
         for (int i = 0; i < size_data_out; ++i)
         {
             double* pos_ = new double[size_data_in];
+            double* sigmas_ = new double[size_data_in];
+
             for (int j = 0; j < size_data_in; ++j)
             {
                 pos_[j] = json_grid_positions[i][j].asDouble();
+               
+                //put sigmas on the diagonal
+                sigmas_[j] = json_grid_positions[i][size_data_in + j].asDouble(); 
             }
             grid_positions.insert(std::pair<int, double*>(i, pos_));
+            sigmas.insert(std::pair<int, double*>(i, sigmas_));
         }
 
 
     }
 
 }
+
 
 
 
@@ -142,27 +147,20 @@ DiscretizeAdapter::runMUSIC()
     gettimeofday(&start, NULL);
     unsigned int ticks_skipped = 0;
 
-    double* tmp_dist = new double[size_data_in]; 
-    for (int i = 0; i < size_data_in; ++i)
-    {
-        tmp_dist[i] = 0.;
-    }
 
 
     for (int t = 0; runtime->time() < stoptime; t++)
     {
         for (int i = 0; i < size_data_out; ++i){
-
+            double tmp_ = 0; 
 
             // calculate distance to this place cell 
             for (int j = 0; j < size_data_in; ++j){
-                tmp_dist[j] = data_in[j] - grid_positions[i][j];
+                tmp_ += std::pow((data_in[j] - grid_positions[i][j]) / sigmas[i][j], 2);
             }
-
+           
             // calculate activation in respect to gaussion kernel
-            data_out[i] = -1. + 2. * std::exp(
-                   -std::inner_product(tmp_dist, &tmp_dist[size_data_in], tmp_dist, 0.0)
-                   / (2 * std::pow(sigma, 2)) );
+            data_out[i] = -1. + 2. * std::exp(-tmp_/2.);
         }
    
        
