@@ -116,14 +116,11 @@ RoundAdapter::runMUSIC()
       int argmax = 0;
       for (int i = 0; i < size_data_in; ++i)
       {
-          if (data_in[i] > max){
-              max = data_in[i];
-              argmax = i;
-          }
-          data_out[i] = 0.;
+          if (data_in[i] < 0.5)
+              data_out[i] = 0.;
+          else
+              data_out[i] = 1.;
       }
-
-      data_out[argmax] = 1.;
        
 #if DEBUG_OUTPUT
       std::cout << "Round Adapter: ";
