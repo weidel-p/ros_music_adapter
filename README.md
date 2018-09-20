@@ -1,4 +1,6 @@
-# ros_music_adapter
+# ros music adapter
+
+THIS IS AN OUTDATED VERSION! Please use https://github.com/incf-music/music-adapters
 
 ## Software Dependencies
 - MUSIC (https://github.com/INCF/MUSIC)
